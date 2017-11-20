@@ -1,0 +1,48 @@
+package:
+  name: nbsite
+  version: {{ environ['GIT_DESCRIBE_TAG'].lstrip('v') }}.{{ GIT_BUILD_STR }}
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+
+requirements:
+  build:
+    - python
+  run:
+    - python=3.6*
+    - holoviews
+    - paramnb
+    - numpy
+    - scipy
+    - notebook
+    - matplotlib
+    - pandas
+    - bokeh=0.12.10
+    - nose
+    - networkx
+    - xarray
+    - datashader
+    - scikit-image
+    - selenium
+    - phantomjs
+    - streamz=0.2.0
+    - dask=0.15.4
+    - sphinx
+    - runipy
+    - beautifulsoup4
+    - graphviz
+    - plotly
+
+
+#test:
+#  imports:
+#    - parambokeh
+
+about:
+  home: https://github.com/ioam/nbsite
+  summary: abc123
+  license: BSD 3-Clause
