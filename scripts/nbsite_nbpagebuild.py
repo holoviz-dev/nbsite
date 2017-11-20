@@ -1,24 +1,19 @@
 """
 Auto-generates the rst files corresponding to the Notebooks in examples/
 
-used by a makefile but you could try python builder/nbpagebuild.py yourprojname
+nbsite_nbpagebuild.py project /path/to/examples /path/to/doc
 """
+
 import os
 import glob
 import re
 import sys
 
-# TODO: only ok while submodule following organization rules
-examples_path = os.path.abspath(
-    os.path.join(__file__, '..','..', '..','examples'))
-
-doc_path = os.path.abspath(
-    os.path.join(__file__, '..','..', '..','doc'))
-
-# TODO: hardcoded!
 project = sys.argv[1]
+examples_path = os.path.abspath(sys.argv[2])
+doc_path = os.path.abspath(sys.argv[3])
 
-print("Making rst for %s and putting them %s"%(examples_path,doc_path))
+print("Making rst for notebooks in %s and putting them %s"%(examples_path,doc_path))
 
 for filename in glob.iglob(os.path.join(examples_path,"**","*.ipynb"), recursive=True):
     fromhere = filename.split(examples_path)[1].lstrip('/')
