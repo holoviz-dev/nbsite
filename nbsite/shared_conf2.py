@@ -28,11 +28,11 @@ def hack(project,ioam_module,authors,description,html_static_path=None):
 
     def setup(app):
         app.connect('autodoc-process-docstring', param_formatter)
-        try:
-            import runipy # noqa (Warning import)
-            nbbuild.setup(app)
-        except:
-            print('RunIPy could not be imported; pages including the '
-                  'Notebook directive will not build correctly')
+        #try:
+        #    import runipy # noqa (Warning import)
+        nbbuild.setup(app)
+        #except:
+        #    print('RunIPy could not be imported; pages including the '
+        #          'Notebook directive will not build correctly')
 
     return setup, intersphinx_mapping, texinfo_documents, man_pages, latex_documents, htmlhelp_basename, html_static_path, html_title, exclude_patterns
