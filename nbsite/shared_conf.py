@@ -1,18 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import sys
-import os
-
-def add_paths(paths):
-    for path in paths:
-        abs_path = os.path.abspath( path)
-        sys.path.insert(0, abs_path)
-        if "PYTHONPATH" not in os.environ:
-            # PYTHONPATH needs to be set for runipy
-            os.environ["PYTHONPATH"] = abs_path
-        else:
-            os.environ["PYTHONPATH"] += ':' + abs_path
-
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
