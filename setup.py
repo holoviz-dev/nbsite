@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import glob, pathlib
 from setuptools import setup
 
 import versioneer
+
+_tmplate_files = [pathlib.Path(x) for x in glob.glob("nbsite/tmplate/*.*") + glob.glob("nbsite/tmplate/*/*.*")]
+print([x.relative_to(x.parts[0]) for x in _tmplate_files])
 
 setup(
     name='nbsite',
@@ -11,7 +15,8 @@ setup(
     author='nbsite contributors',
     license='BSD-3',
     url='https://github.com/ioam/nbsite',
-    py_modules=['nbsite'],
+    packages=['nbsite'],
+    package_data={'nbsite': [x.relative_to(x.parts[0]) for x in _tmplate_files]},
 # TODO
 #    install_requires=[],
     classifiers=[
@@ -25,5 +30,6 @@ setup(
         'scripts/nbsite_gallery.py',
         'scripts/nbsite_generate_modules.py',
         'scripts/nbsite_nbpagebuild.py'
-    ]
+    ],
+    zip_safe=False
 )
