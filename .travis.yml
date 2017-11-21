@@ -1,0 +1,23 @@
+language: generic
+
+os:
+  - linux
+
+sudo: false
+
+stages:
+#  - test
+  - name: deploy
+    if: branch = master AND type != pull_request  
+
+jobs:
+  include:
+    - stage: deploy
+      install:
+      - source ./etc/travis-miniconda.sh
+      # for building and uploading packages
+      - conda install conda-build=3.0.25
+      - conda install anaconda-client
+      script:
+      - conda build conda.recipe
+      - anaconda -t $CONDA_UPLOAD_TOKEN upload --force -u cball $HOME/miniconda/conda-bld/noarch/nbsite*.tar.bz2
