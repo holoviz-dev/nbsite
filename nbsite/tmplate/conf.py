@@ -55,13 +55,11 @@ html_context = {
     'js_includes': ['custom.js', 'require.js'],
 }
 
-# If extensions (or modules to document with autodoc) are in another
-# directory, add these directories to sys.path here.
-paths = ['.', '..']
+# If modules to document with autodoc are other directories, add here.
+paths = ['..']
 
 # end of things to edit
 ##############################################################
-
 
 add_paths(paths)
 
