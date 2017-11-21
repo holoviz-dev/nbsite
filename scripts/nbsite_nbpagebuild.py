@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Auto-generates the rst files corresponding to the Notebooks in examples/
 

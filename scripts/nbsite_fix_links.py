@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 """
 Cleans up relative cross-notebook links by replacing them with .html
 extension.
