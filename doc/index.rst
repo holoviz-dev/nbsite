@@ -18,6 +18,11 @@ Documentation for users: `Usage <Usage.html>`_
 
 Documentation for developers: `Development <Development.html>`_.
 
+Why (or why not) use this rater than : nikola; pelican; jupytersite; hugo;
+(whatever https://seaborn.pydata.org/tutorial/color_palettes.html
+uses), whatever scikit-learn uses ; wahtever scikit-image uses; ...
+
+
 Please feel free to report `issues
 <https://github.com/ioam/nbsite/issues>`_ or `contribute code
 <https://help.github.com/articles/about-pull-requests>`_. You are also
