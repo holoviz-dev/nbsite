@@ -14,7 +14,7 @@ Project is an `open-source
 library for something something something something and something
 more.
 
-Documentation for users and developers is in the `Getting Started Guide <getting_started>`_.
+Documentation for users is `Introduction <Introduction>`_ and for developers is `Development <Development>`_.
 
 Please feel free to report `issues
 <https://github.com/ioam/holoviews/issues>`_ or `contribute code
@@ -69,7 +69,9 @@ welcome to chat with the developers on `gitter
 
 
 .. toctree::
-   :hidden:
-   :maxdepth: 2
+    :hidden:
+    :maxdepth: 2
 
-   Getting Started <getting_started/index>
+    Introduction <Introduction>
+    Development <Development>
+   
