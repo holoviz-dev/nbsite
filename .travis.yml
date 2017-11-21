@@ -15,11 +15,7 @@ script:
 - sphinx-build -b html . ./_build/html
 - nbsite_fix_links.py _build/html
 - touch ./_build/html/.nojekyll
-before_cache:
-- rm -rf $HOME/.cache/pip/log
-cache:
-  directories:
-  - "$HOME/.cache/pip"
+- cd ..
 deploy:
   - provider: pypi
     distributions: "sdist bdist_wheel"
@@ -31,7 +27,7 @@ deploy:
   - provider: pages
     skip_cleanup: true
     github_token: $GITHUB_TOKEN
-    local_dir: ./_build/html
+    local_dir: ./doc/_build/html
     on:
       tags: true
 
