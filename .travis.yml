@@ -17,6 +17,12 @@ script:
 - touch ./_build/html/.nojekyll
 - cd ..
 deploy:
+  - provider: pages
+    skip_cleanup: true
+    github_token: $GITHUB_TOKEN
+    local_dir: ./doc/_build/html
+    on:
+      tags: true
   - provider: pypi
     distributions: "sdist bdist_wheel"
     on:
@@ -24,12 +30,6 @@ deploy:
     user: ceball
     password:
       secure: qxvOx0FUW6x4rJ3lEyJdrRLg1dRVUOc1pdh5lWTRhQ25VHG3v4GYporg5J489ni4mdxCVd56sPVTmOKgDk+rtMqFVLH87xMoQvEw0Ep691zEZVJJ4aTgcfCwDh+OajNGkLFLK7OSoM0z7S6S7Wuf83DO4dWJZZ70ey3/KvxHE+xLgI5fO3+bu3zyseLyDo/og/eFRV+w4jG6K1zONcG2RihX9kn00jajshhDkPWtG0FBzKWWRqSqEGTXvibqAcSbL50meBcPc8YHdCVkSsg412GpIOcPQM8Yslz06hj0EuV605fjPDc/sGmGn7ocxEdB9ElMoCB0+XEtPUosP5Taink6StRjvotGwJmjF20YHP3lnLErAzsenjY7VTXmRzwzCXL/L0RaOSE9a6BP/Osq5lOQCFIO4/O3+gE5vyN6Ve6Sh/66Z8UgRMw3whXN8hXF0LqdDmD5p1HdMWZpXrmhz/ju+veR0LGBd2/FKcMxGWxdK+2133MvWLNbrazPs9ytZewJ2fpGzobEZ+wXtVCfMjwRdsuXXkeCbSo2Q7aUZRzSNzQ8qtKhabBXtJEZ2WEeE1W2BcTsp9gKAon1QROJQP31RiAI1Sm/xo9dChKHhyv2XBueujbZLNrxfNm3UgVJXaLrkKe58q8QO2GHnDiT3VXz1fp7tOyycDkvGKCnRVw=  
-  - provider: pages
-    skip_cleanup: true
-    github_token: $GITHUB_TOKEN
-    local_dir: ./doc/_build/html
-    on:
-      tags: true
 
 
 # some conda pain to deal with later
