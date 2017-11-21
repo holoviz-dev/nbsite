@@ -30,14 +30,13 @@ for filename in glob.iglob(os.path.join(examples_path,"**","*.ipynb"), recursive
     title = re.match('(\d*-)?(?P<title>.*)',title).group('title')
     fullpathrst = os.path.join(dirname, title) + '.rst'
     fullpathrst = fullpathrst.replace(' ','_')
-    # TODO: hardcoded
-    todo = "../../examples/"
     with open(fullpathrst, 'w') as rst_file:
         rst_file.write(title+'\n')
         rst_file.write('_'*len(title)+'\n\n')
-        rst_file.write(".. notebook:: %s %s\n" % (project, todo+fromhere))
+        rst_file.write(".. notebook:: %s %s\n" % (project, os.path.relpath(examples_path,start=dirname)+'/'+fromhere))
         rst_file.write("    :offset: 1\n")
         rst_file.write('\n\n-------\n\n')
+        # TODO: hardcoded
         rst_file.write('`Right click to download this notebook from GitHub.'
                        ' <https://raw.githubusercontent.com/ioam/%s/master/examples/%s>`_\n' % (project,fromhere))
 
