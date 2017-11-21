@@ -1,2 +1,2 @@
 include versioneer.py
-include _version.py
+include nbsite/_version.py

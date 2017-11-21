@@ -28,5 +28,6 @@ setup(
         'License :: OSI Approved :: BSD License',
     ],
     scripts = glob.glob("scripts/*.py"),
-    zip_safe=False
+    zip_safe=False,
+    cmdclass=versioneer.get_cmdclass()
 )
