@@ -1,19 +1,20 @@
 package:
   name: nbsite
-  version: {{ environ['GIT_DESCRIBE_TAG'].lstrip('v') }}.{{ GIT_BUILD_STR }}
+  version: {{ environ['GIT_DESCRIBE_TAG'] }}.{{ GIT_BUILD_STR }}
 
 source:
   path: ..
 
 build:
   noarch: python
-  script: python setup.py install --single-version-externally-managed --record=record.txt
+  script: python -c "print('sigh')"
+  #setup.py install --single-version-externally-managed --record=record.txt
 
 requirements:
   build:
     - python
   run:
-    - python=3.6*
+    - python >=3.6,<3.7
     - holoviews
     - paramnb
     - numpy
@@ -21,7 +22,7 @@ requirements:
     - notebook
     - matplotlib
     - pandas
-    - bokeh=0.12.10
+    - bokeh >=0.12.10,<0.12.11
     - nose
     - networkx
     - xarray
@@ -29,8 +30,8 @@ requirements:
     - scikit-image
     - selenium
     - phantomjs
-    - streamz=0.2.0
-    - dask=0.15.4
+    - streamz >=0.2.0,<0.2.1
+    - dask >=0.15.4,<0.15.5
     - sphinx
     - runipy
     - beautifulsoup4
