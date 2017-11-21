@@ -264,7 +264,9 @@ Note: By default this script will not overwrite already created files.""")
         modules = args
         excludes = opts.excludes
         for module in modules:
-            rootpath = os.path.abspath(os.path.join(__file__, "..", "..", "..", module))
+            mod = __import__(module)
+            rootpath = os.path.abspath(os.path.dirname(mod.__file__))
+            print("%s: %s"%(module,rootpath))
             if os.path.isdir(rootpath):
                 # check if the output destination is a valid directory
                 if opts.destdir and os.path.isdir(opts.destdir):
