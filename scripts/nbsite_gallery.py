@@ -1,8 +1,9 @@
+import sys
 import os
 import glob
 import shutil
 import requests
-from builder.thumbnailer import notebook_thumbnail, execute
+from nbsite.thumbnailer import notebook_thumbnail, execute
 
 # Try Python 3 first, otherwise load from Python 2
 try:
@@ -285,6 +286,6 @@ def generate_gallery(basepath, title, folders):
 
 
 if __name__ == '__main__':
-    basepath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    basepath = os.path.abspath(sys.argv[1])
     for title, folders in sorted(gallery_conf.items()):
         generate_gallery(basepath, title, folders)

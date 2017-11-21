@@ -20,8 +20,8 @@ def hack(project,ioam_module,authors,description,html_static_path=None):
                            'http://ipython.org/ipython-doc/2/': None,
                            'http://ioam.github.io/param/': None}
 
-    from builder.paramdoc import param_formatter
-    from builder import nbbuild
+    from nbsite.paramdoc import param_formatter
+    from nbsite import nbbuild
 
 
     def setup(app):
