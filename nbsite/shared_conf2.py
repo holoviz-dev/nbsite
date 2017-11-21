@@ -1,3 +1,5 @@
+import os
+
 def hack(project,ioam_module,authors,description,html_static_path=None):
 
     exclude_patterns = ['_build']
