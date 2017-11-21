@@ -14,7 +14,9 @@ nbsite is an `open-source
 library for something something something something and something
 more.
 
-Documentation for users: `Usage <Usage>`_ and for developers is `Development <Development>`_.
+Documentation for users: `Usage <Usage.html>`_
+
+Documentation for developers: `Development <Development.html>`_.
 
 Please feel free to report `issues
 <https://github.com/ioam/nbsite/issues>`_ or `contribute code
