@@ -314,6 +314,7 @@ def setup(app):
 
 
 if __name__ == '__main__':
+    raise NoLongerUsingAsScript
     import argparse, sys
     path, filename = os.path.split(__file__)
     sys.path.append(os.path.abspath(path))
@@ -323,7 +324,6 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--dest', nargs=1)
     parser.add_argument('-s', '--skip', action='store_true')
     args = parser.parse_args()
-
     dest_path = os.paths.abspath(args.dest) if args.dest else None
     skip = args.skip
     for nbpath in args.nbpaths:
