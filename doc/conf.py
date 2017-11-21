@@ -31,7 +31,6 @@ html_theme_options = {
 
 
 _NAV =  (
-        ('Getting Started', 'getting_started/index'),
 )
 
 html_context = {
@@ -44,18 +43,15 @@ html_context = {
     'NAV': _NAV,
     'LINKS': _NAV,
     'SOCIAL': (
-        ('Github', '//github.com/ioam/holoviews'),
+        ('Github', '//github.com/ioam/nbsite'),
     ),
     'js_includes': ['custom.js', 'require.js'],
 }
 
-# If extensions (or modules to document with autodoc) are in another
-# directory, add these directories to sys.path here.
-paths = ['.', '..']
+paths = []
 
 # end of things to edit
 ##############################################################
-
 
 add_paths(paths)
 
