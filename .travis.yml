@@ -1,23 +1,43 @@
-language: generic
-
-os:
-  - linux
-
 sudo: false
+language: python
+script:
+- ls
+before_cache:
+- rm -rf $HOME/.cache/pip/log
+cache:
+  directories:
+  - "$HOME/.cache/pip"
+deploy:
+  provider: pypi
+  distributions: "sdist bdist_wheel"
+  on:
+    tags: true
+  user: ceball
+  password:
+    secure: VJpGRSoKsuSZSIuBwXmd/XtAviateO7xlU4LYVzz9wrfI1xzd7TQkrRLbL/JQIzPFPop79nrtWvREZC7p+e/o8llNGNWeS8GiZHjDZxaONWhvrZqJKGRu9SNfWH08dxut6gQ9XLZ1+jilAG4KMuEhD/dww7uT+rjVLUrXcKQTMzmMt6+tWlCiVc56rQ6ZZLEqTC0eVq2Ctd2GnKqpRqUbzb1ajp3Y1nqt7M8Nr/XEwTGswt5/kFZpAi7QUz2tW39W4LlPnlzGqx9fkeRxzZ0ws1vkAhB//oJOSh+ao07i3GdneGjydjWlTaqFGUlB+W/Qol/bQpMvI0PlTiGEKqRLsoqXTVyq+8yuLtFRj+C74Bbg6/heKmHhF4lRNZXbeYbQ1Z2yVhxr3i81+DTjT02+EExvJ//96iO08KJmPnjVxxFCY5DC16YMDzGZ04s1MR+Fe3CohWKkgigfnAsZukmyFpZT/Qc9MvRUEDX4/7hEptedUULs/TaQP7yMoDf1V2c7F3jDDqB5Fjkgedqmh2LRJ2YGSFl7ciJ9hpSOCg3FibOOxDX3RPMqUpxUbd9cNyYXykPBwTg2vAe6aFuRf0lahwR6b6hRp4Kbs5sFmpFcQrJjSS9ty1TbriVoeG7MEwmhLRo7L1FYXkcSHngwooxcziU1IntwWoJMhfUZ8cx+dw=
 
-stages:
-#  - test
-  - name: deploy
-    if: branch = master AND type != pull_request  
-
-jobs:
-  include:
-    - stage: deploy
-      install:
-      - source ./etc/travis-miniconda.sh
-      # for building and uploading packages
-      - conda install conda-build=3.0.25
-      - conda install anaconda-client
-      script:
-      - conda build conda.recipe
-      - anaconda -t $CONDA_UPLOAD_TOKEN upload --force -u cball $HOME/miniconda/conda-bld/noarch/nbsite*.tar.bz2
+# some conda pain to deal with later
+#language: generic
+#
+#os:
+#  - linux
+#
+#sudo: false
+#
+#stages:
+##  - test
+#  - name: deploy
+#    if: branch = master AND type != pull_request  
+#
+#jobs:
+#  include:
+#    - stage: deploy
+#      install:
+#      - source ./etc/travis-miniconda.sh
+#      # for building and uploading packages
+#      - conda install conda-build=3.0.25
+#      - conda install anaconda-client
+#      script:
+#      - conda build conda.recipe
+#      - anaconda -t $CONDA_UPLOAD_TOKEN upload --force -u cball $HOME/miniconda/conda-bld/noarch/nbsite*.tar.bz2
+#
