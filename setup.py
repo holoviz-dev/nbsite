@@ -16,7 +16,9 @@ setup(
     license='BSD-3',
     url='https://github.com/ioam/nbsite',
     packages=['nbsite'],
-    package_data={'nbsite': [x.relative_to(x.parts[0]) for x in _tmplate_files]},
+    package_data={'nbsite': [x.relative_to(x.parts[0]) for x in _tmplate_files]+\
+                            ['_shared_static/*.*']
+    },
 # TODO
 #    install_requires=[],
     classifiers=[
@@ -25,11 +27,6 @@ setup(
         'Operating System :: OS Independent',
         'License :: OSI Approved :: BSD License',
     ],
-    scripts = [
-        'scripts/nbsite_fix_links.py',
-        'scripts/nbsite_gallery.py',
-        'scripts/nbsite_generate_modules.py',
-        'scripts/nbsite_nbpagebuild.py'
-    ],
+    scripts = glob.glob("scripts/*.py"),
     zip_safe=False
 )

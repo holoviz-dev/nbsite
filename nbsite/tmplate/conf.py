@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-from builder.shared_conf import * # noqa
+from nbsite.shared_conf import * # noqa
 
 ##############################################################
 # start of things to edit
@@ -20,7 +20,7 @@ release = '0.0.1'
 
 html_static_path = ['_static']
 
-html_theme = 'ioam_theme'
+html_theme = 'sphinx_ioam_theme'
 html_theme_options = {
 #    'logo':'images/amazinglogo.png'
 #    'favicon':'images/amazingfavicon.ico'
@@ -65,5 +65,5 @@ paths = ['.', '..']
 
 add_paths(paths)
 
-from builder.shared_conf2 import hack
+from nbsite.shared_conf2 import hack
 setup, intersphinx_mapping, texinfo_documents, man_pages, latex_documents, htmlhelp_basename, html_static_path, html_title, exclude_patterns = hack(project,ioam_module,authors,description,html_static_path)

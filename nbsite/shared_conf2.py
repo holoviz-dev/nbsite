@@ -1,10 +1,10 @@
 def hack(project,ioam_module,authors,description,html_static_path=None):
 
-    exclude_patterns = ['_build', 'builder']
+    exclude_patterns = ['_build']
     html_title = project
     if html_static_path is None:
         html_static_path = []
-    html_static_path += ['builder/_shared_static']
+    html_static_path += [os.path.abspath(os.path.join(os.path.dirname(__file__),'_shared_static'))]
     htmlhelp_basename = ioam_module+'doc'
     latex_documents = [
       ('index', ioam_module+'.tex', project+u' Documentation', authors, 'manual'),
