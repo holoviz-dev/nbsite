@@ -25,6 +25,7 @@ Contents:
 
 .. toctree::
     :titlesonly:
+    :hidden:
     :maxdepth: 2
 
     Annotating your Data <Annotating_Data>
