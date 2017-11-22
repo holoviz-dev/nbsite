@@ -22,12 +22,16 @@ def hack(project,ioam_module,authors,description,html_static_path=None):
                            'http://ipython.org/ipython-doc/2/': None,
                            'http://ioam.github.io/param/': None}
 
-    from nbsite.paramdoc import param_formatter
+    
     from nbsite import nbbuild
 
-
     def setup(app):
-        app.connect('autodoc-process-docstring', param_formatter)
+        try:
+            from nbsite.paramdoc import param_formatter
+            app.connect('autodoc-process-docstring', param_formatter)
+        except ImportError:
+            print('no param_formatter (no param?)')
+
         #try:
         #    import runipy # noqa (Warning import)
         nbbuild.setup(app)
