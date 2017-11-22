@@ -7,32 +7,34 @@ nbsite
    <div style="width: 65%; float:left">
 
 	 
-**Short description of the point of this project**
+**Build a tested, sphinx-based website from notebooks**
 
-nbsite is an `open-source
-<https://github.com/ioam/nbsite/blob/master/LICENSE.txt>`_ Python
-library for something something something something and something
-more.
+Note: this is a work in progress!
 
-Particularly for notebooks using holoviews/bokeh for
-visualization. Might work without it.
-
-Documentation for users: `Usage <Usage.html>`_
-
-Documentation for developers: `Development <Development.html>`_.
-
-Why (or why not) use this rater than : nikola; pelican; jupytersite; hugo;
-(whatever https://seaborn.pydata.org/tutorial/color_palettes.html
-uses), whatever scikit-learn uses ; wahtever scikit-image uses; ...
-
-Sites built using nbsite::
+Sites built using nbsite:
   
-  * `parambokeh <https://github.com/ioam/parambokeh>`_: `<https://ioam.github.io/parambokeh>`_
+  * `holoviews <https://github.com/ioam/holoviews>`_:
+    `<https://holoviews.org/>`_ (note: built with a prototype of
+    nbsite ;) )
 
-  * `tmp demo site <https://github.com/ContinuumIO/tmphvdocs/tree/tmphvdocs>`_: `<https://ceball.github.io/>`_
+  * `parambokeh <https://github.com/ioam/parambokeh>`_:
+    `<https://ioam.github.io/parambokeh>`_
 
-  * this site (nbsite's site)
+  * `tmp demo site
+    <https://github.com/ContinuumIO/tmphvdocs/tree/tmphvdocs>`_:
+    `<https://ceball.github.io/>`_
 
+  * `nbsite <https://github.com/ioam/nbsite>`_ (this site):
+    `<https://ioam.github.io/nbsite>`_
+
+Why (or why not) use this rater than : nikola; pelican; jupytersite;
+hugo; (whatever
+https://seaborn.pydata.org/tutorial/color_palettes.html uses),
+whatever scikit-learn uses ; wahtever scikit-image uses; ...
+
+How to use nbsite: `Usage <Usage.html>`_
+
+Notes for nbsite developers: `Development <Development.html>`_
 
 Please feel free to report `issues
 <https://github.com/ioam/nbsite/issues>`_ or `contribute code
