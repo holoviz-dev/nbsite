@@ -14,6 +14,9 @@ nbsite is an `open-source
 library for something something something something and something
 more.
 
+Particularly for notebooks using holoviews/bokeh for
+visualization. Might work without it.
+
 Documentation for users: `Usage <Usage.html>`_
 
 Documentation for developers: `Development <Development.html>`_.

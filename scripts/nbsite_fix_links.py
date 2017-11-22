@@ -7,8 +7,6 @@ import os
 import re
 from bs4 import BeautifulSoup
 
-import holoviews as hv
-import param
 
 # TODO: holoviews specific links e.g. to reference manual...doc & generalize
 
@@ -47,7 +45,16 @@ def filter_available(names, name_type):
     return available
 
 
+# TODO: allow to register stuff
 def find_autolinkable():
+
+    try:
+        import holoviews as hv
+        import param
+    except ImportError:
+        print('no holoviews and/or param: skipping autolinks')        
+        return {}
+
     # Class names for auto-linking
     excluded_names = { 'UniformNdMapping', 'NdMapping', 'MultiDimensionalMapping',
                        'Empty', 'CompositeOverlay', 'Collator', 'AdjointLayout'}
