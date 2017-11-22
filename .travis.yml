@@ -6,7 +6,7 @@ install:
 - source ./etc/travis-miniconda.sh
 - conda create --name ioamdocenv
 - source activate ioamdocenv
-- conda install python=3.6* notebook ipython sphinx beautifulsoup4 graphviz
+- conda install -c conda-forge python=3.6* notebook ipython sphinx beautifulsoup4 graphviz
 - pip install sphinx_ioam_theme
 - pip install -e .
 script:
