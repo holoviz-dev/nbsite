@@ -16,6 +16,18 @@ setup(
     license='BSD-3',
     url='https://github.com/ioam/nbsite',
     packages=['nbsite'],
+    install_requires=[
+        'jupyter_client',
+        'ipykernel',
+        'nbformat',
+        'nbconvert',
+        'notebook',
+        'graphviz',
+        'ipython',
+        'sphinx',
+        'beautifulsoup4',
+        'graphviz'
+    ],
     package_data={'nbsite': [x.relative_to(x.parts[0]) for x in _tmplate_files]+\
                             ['_shared_static/*.*']
     },
