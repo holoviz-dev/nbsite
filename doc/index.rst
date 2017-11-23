@@ -21,6 +21,9 @@ eventually trim to a few examples):
   * `<https://ioam.github.io/parambokeh>`_ (`parambokeh
     <https://github.com/ioam/parambokeh>`_)
 
+  * `<https://ioam.github.io/geoviews>`_ (`geoviews
+    <https://github.com/ioam/geoviews>`_)
+    
   * `<https://ceball.github.io/datashader/>`_ (a tmp fork of
     `datashader <https://github.com/ceball/datashader/>`_)
     
