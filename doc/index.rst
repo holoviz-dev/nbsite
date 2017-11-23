@@ -13,19 +13,20 @@ Note: this is a work in progress!
 
 Sites built using nbsite:
   
-  * `holoviews <https://github.com/ioam/holoviews>`_:
-    `<https://holoviews.org/>`_ (note: built with a prototype of
-    nbsite ;) )
+  * `<http://holoviews.org/>`_ (`holoviews
+    <https://github.com/ioam/holoviews>`_; note: built with a
+    more advanced prototype of nbsite)
 
-  * `parambokeh <https://github.com/ioam/parambokeh>`_:
-    `<https://ioam.github.io/parambokeh>`_
+  * `<https://ioam.github.io/parambokeh>`_ (`parambokeh
+    <https://github.com/ioam/parambokeh>`_)
 
-  * `tmp demo site
-    <https://github.com/ContinuumIO/tmphvdocs/tree/tmphvdocs>`_:
-    `<https://ceball.github.io/>`_
+  * `<https://ceball.github.io/>`_ (`tmp demo site
+    <https://github.com/ContinuumIO/tmphvdocs/tree/tmphvdocs>`_)
+    
 
-  * `nbsite <https://github.com/ioam/nbsite>`_ (this site):
-    `<https://ioam.github.io/nbsite>`_
+  * `<https://ioam.github.io/nbsite>`_ (`nbsite
+    <https://github.com/ioam/nbsite>`_; note: this site ;) )
+    
 
 Why (or why not) use this rater than : nikola; pelican; jupytersite;
 hugo; (whatever
