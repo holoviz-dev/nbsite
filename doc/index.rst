@@ -11,7 +11,8 @@ nbsite
 
 Note: this is a work in progress!
 
-Sites built using nbsite:
+Sites built using nbsite (currently so I can keep track;
+eventually trim to a few examples):
   
   * `<http://holoviews.org/>`_ (`holoviews
     <https://github.com/ioam/holoviews>`_; note: built with a
