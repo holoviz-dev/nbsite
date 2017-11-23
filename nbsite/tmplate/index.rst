@@ -83,6 +83,7 @@ welcome to chat with the developers on `gitter
    :hidden:
    :maxdepth: 2
 
+   Introduction <self>
    Getting Started <getting_started/index>
    User Guide <user_guide/index>
    Gallery <gallery/index>
