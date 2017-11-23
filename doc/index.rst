@@ -20,9 +20,14 @@ Sites built using nbsite:
   * `<https://ioam.github.io/parambokeh>`_ (`parambokeh
     <https://github.com/ioam/parambokeh>`_)
 
+  * `<https://ceball.github.io/datashader/>`_ (a tmp fork of
+    `datashader <https://github.com/ceball/datashader/>`_)
+    
+  * `<https://continuumio.github.io/anacondaviz>`_ (`anacondaviz
+    <https://github.com/ContinuumIO/anacondaviz>`_)
+
   * `<https://ceball.github.io/>`_ (`tmp demo site
     <https://github.com/ContinuumIO/tmphvdocs/tree/tmphvdocs>`_)
-    
 
   * `<https://ioam.github.io/nbsite>`_ (`nbsite
     <https://github.com/ioam/nbsite>`_; note: this site ;) )
