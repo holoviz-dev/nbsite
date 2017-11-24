@@ -1,42 +1,38 @@
 # -*- coding: utf-8 -*-
 
-
-from nbsite.shared_conf import * # noqa
-
-##############################################################
-# start of things to edit
+from nbsite.shared_conf import extensions, inheritance_graph_attrs,\
+    default_edge_attrs, source_suffix, master_doc, pygments_style,\
+    exclude_patterns, html_static_path, setup
 
 project = u'Project'
 authors = u'Project GitHub contributors'
 copyright = u'2017 ' + authors
 
-# TODO: rename
-ioam_module = 'holoviews'
 description = 'Stop plotting your data - annotate your data and let it visualize itself.'
 
 # TODO: gah, version
 version = '0.0.1'
 release = '0.0.1'
 
-html_static_path = ['_static']
-
+html_static_path += ['_static']
 html_theme = 'sphinx_ioam_theme'
+# logo file etc should be in html_static_path, e.g. _static
 html_theme_options = {
-#    'logo':'images/amazinglogo.png'
-#    'favicon':'images/amazingfavicon.ico'
+#    'logo':'amazinglogo.png'
+#    'favicon':'amazingfavicon.ico'
 # ...
 # ? css
 # ? js
 }
 
-
 _NAV =  (
-        ('Getting Started', 'getting_started/index'),
-        ('User Guide', 'user_guide/index'),
-        ('Gallery', 'gallery/index'),
-        ('API', 'Reference_Manual/index'),
-        ('FAQ', 'FAQ'),
-        ('About', 'about'))
+    ('Getting Started', 'getting_started/index'),
+    ('User Guide', 'user_guide/index'),
+    ('Gallery', 'gallery/index'),
+    ('API', 'Reference_Manual/index'),
+    ('FAQ', 'FAQ'),
+    ('About', 'about')
+)
 
 html_context = {
     'PROJECT': project,
@@ -55,8 +51,3 @@ html_context = {
     'js_includes': ['custom.js', 'require.js'],
 }
 
-# end of things to edit
-##############################################################
-
-from nbsite.shared_conf2 import hack
-setup, intersphinx_mapping, texinfo_documents, man_pages, latex_documents, htmlhelp_basename, html_static_path, html_title, exclude_patterns = hack(project,ioam_module,authors,description,html_static_path)

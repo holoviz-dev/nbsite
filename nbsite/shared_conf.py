@@ -1,5 +1,19 @@
 # -*- coding: utf-8 -*-
 
+import os
+
+from nbsite import nbbuild
+
+def setup(app):
+    try:
+        from nbsite.paramdoc import param_formatter
+        app.connect('autodoc-process-docstring', param_formatter)
+    except ImportError:
+        print('no param_formatter (no param?)')
+
+    nbbuild.setup(app)
+
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
@@ -21,4 +35,5 @@ default_edge_attrs = {
 source_suffix = '.rst'
 master_doc = 'index'
 pygments_style = 'sphinx'
-#html_static_path = ['builder/_shared_static']
+exclude_patterns = ['_build']
+html_static_path = [os.path.abspath(os.path.join(os.path.dirname(__file__),'_shared_static'))]
