@@ -10,7 +10,7 @@ description = 'something'
 import nbsite
 version = release = nbsite.__version__
 
-html_static_path = ['_static']
+html_static_path += ['_static']
 html_theme = 'sphinx_ioam_theme'
 html_theme_options = {}
 
