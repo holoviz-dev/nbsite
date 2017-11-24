@@ -1,7 +1,9 @@
-============
-IOAM builder
-============
+======
+NBSite
+======
 
-WIP, something something.
+** Build a tested, sphinx-based website from notebooks **
 
-See ioam.github.io/nbsite
+This project is currently an early work in progress. See the
+documentation at `ioam.github.io/nbsite <ioam.github.io/nbsite>`_ for
+more information.
