@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from nbsite.shared_conf import extensions, inheritance_graph_attrs,\
-    default_edge_attrs, source_suffix, master_doc, pygments_style,\
-    exclude_patterns, html_static_path, setup
+from nbsite.shared_conf import *
+
+###################################################
+# edit things below as appropriate for your project
 
 project = u'Project'
-authors = u'Project GitHub contributors'
+authors = u'Authors for html meta author'
 copyright = u'2017 ' + authors
+description = 'Short description for html meta description.'
 
-description = 'Stop plotting your data - annotate your data and let it visualize itself.'
-
-# TODO: gah, version
 version = '0.0.1'
 release = '0.0.1'
 
@@ -42,6 +41,7 @@ html_context = {
     'WEBSITE_SERVER': 'https://ceball.github.io',
     'VERSION': version,
     'NAV': _NAV,
+    # by default, footer links are same as those in header
     'LINKS': _NAV,
     'SOCIAL': (
         ('Gitter', '//gitter.im/ioam/holoviews'),
