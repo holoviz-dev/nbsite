@@ -12,7 +12,10 @@ version = release = nbsite.__version__
 
 html_static_path += ['_static']
 html_theme = 'sphinx_ioam_theme'
-html_theme_options = {}
+html_theme_options = {
+    'logo': 'nbsite-logo.png',
+    'favicon': 'favicon.ico'
+}
 
 _NAV = ()
 
