@@ -11,10 +11,11 @@ install:
 - pip install -e .
 script:
 - cd doc
-- nbsite_nbpagebuild.py nbsite ../examples .
+- nbsite_nbpagebuild.py ioam nbsite ../examples .
 - sphinx-build -b html . ./_build/html
 - nbsite_fix_links.py _build/html
 - touch ./_build/html/.nojekyll
+- nbsite_cleandisthtml.py ./_build/html take_a_chance
 - cd ..
 deploy:
   - provider: pages
