@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os, string, glob, re, copy, ast
+import os, string, glob, re, copy, ast, sys
 
 from sphinx.util.compat import Directive
 from docutils import nodes
@@ -36,6 +36,37 @@ from IPython.nbformat.current import read, write
 import nbconvert
 import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor, CellExecutionError
+
+
+from nbformat.v4 import output_from_msg
+class ExecutePreprocessor1000(ExecutePreprocessor):
+    """Sigh"""
+    _ipython_startup = None
+    @property
+    def kc(self):
+        return self._kc
+
+    @kc.setter
+    def kc(self,v):
+        self._kc=v
+        if self._ipython_startup is not None:
+            msg_id = self._kc.execute(
+                self._ipython_startup,silent=False,store_history=False,allow_stdin=False,stop_on_error=True)
+# you can attempt to debug your startup code with this hack...            
+#            exec_reply = self._wait_for_reply(msg_id, self._ipython_startup)
+#            while True:
+#                msg = self.kc.iopub_channel.get_msg()
+#                if msg['parent_header'].get('msg_id') != msg_id:
+#                    continue
+#                else:
+#                    try:
+#                        output = output_from_msg(msg)
+#                    except:
+#                        continue
+#                    if output.output_type == 'error':
+#                        raise ValueError("Startup code failed: %s %s\n%s"%(output.ename,output.evalue,output.traceback))
+#                    break
+
 
 try:
     from nbconvert.preprocessors import Preprocessor
@@ -194,7 +225,9 @@ class NotebookDirective(Directive):
                                            end=self.options.get('end'),
                                            skip_execute=self.options.get('skip_execute'),
                                            skip_output=self.options.get('skip_output'),
-                                           offset=self.options.get('offset', 0))
+                                           offset=self.options.get('offset', 0),
+                                           timeout=setup.config.nbbuild_cell_timeout,
+                                           ipython_startup=setup.config.nbbuild_ipython_startup)
 
         # Insert evaluated notebook HTML into Sphinx
 
@@ -236,25 +269,23 @@ def nb_to_html(nb_path, preprocessors=[]):
     return output
 
 
-# TODO: (does it matter) have lost profile_dir
 # TODO: (does it matter) have lost NotebookRunner.MIME_MAP['application/vnd.bokehjs_load.v0+json'] = 'html'
 # TODO: (does it matter) have lost NotebookRunner.MIME_MAP['application/vnd.bokehjs_exec.v0+json'] = 'html'
-def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=None, end=None, skip_execute=None,skip_output=None, offset=0):
+def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=None, end=None, skip_execute=None,skip_output=None, offset=0, timeout=300, ipython_startup=None):
 
     notebook = nbformat.read(nb_path, as_version=4)
-    # TODO: allow config? except hope to replace whole file...
-    kwargs = dict(timeout=300,
-                  allow_errors=False,
-                  # or sys.version_info[1] ?
-                  kernel_name='python',
-                  allow_exceptions=skip_exceptions)
+    kwargs = dict(timeout=timeout,
+                  kernel_name='python%s'%sys.version_info[0],
+                  allow_errors=skip_exceptions)
 
     cwd = os.getcwd()
     filedir, filename = os.path.split(nb_path)
     os.chdir(filedir)
-    profile_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profile_docs')
-    print("Ignoring %s...hope that's ok"%profile_dir)
-    not_nb_runner = ExecutePreprocessor(**kwargs)    
+    #profile_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profile_docs')
+    #print("Ignoring %s...hope that's ok"%profile_dir)
+    not_nb_runner = ExecutePreprocessor1000(**kwargs)
+    if ipython_startup is not None:
+        not_nb_runner._ipython_startup = ipython_startup
 
     if not os.path.isfile(dest_path):
         print('INFO: Running temp notebook {dest_path!s}'.format(
@@ -306,6 +337,9 @@ def setup(app):
     setup.config = app.config
     setup.confdir = app.confdir
 
+    app.add_config_value('nbbuild_cell_timeout',300,'html')
+    app.add_config_value('nbbuild_ipython_startup',"from nbsite.ipystartup import *",'html')
+    
     app.add_node(notebook_node,
                  html=(visit_notebook_node, depart_notebook_node))
 
