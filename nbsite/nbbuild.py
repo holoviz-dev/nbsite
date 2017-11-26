@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os, string, glob, re, copy, ast, sys
+import os, string, glob, re, copy, ast, sys, shutil
 
 from sphinx.util.compat import Directive
 from docutils import nodes
@@ -227,7 +227,8 @@ class NotebookDirective(Directive):
                                            skip_output=self.options.get('skip_output'),
                                            offset=self.options.get('offset', 0),
                                            timeout=setup.config.nbbuild_cell_timeout,
-                                           ipython_startup=setup.config.nbbuild_ipython_startup)
+                                           ipython_startup=setup.config.nbbuild_ipython_startup,
+                                           patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along)
 
         # Insert evaluated notebook HTML into Sphinx
 
@@ -242,6 +243,7 @@ class NotebookDirective(Directive):
         # add dependency
         self.state.document.settings.record_dependencies.add(nb_abs_path)
 
+        # TODO: doubt this isdoing anyting
         # clean up png files left behind by notebooks.
         png_files = glob.glob("*.png")
         for file in png_files:
@@ -271,7 +273,10 @@ def nb_to_html(nb_path, preprocessors=[]):
 
 # TODO: (does it matter) have lost NotebookRunner.MIME_MAP['application/vnd.bokehjs_load.v0+json'] = 'html'
 # TODO: (does it matter) have lost NotebookRunner.MIME_MAP['application/vnd.bokehjs_exec.v0+json'] = 'html'
-def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=None, end=None, skip_execute=None,skip_output=None, offset=0, timeout=300, ipython_startup=None):
+def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=None, end=None, skip_execute=None,skip_output=None, offset=0, timeout=300, ipython_startup=None,patterns_to_take_with_me=None):
+
+    if patterns_to_take_with_me is None:
+        patterns_to_take_with_me = []
 
     notebook = nbformat.read(nb_path, as_version=4)
     kwargs = dict(timeout=timeout,
@@ -288,6 +293,7 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
         not_nb_runner._ipython_startup = ipython_startup
 
     if not os.path.isfile(dest_path):
+        # TODO but this isn't true, is it? it's running the originl nb
         print('INFO: Running temp notebook {dest_path!s}'.format(
             dest_path=os.path.abspath(dest_path)))
         try:
@@ -309,6 +315,10 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
             newnb, _ = ne.from_notebook_node(notebook)
             with open(dest_path,'w') as f:
                 f.write(newnb)
+            for pattern in patterns_to_take_with_me:
+                for f in glob.glob(os.path.join(os.path.dirname(nb_path),pattern)):
+                    print("mv %s %s"%(f, os.path.dirname(dest_path)))
+                    shutil.move(f,os.path.dirname(dest_path))
             
     else:
         print('INFO: Skipping existing temp notebook {dest_path!s}'.format(
@@ -339,6 +349,7 @@ def setup(app):
 
     app.add_config_value('nbbuild_cell_timeout',300,'html')
     app.add_config_value('nbbuild_ipython_startup',"from nbsite.ipystartup import *",'html')
+    app.add_config_value('nbbuild_patterns_to_take_along',["*.json"],'html')
     
     app.add_node(notebook_node,
                  html=(visit_notebook_node, depart_notebook_node))
