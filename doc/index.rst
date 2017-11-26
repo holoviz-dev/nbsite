@@ -31,7 +31,8 @@ eventually trim to a few examples):
     <https://github.com/ContinuumIO/anacondaviz>`_)
 
   * `<https://ceball.github.io/>`_ (`tmp demo site
-    <https://github.com/ContinuumIO/tmphvdocs/tree/tmphvdocs>`_)
+    <https://github.com/ContinuumIO/tmphvdocs/tree/tmphvdocs>`_; note:
+    built from scratch, starting from nbsite template)
 
   * `<https://ioam.github.io/nbsite>`_ (`nbsite
     <https://github.com/ioam/nbsite>`_; note: this site ;) )
