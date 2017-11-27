@@ -17,11 +17,9 @@ html_static_path += ['_static']
 html_theme = 'sphinx_ioam_theme'
 # logo file etc should be in html_static_path, e.g. _static
 html_theme_options = {
-#    'logo':'amazinglogo.png'
+#    'custom_css':'bettercolors.css',
+#    'logo':'amazinglogo.png',
 #    'favicon':'amazingfavicon.ico'
-# ...
-# ? css
-# ? js
 }
 
 _NAV =  (
@@ -33,7 +31,7 @@ _NAV =  (
     ('About', 'about')
 )
 
-html_context = {
+html_context.update({
     'PROJECT': project,
     'DESCRIPTION': description,
     'AUTHOR': authors,
@@ -47,7 +45,5 @@ html_context = {
         ('Gitter', '//gitter.im/ioam/holoviews'),
         ('Twitter', '//twitter.com/holoviews'),
         ('Github', '//github.com/ioam/holoviews'),
-    ),
-    'js_includes': ['custom.js', 'require.js'],
-}
-
+    )
+})

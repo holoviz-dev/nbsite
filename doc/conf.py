@@ -13,13 +13,14 @@ version = release = nbsite.__version__
 html_static_path += ['_static']
 html_theme = 'sphinx_ioam_theme'
 html_theme_options = {
+    'custom_css': 'nbsitesite.css',
     'logo': 'nbsite-logo.png',
     'favicon': 'favicon.ico'
 }
 
 _NAV = ()
 
-html_context = {
+html_context.update({
     'PROJECT': project,
     'DESCRIPTION': description,
     'AUTHOR': authors,
@@ -29,7 +30,6 @@ html_context = {
     'LINKS': _NAV,
     'SOCIAL': (
         ('Github', '//github.com/ioam/nbsite'),
-    ),
-    'js_includes': ['custom.js', 'require.js'],
-}
+    )
+})
 

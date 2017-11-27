@@ -37,3 +37,8 @@ master_doc = 'index'
 pygments_style = 'sphinx'
 exclude_patterns = ['_build']
 html_static_path = [os.path.abspath(os.path.join(os.path.dirname(__file__),'_shared_static'))]
+
+html_context = {
+    'js_includes': ['nbsite.js', 'require.js'],
+    'css_includes': ['nbsite.css'] 
+}
