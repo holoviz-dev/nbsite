@@ -18,23 +18,23 @@ eventually trim to a few examples):
     <https://github.com/ioam/holoviews>`_; note: built with a
     more advanced prototype of nbsite)
 
-  * `<https://ioam.github.io/parambokeh>`_ (`parambokeh
+  * `<https://ioam.github.io/parambokeh/>`_ (`parambokeh
     <https://github.com/ioam/parambokeh>`_)
 
-  * `<https://ioam.github.io/geoviews>`_ (`geoviews
+  * `<https://ioam.github.io/geoviews/>`_ (`geoviews
     <https://github.com/ioam/geoviews>`_)
     
-  * `<https://ceball.github.io/datashader/>`_ (a tmp fork of
-    `datashader <https://github.com/ceball/datashader/>`_)
+  * `<https://bokeh.github.io/datashader-docs/>`_ (`datashader
+    <https://github.com/bokeh/datashader/>`_)
     
-  * `<https://continuumio.github.io/anacondaviz>`_ (`anacondaviz
-    <https://github.com/ContinuumIO/anacondaviz>`_)
+  * `<https://pyviz.github.io/pyviz/>`_ (`pyviz
+    <https://github.com/pyviz/pyviz>`_)
 
   * `<https://ceball.github.io/>`_ (`tmp demo site
     <https://github.com/ContinuumIO/tmphvdocs/tree/tmphvdocs>`_; note:
     built from scratch, starting from nbsite template)
 
-  * `<https://ioam.github.io/nbsite>`_ (`nbsite
+  * `<https://ioam.github.io/nbsite/>`_ (`nbsite
     <https://github.com/ioam/nbsite>`_; note: this site ;) )
     
 
