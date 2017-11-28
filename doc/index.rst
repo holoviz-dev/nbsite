@@ -63,5 +63,6 @@ welcome to chat with the developers on `gitter
     :maxdepth: 2
 
     Introduction <self>
-    Usage <Usage>
-    Development <Development>
+    Usage
+    Development
+    FAQ

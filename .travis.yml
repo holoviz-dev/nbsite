@@ -11,7 +11,7 @@ install:
 - pip install -e .
 script:
 - cd doc
-- nbsite_nbpagebuild.py ioam nbsite ../examples . 0
+- nbsite_nbpagebuild.py ioam nbsite . .
 - sphinx-build -b html . ./_build/html
 - nbsite_fix_links.py _build/html
 - touch ./_build/html/.nojekyll
