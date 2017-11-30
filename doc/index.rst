@@ -43,15 +43,15 @@ hugo; (whatever
 https://seaborn.pydata.org/tutorial/color_palettes.html uses),
 whatever scikit-learn uses ; wahtever scikit-image uses; ...
 
+Why not using: http://nbsphinx.readthedocs.io/en/0.2.17/index.html, RunNotebook https://github.com/ngoldbaum/RunNotebook
+
 How to use nbsite: `Usage <Usage.html>`_
 
 Notes for nbsite developers: `Development <Development.html>`_
 
 Please feel free to report `issues
 <https://github.com/ioam/nbsite/issues>`_ or `contribute code
-<https://help.github.com/articles/about-pull-requests>`_. You are also
-welcome to chat with the developers on `gitter
-<https://gitter.im/ioam/holoviews>`_.
+<https://help.github.com/articles/about-pull-requests>`_. 
 
 
 .. raw:: html

@@ -5,7 +5,7 @@ from nbsite.shared_conf import *
 project = u'nbsite'
 authors = u'nbsite GitHub contributors'
 copyright = u'2017 ' + authors
-description = 'something'
+description = 'Build a tested, sphinx-based website from notebooks'
 
 import nbsite
 version = release = nbsite.__version__
