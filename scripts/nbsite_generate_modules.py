@@ -152,6 +152,9 @@ def shall_skip(module):
     """
     Check if we want to skip this module.
     """
+    mname = os.path.splitext(os.path.basename(module))[0]
+    if mname.startswith('_') and mname!='__init__':
+        return True
     # skip it, if there is nothing (or just \n or \r\n) in the file
     return os.path.getsize(module) < 3
 
