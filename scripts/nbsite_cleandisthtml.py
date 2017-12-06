@@ -27,7 +27,9 @@ def IGetFiles(d):
             yield from IGetFiles(thing.path)
         else:
             yield thing.path
-    
+
+# I think it's ok to assume these exist for a sphinx site...
+            
 for folder in (".doctrees", "_sources"):
     d = os.path.join(htmldir,folder)
     print("removing %s"%d)
