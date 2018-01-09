@@ -1,60 +1,49 @@
 sudo: false
 language: python
-python:
-  - "3.6"
-install:
-- source ./etc/travis-miniconda.sh
-- conda create --name ioamdocenv
-- source activate ioamdocenv
-- conda install -c conda-forge python=3.6* notebook ipython sphinx beautifulsoup4 graphviz selenium phantomjs
-- pip install sphinx_ioam_theme
-- pip install -e .
-script:
-- cd doc
-- nbsite_nbpagebuild.py ioam nbsite . .
-- sphinx-build -b html . ./_build/html
-- nbsite_fix_links.py _build/html
-- touch ./_build/html/.nojekyll
-- nbsite_cleandisthtml.py ./_build/html take_a_chance
-- cd ..
-deploy:
-  - provider: pages
-    skip_cleanup: true
-    github_token: $GITHUB_TOKEN
-    local_dir: ./doc/_build/html
-    on:
-      tags: true
-  - provider: pypi
-    distributions: "sdist bdist_wheel"
-    on:
-      tags: true
-    user: ceball
-    password:
-      secure: qxvOx0FUW6x4rJ3lEyJdrRLg1dRVUOc1pdh5lWTRhQ25VHG3v4GYporg5J489ni4mdxCVd56sPVTmOKgDk+rtMqFVLH87xMoQvEw0Ep691zEZVJJ4aTgcfCwDh+OajNGkLFLK7OSoM0z7S6S7Wuf83DO4dWJZZ70ey3/KvxHE+xLgI5fO3+bu3zyseLyDo/og/eFRV+w4jG6K1zONcG2RihX9kn00jajshhDkPWtG0FBzKWWRqSqEGTXvibqAcSbL50meBcPc8YHdCVkSsg412GpIOcPQM8Yslz06hj0EuV605fjPDc/sGmGn7ocxEdB9ElMoCB0+XEtPUosP5Taink6StRjvotGwJmjF20YHP3lnLErAzsenjY7VTXmRzwzCXL/L0RaOSE9a6BP/Osq5lOQCFIO4/O3+gE5vyN6Ve6Sh/66Z8UgRMw3whXN8hXF0LqdDmD5p1HdMWZpXrmhz/ju+veR0LGBd2/FKcMxGWxdK+2133MvWLNbrazPs9ytZewJ2fpGzobEZ+wXtVCfMjwRdsuXXkeCbSo2Q7aUZRzSNzQ8qtKhabBXtJEZ2WEeE1W2BcTsp9gKAon1QROJQP31RiAI1Sm/xo9dChKHhyv2XBueujbZLNrxfNm3UgVJXaLrkKe58q8QO2GHnDiT3VXz1fp7tOyycDkvGKCnRVw=  
+python: "3.6"
 
+stages:
+  - test
+  - name: conda_package
+# TODO: restore after testing
+#    if: tag =~ ^0\.
 
-# some conda pain to deal with later
-#language: generic
-#
-#os:
-#  - linux
-#
-#sudo: false
-#
-#stages:
-##  - test
-#  - name: deploy
-#    if: branch = master AND type != pull_request  
-#
-#jobs:
-#  include:
-#    - stage: deploy
-#      install:
-#      - source ./etc/travis-miniconda.sh
-#      # for building and uploading packages
-#      - conda install conda-build=3.0.25
-#      - conda install anaconda-client
-#      script:
-#      - conda build conda.recipe
-#      - anaconda -t $CONDA_UPLOAD_TOKEN upload --force -u cball $HOME/miniconda/conda-bld/noarch/nbsite*.tar.bz2
-#
+jobs:
+  include:
+    - stage: test    
+      install:
+        - source ./etc/travis-miniconda.sh
+        - conda create --name ioamdocenv python=3.6
+        - source activate ioamdocenv
+        - conda install -c conda-forge notebook ipython sphinx beautifulsoup4 graphviz selenium phantomjs
+        - pip install sphinx_ioam_theme
+        - pip install -e .
+      script:
+        - cd doc
+        - nbsite_nbpagebuild.py ioam nbsite . .
+        - sphinx-build -b html . ./_build/html
+        - nbsite_fix_links.py _build/html
+        - touch ./_build/html/.nojekyll
+        - nbsite_cleandisthtml.py ./_build/html take_a_chance
+        - cd ..
+      deploy:
+        - provider: pages
+          skip_cleanup: true
+          github_token: $GITHUB_TOKEN
+          local_dir: ./doc/_build/html
+          on:
+            tags: true
+        - provider: pypi
+          distributions: "sdist bdist_wheel"
+          on:
+            tags: true
+          user: ceball
+          password:
+            secure: qxvOx0FUW6x4rJ3lEyJdrRLg1dRVUOc1pdh5lWTRhQ25VHG3v4GYporg5J489ni4mdxCVd56sPVTmOKgDk+rtMqFVLH87xMoQvEw0Ep691zEZVJJ4aTgcfCwDh+OajNGkLFLK7OSoM0z7S6S7Wuf83DO4dWJZZ70ey3/KvxHE+xLgI5fO3+bu3zyseLyDo/og/eFRV+w4jG6K1zONcG2RihX9kn00jajshhDkPWtG0FBzKWWRqSqEGTXvibqAcSbL50meBcPc8YHdCVkSsg412GpIOcPQM8Yslz06hj0EuV605fjPDc/sGmGn7ocxEdB9ElMoCB0+XEtPUosP5Taink6StRjvotGwJmjF20YHP3lnLErAzsenjY7VTXmRzwzCXL/L0RaOSE9a6BP/Osq5lOQCFIO4/O3+gE5vyN6Ve6Sh/66Z8UgRMw3whXN8hXF0LqdDmD5p1HdMWZpXrmhz/ju+veR0LGBd2/FKcMxGWxdK+2133MvWLNbrazPs9ytZewJ2fpGzobEZ+wXtVCfMjwRdsuXXkeCbSo2Q7aUZRzSNzQ8qtKhabBXtJEZ2WEeE1W2BcTsp9gKAon1QROJQP31RiAI1Sm/xo9dChKHhyv2XBueujbZLNrxfNm3UgVJXaLrkKe58q8QO2GHnDiT3VXz1fp7tOyycDkvGKCnRVw=  
+
+    - stage: conda_package
+      install:
+        - source ./etc/travis-miniconda.sh
+        - conda install "conda-build=3.0.25" anaconda-client
+      script:
+        - conda build --token $CONDA_UPLOAD_TOKEN --user cball conda.recipe/
