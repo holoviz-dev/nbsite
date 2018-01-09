@@ -7,37 +7,20 @@ source:
 
 build:
   noarch: python
-  script: python -c "print('sigh')"
-  #setup.py install --single-version-externally-managed --record=record.txt
+  script: python setup.py install --single-version-externally-managed --record=record.txt
 
 requirements:
   build:
     - python
   run:
-    - python >=3.6,<3.7
-    - holoviews
-    - paramnb
-    - numpy
-    - scipy
+    - python >=3.6
     - notebook
-    - matplotlib
-    - pandas
-    - bokeh >=0.12.10,<0.12.11
-    - nose
-    - networkx
-    - xarray
-    - datashader
-    - scikit-image
-    - selenium
-    - phantomjs
-    - streamz >=0.2.0,<0.2.1
-    - dask >=0.15.4,<0.15.5
+    - ipython
     - sphinx
-    - runipy
     - beautifulsoup4
     - graphviz
-    - plotly
-
+    - selenium
+    - phantomjs
 
 #test:
 #  imports:
