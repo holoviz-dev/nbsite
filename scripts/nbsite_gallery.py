@@ -17,14 +17,7 @@ except ImportError:
 
 THUMBNAIL_URL = 'http://assets.holoviews.org'
 
-# CONFIGURATION
-gallery_conf = {
-    'Gallery':   {'Apps': 'apps', 'Notebooks': 'notebooks'},
-#    'Reference': {'Apps': 'apps', 'Containers': 'containers',
-#                  'Elements': 'elements',
-#                  'Streams': {'path': 'streams', 'skip': True}}
-}
-backends = ['bokeh', 'matplotlib', 'plotly']
+backends = []
 
 PREFIX = """
 # -*- coding: utf-8 -*-
@@ -286,10 +279,39 @@ def generate_gallery(basepath, examples, title, folders):
         f.write(gallery_rst)
 
 
+# TODO: will be cleaning up configuration later, meanwhile good luck
 if __name__ == '__main__':
     basepath = os.path.abspath(sys.argv[1])
     examples = 'examples'
+    Apps = 'apps'
+    Notebooks = 'notebooks'
+    backend0 = 'bokeh'
+    backend1 = 'matplotlib'
+    backend2 = 'plotly'
     if len(sys.argv)>2:
         examples = sys.argv[2]
+    if len(sys.argv)>3:
+        Apps = sys.argv[3]
+    if len(sys.argv)>4:
+        Notebooks = sys.argv[4]
+    if len(sys.argv)>5:
+        backend0 = sys.argv[5]
+    if len(sys.argv)>6:
+        backend1 = sys.argv[6]
+    if len(sys.argv)>7:
+        backend2 = sys.argv[7]
+
+    for bend in (backend0,backend1,backend2):
+        if bend!="None":
+            backends.append(bend)
+
+    # CONFIGURATION
+    gallery_conf = {
+        'Gallery':   {'Apps': Apps, 'Notebooks': Notebooks},
+    #    'Reference': {'Apps': 'apps', 'Containers': 'containers',
+    #                  'Elements': 'elements',
+    #                  'Streams': {'path': 'streams', 'skip': True}}
+    }
+        
     for title, folders in sorted(gallery_conf.items()):
         generate_gallery(basepath, examples, title, folders)
