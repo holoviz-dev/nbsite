@@ -112,7 +112,7 @@ HIDE_JS = """
 
 skip_execute_nbs = ['DynamicMap.ipynb']
 
-def generate_file_rst(src_dir, backend, skip):
+def generate_file_rst(src_dir, examples, backend, skip):
     files = (glob.glob(os.path.join(src_dir, '*.ipynb'))+
              glob.glob(os.path.join(src_dir, '*.py')))
     for f in files:
@@ -138,8 +138,8 @@ def generate_file_rst(src_dir, backend, skip):
                 rst_file.write('.. figure:: %s\n\n' % url)
             rst_file.write('\n\n-------\n\n')
             rst_file.write('`Download this %s from GitHub (right-click to download).'
-                           ' <https://raw.githubusercontent.com/ioam/holoviews/master/examples/%s/%s>`_'
-                           % (ftype, src_dir[2:], basename))
+                           ' <https://raw.githubusercontent.com/ioam/holoviews/master/%s/%s/%s>`_'
+                           % (ftype, examples, src_dir[2:], basename))
 
 
 def _thumbnail_div(full_dir, fname, snippet, backend, extension):
@@ -175,7 +175,7 @@ guide and for more detailed documentation our `User Guide
 
 INTRO_PARAGRAPH = {'Reference': REFERENCE_INTRO, 'Gallery': GALLERY_INTRO}
 
-def generate_gallery(basepath, title, folders):
+def generate_gallery(basepath, examples, title, folders):
     """
     Generates a gallery for all example directories specified in
     the gallery_conf. Generates rst files for all found notebooks
@@ -201,12 +201,12 @@ def generate_gallery(basepath, title, folders):
         else:
             skip = False
         gallery_rst += heading + '\n' + '='*len(heading) + '\n\n'
-        asset_dir = os.path.join(basepath, 'examples', page, folder, 'assets')
+        asset_dir = os.path.join(basepath, examples, page, folder, 'assets')
         asset_dest = os.path.join('.', page, folder, 'assets')
         if os.path.isdir(asset_dir) and not os.path.isdir(asset_dest):
             shutil.copytree(asset_dir, asset_dest)
         for backend in backends:
-            path = os.path.join(basepath, 'examples', page, folder, backend)
+            path = os.path.join(basepath, examples, page, folder, backend)
             dest_dir = os.path.join('.', page, folder, backend)
             try:
                 os.makedirs(dest_dir)
@@ -230,8 +230,9 @@ def generate_gallery(basepath, title, folders):
                                       backend, '%s.png' % basename])
                 thumb = os.path.join(dest_dir, 'thumbnails',
                                      '%s.png' % basename)
-                thumb_req = requests.get(thumb_url)
-                thumb_req2 = requests.get(thumb_url[:-4]+'.gif')
+                # TODO: decide what to do about this
+                thumb_req = False #requests.get(thumb_url)
+                thumb_req2 = False # requests.get(thumb_url[:-4]+'.gif')
                 if os.path.isfile(thumb):
                     thumb_extension = 'png'
                     verb = 'Used existing'
@@ -276,7 +277,7 @@ def generate_gallery(basepath, title, folders):
                     this_entry = _thumbnail_div(dest_dir, basename, ftitle,
                                                 backend, thumb_extension)
                 gallery_rst += this_entry
-            generate_file_rst(dest_dir, backend, skip)
+            generate_file_rst(dest_dir, examples, backend, skip)
         # clear at the end of the section
         gallery_rst += """.. raw:: html\n\n
         <div style='clear:both'></div>\n\n"""
@@ -287,5 +288,8 @@ def generate_gallery(basepath, title, folders):
 
 if __name__ == '__main__':
     basepath = os.path.abspath(sys.argv[1])
+    examples = 'examples'
+    if len(sys.argv)>2:
+        examples = sys.argv[2]
     for title, folders in sorted(gallery_conf.items()):
-        generate_gallery(basepath, title, folders)
+        generate_gallery(basepath, examples, title, folders)
