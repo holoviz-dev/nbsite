@@ -305,9 +305,15 @@ if __name__ == '__main__':
         if bend!="None":
             backends.append(bend)
 
+    Gallery = {}
+    if Apps!='None':
+        Gallery['Apps'] = Apps
+    if Notebooks!='None':
+        Gallery['Notebooks'] = Notebooks
+            
     # CONFIGURATION
     gallery_conf = {
-        'Gallery':   {'Apps': Apps, 'Notebooks': Notebooks},
+        'Gallery': Gallery
     #    'Reference': {'Apps': 'apps', 'Containers': 'containers',
     #                  'Elements': 'elements',
     #                  'Streams': {'path': 'streams', 'skip': True}}
