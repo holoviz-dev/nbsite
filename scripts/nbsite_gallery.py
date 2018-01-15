@@ -177,7 +177,7 @@ def generate_gallery(basepath, examples, title, folders):
     """
     #title = 'Reference Guide' if title=='Reference' else title
     gallery_rst = title + '\n' + '_'*len(title)
-    gallery_rst += '\n' + INTRO_PARAGRAPH[title]
+    #gallery_rst += '\n' + INTRO_PARAGRAPH[title]
 
     buttons = []
     for n, backend in enumerate(backends):
