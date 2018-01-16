@@ -11,9 +11,10 @@ jobs:
     - stage: test    
       install:
         - source ./etc/travis-miniconda.sh
-        - conda create --name ioamdocenv python=3.6
-        - source activate ioamdocenv
-        - conda install -c conda-forge notebook ipython sphinx beautifulsoup4 graphviz selenium phantomjs
+        - conda create --name test-environment python=3.6
+        - source activate test-environment
+        - conda install -c conda-forge -c cball/label/dev nbsite
+        - conda remove --force nbsite
         - pip install sphinx_ioam_theme
         - pip install -e .
       script:
@@ -43,4 +44,4 @@ jobs:
         - conda install conda-build anaconda-client
       script:
         - conda build -c conda-forge conda.recipe/
-        - anaconda --token $CONDA_UPLOAD_TOKEN upload --user cball --label dev `conda build --output conda.recipe`
+        - anaconda --token $CONDA_UPLOAD_TOKEN upload --user cball --label dev `conda build -c conda-forge --output conda.recipe`
