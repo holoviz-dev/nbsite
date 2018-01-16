@@ -43,6 +43,7 @@ jobs:
     - stage: conda_package
       install:
         - source ./etc/travis-miniconda.sh
-        - conda install "conda-build=3.0.25" anaconda-client
+        - conda install conda-build anaconda-client
       script:
-        - conda build -c conda-forge --token $CONDA_UPLOAD_TOKEN --user cball conda.recipe/
+        - conda build -c conda-forge conda.recipe/
+        - anaconda --token $CONDA_UPLOAD_TOKEN upload --user cball --label dev `conda build --output conda.recipe`

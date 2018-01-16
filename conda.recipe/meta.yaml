@@ -1,6 +1,6 @@
 package:
   name: nbsite
-  version: {{ environ['GIT_DESCRIBE_TAG'] }}.{{ GIT_BUILD_STR }}
+  version: {{ load_setup_py_data().get('version') }}
 
 source:
   path: ..
@@ -14,19 +14,25 @@ requirements:
     - python
   run:
     - python >=3.6
+    - jupyter_client
+    - ipykernel
+    - nbformat
+    - nbconvert
     - notebook
-    - ipython
+    - graphviz
     - sphinx
     - beautifulsoup4
     - graphviz
     - selenium
     - phantomjs
 
-#test:
-#  imports:
-#    - parambokeh
+test:
+  imports:
+    - nbsite
+  commands:
+    - nbsite_from_tmplate.py /tmp/doc
 
 about:
   home: https://github.com/ioam/nbsite
-  summary: abc123
+  summary: Build a tested, sphinx-based website from notebooks.
   license: BSD 3-Clause
