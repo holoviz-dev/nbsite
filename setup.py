@@ -7,7 +7,6 @@ from setuptools import setup
 import versioneer
 
 _tmplate_files = [pathlib.Path(x) for x in glob.glob("nbsite/tmplate/*.*") + glob.glob("nbsite/tmplate/*/*.*")]
-print([x.relative_to(x.parts[0]) for x in _tmplate_files])
 
 setup(
     name='nbsite',
