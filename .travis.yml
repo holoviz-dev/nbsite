@@ -5,7 +5,6 @@ python: "3.6"
 stages:
   - test
   - name: conda_package
-    if: tag =~ ^0\.
 
 jobs:
   include:
