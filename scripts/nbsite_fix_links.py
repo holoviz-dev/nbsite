@@ -90,7 +90,7 @@ def cleanup_links(path):
 #            text = text.replace(k, v)
 
     text = component_links(text, path)
-    soup = BeautifulSoup(text)
+    soup = BeautifulSoup(text, "lxml")
     for a in soup.findAll('a'):
         href = a.get('href', '')
         if '.ipynb' in href and 'http' not in href:
