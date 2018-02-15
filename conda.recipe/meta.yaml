@@ -20,7 +20,7 @@ requirements:
     - nbconvert
     - notebook
     - graphviz
-    - sphinx
+    - sphinx <1.7
     - beautifulsoup4
     - graphviz
     - selenium
