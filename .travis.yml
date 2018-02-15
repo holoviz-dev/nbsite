@@ -8,15 +8,17 @@ stages:
 
 jobs:
   include:
-    - stage: test    
+    - stage: test
       install:
         - source ./etc/travis-miniconda.sh
+        # TODO build and use conda pkg here is temporary; might replace with just installing deps from meta yaml
+        - conda install conda-build
+        - conda build -c conda-forge conda.recipe/
         - conda create --name test-environment python=3.6
         - source activate test-environment
-        - conda install -c conda-forge -c cball/label/dev nbsite
-        - conda remove --force nbsite
-        - pip install sphinx_ioam_theme
-        - pip install -e .
+        - conda install --use-local -c conda-forge -c pyviz/label/dev nbsite sphinx_ioam_theme
+#        - pip install sphinx_ioam_theme
+#        - pip install -e .
       script:
         - cd doc
         - nbsite_nbpagebuild.py ioam nbsite . .
