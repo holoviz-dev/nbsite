@@ -46,4 +46,4 @@ jobs:
         - conda install conda-build anaconda-client
       script:
         - conda build -c conda-forge conda.recipe/
-        - anaconda --token $CONDA_UPLOAD_TOKEN upload --user cball --label dev `conda build -c conda-forge --output conda.recipe`
+        - anaconda --token $CONDA_PYVIZ_TOKEN upload --user pyviz --label dev `conda build -c conda-forge --output conda.recipe`
