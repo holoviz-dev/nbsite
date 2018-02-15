@@ -1,6 +1,8 @@
+{% set sdata = load_setup_py_data() %}
+
 package:
   name: nbsite
-  version: {{ load_setup_py_data().get('version') }}
+  version: {{ sdata['version'] }}
 
 source:
   path: ..
@@ -13,26 +15,30 @@ requirements:
   build:
     - python
   run:
-    - python >=3
-    - jupyter_client
-    - ipykernel
-    - nbformat
-    - nbconvert
-    - notebook
-    - graphviz
-    - sphinx <1.7
-    - beautifulsoup4
-    - graphviz
-    - selenium
-    - phantomjs
+    - python {{ sdata['python_requires'] }}
+    {% for dep in sdata.get('install_requires',{}) %}
+    - {{ dep }}
+    {% endfor %}
+
+    {% for option in sdata.get('extras_require',{}) %}
+     {% for dep in sdata['extras_require'][option] %}
+    - {{ dep }}
+     {% endfor %}
+    {% endfor %}
 
 test:
+  requires:
+    {% for dep in sdata.get('tests_require',{}) %}
+    - {{ dep }}
+    {% endfor %}
   imports:
     - nbsite
   commands:
-    - nbsite_from_tmplate.py /tmp/doc
+    - nbsite_from_tmplate.py /tmp/doc    
+  commands:
+    - pytest -v tests
 
 about:
-  home: https://github.com/ioam/nbsite
-  summary: Build a tested, sphinx-based website from notebooks.
-  license: BSD 3-Clause
+  home: {{ sdata['url'] }}
+  summary: {{ sdata['description'] }}
+  license: {{ sdata['license'] }}

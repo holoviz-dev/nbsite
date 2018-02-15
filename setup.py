@@ -8,13 +8,15 @@ import versioneer
 
 _tmplate_files = [pathlib.Path(x) for x in glob.glob("nbsite/tmplate/*.*") + glob.glob("nbsite/tmplate/*/*.*")]
 
-setup(
+setup_args = dict(
     name='nbsite',
     version=versioneer.get_version(),
-    author='nbsite contributors',
+    author='pyviz contributors',
+    description='Build a tested, sphinx-based website from notebooks.',
     license='BSD-3',
-    url='https://github.com/ioam/nbsite',
+    url='https://ioam.github.io/nbsite/',
     packages=['nbsite'],
+    python_requires='>=3',
     install_requires=[
         'jupyter_client',
         'ipykernel',
@@ -22,11 +24,11 @@ setup(
         'nbconvert',
         'notebook',
         'graphviz',
-        'sphinx',
+        'sphinx <1.7',
         'beautifulsoup4',
         'graphviz',
-        # selenium
-        # phantomjs
+        'selenium',
+        'phantomjs'
     ],
     package_data={'nbsite': [x.relative_to(x.parts[0]) for x in _tmplate_files]+\
                             ['_shared_static/*.*']
@@ -42,3 +44,6 @@ setup(
     zip_safe=False,
     cmdclass=versioneer.get_cmdclass()
 )
+
+if __name__=="__main__":
+    setup(**setup_args)
