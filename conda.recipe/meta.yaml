@@ -35,8 +35,6 @@ test:
     - nbsite
   commands:
     - nbsite_from_tmplate.py /tmp/doc    
-  commands:
-    - pytest -v tests
 
 about:
   home: {{ sdata['url'] }}
