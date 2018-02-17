@@ -27,9 +27,11 @@ setup_args = dict(
         'sphinx <1.7',
         'beautifulsoup4',
         'graphviz',
-        'selenium',
-        'phantomjs'
     ],
+    extras_require= {'gallery':[
+        'selenium',
+        'phantomjs'        
+        ]},
     package_data={'nbsite': [x.relative_to(x.parts[0]) for x in _tmplate_files]+\
                             ['_shared_static/*.*']
     },
