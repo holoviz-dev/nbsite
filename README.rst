@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/pyviz/nbsite.svg?branch=master
+    :target: https://travis-ci.org/pyviz/nbsite
+
 ======
 NBSite
 ======
