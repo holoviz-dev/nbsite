@@ -14,7 +14,7 @@ setup_args = dict(
     author='pyviz contributors',
     description='Build a tested, sphinx-based website from notebooks.',
     license='BSD-3',
-    url='https://ioam.github.io/nbsite/',
+    url='https://pyviz.github.io/nbsite/',
     packages=['nbsite'],
     python_requires='>=3',
     install_requires=[

@@ -24,12 +24,11 @@ html_context.update({
     'PROJECT': project,
     'DESCRIPTION': description,
     'AUTHOR': authors,
-    'WEBSITE_SERVER': 'https://ioam.github.io/nbsite',
+    'WEBSITE_SERVER': 'https://pyviz.github.io/nbsite',
     'VERSION': version,
     'NAV': _NAV,
     'LINKS': _NAV,
     'SOCIAL': (
-        ('Github', '//github.com/ioam/nbsite'),
+        ('Github', '//github.com/pyviz/nbsite'),
     )
 })
-

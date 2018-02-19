@@ -25,7 +25,7 @@ change your config on upgrading to a newer version of nbsite. You will
 likely encounter limitations (not all of the above 'idea behind
 nbsite' is easily available yet via this project) and
 problems. However, please file issues or ask questions on `GitHub
-<https://github.com/ioam/nbsite/issues>`_
+<https://github.com/pyviz/nbsite/issues>`_
 
 At some point soon we will describe when you should or should not
 consider using nbsite instead of various alternatives, including:
@@ -66,8 +66,8 @@ keep track; will eventually remove):
     <https://github.com/ContinuumIO/tmphvdocs/tree/tmphvdocs>`_; note:
     built from scratch, starting from nbsite template)
 
-  * `<https://ioam.github.io/nbsite/>`_ (`nbsite
-    <https://github.com/ioam/nbsite>`_; this site)
+  * `<https://pyviz.github.io/nbsite/>`_ (`nbsite
+    <https://github.com/pyviz/nbsite>`_; this site)
 
   * `<https://bokeh.github.io/colorcet/>`_ (`colorcet
     <https://github.com/bokeh/colorcet>`_)
