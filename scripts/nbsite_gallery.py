@@ -21,19 +21,19 @@ backends = []
 
 PREFIX = """
 # -*- coding: utf-8 -*-
-import holoviews
+import holoviews as hv
 from holoviews.plotting.widgets import NdWidget
 from holoviews.plotting.comms import Comm
 
 try:
     import holoviews.plotting.mpl
-    holoviews.Store.renderers['matplotlib'].comms['default'] = (Comm, '')
+    hv.Store.renderers['matplotlib'].comms['default'] = (Comm, '')
 except:
     pass
 
 try:
     import holoviews.plotting.bokeh
-    holoviews.Store.renderers['bokeh'].comms['default'] = (Comm, '')
+    hv.Store.renderers['bokeh'].comms['default'] = (Comm, '')
 except:
     pass
 
@@ -41,8 +41,8 @@ NdWidget.export_json=True
 NdWidget.json_load_path = '/json'
 NdWidget.json_save_path = './'
 
-holoviews.plotting.mpl.MPLPlot.fig_alpha = 0
-holoviews.plotting.bokeh.callbacks.Callback._comm_type = Comm
+hv.plotting.mpl.MPLPlot.fig_alpha = 0
+hv.plotting.bokeh.callbacks.Callback._comm_type = Comm
 """
 
 THUMBNAIL_TEMPLATE = """
