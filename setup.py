@@ -30,12 +30,12 @@ setup_args = dict(
     ],
     extras_require= {'gallery':[
         'selenium',
-        'phantomjs'        
+        'phantomjs'
         ]},
     package_data={'nbsite': [x.relative_to(x.parts[0]) for x in _tmplate_files]+\
                             ['_shared_static/*.*']
     },
-    include_package_data=True,    
+    include_package_data=True,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Programming Language :: Python :: 3',
