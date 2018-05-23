@@ -23,7 +23,7 @@ PREFIX = """
 # -*- coding: utf-8 -*-
 import holoviews as hv
 from holoviews.plotting.widgets import NdWidget
-from holoviews.plotting.comms import Comm
+from pyviz_comms import Comm
 
 try:
     import holoviews.plotting.mpl
