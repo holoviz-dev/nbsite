@@ -18,6 +18,7 @@ setup_args = dict(
     packages=['nbsite'],
     python_requires='>=3',
     install_requires=[
+        'pyviz_comms',
         'jupyter_client',
         'ipykernel',
         'nbformat',
