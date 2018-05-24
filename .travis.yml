@@ -9,7 +9,7 @@ env:
     - CHANS_DEV="-c pyviz/label/dev"
     - CHANS_REL="-c pyviz"
     - PKG_TEST_PYTHON="--test-python=py36"
-    
+
 stages:
   - test
   - name: conda_dev_package
@@ -21,7 +21,7 @@ stages:
   - name: conda_package
     if: tag =~ ^v(\d+|\.)*[^a-z]\d*$
   - name: pip_package
-    if: tag =~ ^v(\d+|\.)*[^a-z]\d*$    
+    if: tag =~ ^v(\d+|\.)*[^a-z]\d*$
   - name: docs
     if: branch = use_pyctdev
     #if: tag =~ ^v(\d+|\.).*$
@@ -34,7 +34,7 @@ jobs:
     - &default
       stage: test
       env: DESC="dev test_all"
-      before_install: pip install pyctdev && doit ecosystem_stup
+      before_install: pip install pyctdev && doit ecosystem_setup
       install:
         # TODO: env_create support for pip ecosystem
         #- doit env_create --python=$PYENV_VERSION
@@ -42,37 +42,37 @@ jobs:
         - doit env_capture
       script: doit test_all
 
-#    - <<: *default
-#      stage: docs
-#      script:
-#        - pip install sphinx_ioam_theme
-#        - cd doc
-#        - nbsite_nbpagebuild.py pyviz nxbsite . .
-#        - sphinx-build -b html . ./_build/html
-#        - nbsite_fix_links.py _build/html
-#        - touch ./_build/html/.nojekyll
-#        - nbsite_cleandisthtml.py ./_build/html take_a_chance
-#        - cd ..
-#      deploy:
-#        - provider: pages
-#          skip_cleanup: true
-#          github_token: $GITHUB_TOKEN
-#          local_dir: ./doc/_build/html
-#          repo: ioam-docs/nbsite-dev
-#          on:
-#            tags: true
-#            all_branches: true
-#            condition: $TRAVIS_TAG =~ [0-9]+[a-z][0-9]*$
-#        - provider: pages
-#          skip_cleanup: true
-#          github_token: $GITHUB_TOKEN
-#          local_dir: ./doc/_build/html
-#          on:
-#            tags: true
-#            all_branches: true
-#            condition: $TRAVIS_TAG =~ [0-9]+[^a-z][0-9]*$
-#
-#
+    - <<: *default
+      stage: docs
+      script:
+        - pip install sphinx_ioam_theme
+        - cd doc
+        - nbsite_nbpagebuild.py pyviz nxbsite . .
+        - sphinx-build -b html . ./_build/html
+        - nbsite_fix_links.py _build/html
+        - touch ./_build/html/.nojekyll
+        - nbsite_cleandisthtml.py ./_build/html take_a_chance
+        - cd ..
+      deploy:
+        - provider: pages
+          skip_cleanup: true
+          github_token: $GITHUB_TOKEN
+          local_dir: ./doc/_build/html
+          repo: ioam-docs/nbsite-dev
+          on:
+            tags: true
+            all_branches: true
+            condition: $TRAVIS_TAG =~ [0-9]+[a-z][0-9]*$
+        - provider: pages
+          skip_cleanup: true
+          github_token: $GITHUB_TOKEN
+          local_dir: ./doc/_build/html
+          on:
+            tags: true
+            all_branches: true
+            condition: $TRAVIS_TAG =~ [0-9]+[^a-z][0-9]*$
+
+
 #    ########## END-USER PACKAGES ##########
 #
 #    ## dev packages
