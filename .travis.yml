@@ -42,58 +42,58 @@ jobs:
         - doit env_capture
       script: doit test_all
 
-    - <<: *default
-      stage: docs
-      script:
-        - pip install sphinx_ioam_theme
-        - cd doc
-        - nbsite_nbpagebuild.py pyviz nxbsite . .
-        - sphinx-build -b html . ./_build/html
-        - nbsite_fix_links.py _build/html
-        - touch ./_build/html/.nojekyll
-        - nbsite_cleandisthtml.py ./_build/html take_a_chance
-        - cd ..
-      deploy:
-        - provider: pages
-          skip_cleanup: true
-          github_token: $GITHUB_TOKEN
-          local_dir: ./doc/_build/html
-          repo: ioam-docs/nbsite-dev
-          on:
-            tags: true
-            all_branches: true
-            condition: $TRAVIS_TAG =~ [0-9]+[a-z][0-9]*$
-        - provider: pages
-          skip_cleanup: true
-          github_token: $GITHUB_TOKEN
-          local_dir: ./doc/_build/html
-          on:
-            tags: true
-            all_branches: true
-            condition: $TRAVIS_TAG =~ [0-9]+[^a-z][0-9]*$
-
-
-    ########## END-USER PACKAGES ##########
-
-    ## dev packages
-
-    - <<: *default
-      stage: pip_dev_package
-      env: PYPI="https://test.pypi.org/legacy/" TRAVIS_NOCACHE=$TRAVIS_JOB_ID
-      install:
-        - unset PYENV_VERSION && pyenv global 3.6 2.7
-        - doit package_build $PKG_TEST_PYTHON --test-group=all
-      script: true #doit ecosystem=pip package_upload -u $TPPU -p $TPPP -r ${PYPI}
-
-    - &conda_default
-      stage: conda_dev_package
-      env: DESC="" TRAVIS_NOCACHE=$TRAVIS_JOB_ID
-      before_install:
-        # install doit/pyctdev and use to install miniconda...
-        - pip install pyctdev && doit ecosystem=conda miniconda_install && pip uninstall -y doit pyctdev
-        - export PATH="$HOME/miniconda/bin:$PATH" && hash -r
-        - conda config --set always_yes True
-        # ...and now install doit/pyctdev into miniconda
-        - conda install -c pyviz/label/dev pyctdev && doit ecosystem=conda ecosystem_setup
-      install: doit package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=all
-      script: true #doit package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev
+#    - <<: *default
+#      stage: docs
+#      script:
+#        - pip install sphinx_ioam_theme
+#        - cd doc
+#        - nbsite_nbpagebuild.py pyviz nxbsite . .
+#        - sphinx-build -b html . ./_build/html
+#        - nbsite_fix_links.py _build/html
+#        - touch ./_build/html/.nojekyll
+#        - nbsite_cleandisthtml.py ./_build/html take_a_chance
+#        - cd ..
+#      deploy:
+#        - provider: pages
+#          skip_cleanup: true
+#          github_token: $GITHUB_TOKEN
+#          local_dir: ./doc/_build/html
+#          repo: ioam-docs/nbsite-dev
+#          on:
+#            tags: true
+#            all_branches: true
+#            condition: $TRAVIS_TAG =~ [0-9]+[a-z][0-9]*$
+#        - provider: pages
+#          skip_cleanup: true
+#          github_token: $GITHUB_TOKEN
+#          local_dir: ./doc/_build/html
+#          on:
+#            tags: true
+#            all_branches: true
+#            condition: $TRAVIS_TAG =~ [0-9]+[^a-z][0-9]*$
+#
+#
+#    ########## END-USER PACKAGES ##########
+#
+#    ## dev packages
+#
+#    - <<: *default
+#      stage: pip_dev_package
+#      env: PYPI="https://test.pypi.org/legacy/" TRAVIS_NOCACHE=$TRAVIS_JOB_ID
+#      install:
+#        - unset PYENV_VERSION && pyenv global 3.6 2.7
+#        - doit package_build $PKG_TEST_PYTHON --test-group=all
+#      script: true #doit ecosystem=pip package_upload -u $TPPU -p $TPPP -r ${PYPI}
+#
+#    - &conda_default
+#      stage: conda_dev_package
+#      env: DESC="" TRAVIS_NOCACHE=$TRAVIS_JOB_ID
+#      before_install:
+#        # install doit/pyctdev and use to install miniconda...
+#        - pip install pyctdev && doit ecosystem=conda miniconda_install && pip uninstall -y doit pyctdev
+#        - export PATH="$HOME/miniconda/bin:$PATH" && hash -r
+#        - conda config --set always_yes True
+#        # ...and now install doit/pyctdev into miniconda
+#        - conda install -c pyviz/label/dev pyctdev && doit ecosystem=conda ecosystem_setup
+#      install: doit package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=all
+#      script: true #doit package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev
