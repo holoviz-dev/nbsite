@@ -83,7 +83,7 @@ jobs:
       install:
         - unset PYENV_VERSION && pyenv global 3.6 2.7
         - doit package_build $PKG_TEST_PYTHON --test-group=all
-      script: true #doit ecosystem=pip package_upload -u $TPPU -p $TPPP -r ${PYPI}
+      script: true #doit package_upload -u $TPPU -p $TPPP -r ${PYPI}
 
     - &conda_default
       stage: conda_dev_package
@@ -95,5 +95,5 @@ jobs:
         - conda config --set always_yes True
         # ...and now install doit/pyctdev into miniconda
         - conda install -c pyviz/label/dev pyctdev && doit ecosystem=conda ecosystem_setup
-      install: doit package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=all
-      script: true #doit package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev
+      install: doit ecosystem=conda package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=all
+      script: true #doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev
