@@ -18,10 +18,10 @@ stages:
   - name: pip_dev_package
     if: branch = use_pyctdev
     #if: tag =~ ^v(\d+|\.)*[a-z]\d*$
-  - name: conda_package
-    if: tag =~ ^v(\d+|\.)*[^a-z]\d*$
-  - name: pip_package
-    if: tag =~ ^v(\d+|\.)*[^a-z]\d*$
+#  - name: conda_package
+#    if: tag =~ ^v(\d+|\.)*[^a-z]\d*$
+#  - name: pip_package
+#    if: tag =~ ^v(\d+|\.)*[^a-z]\d*$
   - name: docs
     if: branch = use_pyctdev
     #if: tag =~ ^v(\d+|\.).*$
@@ -73,27 +73,27 @@ jobs:
             condition: $TRAVIS_TAG =~ [0-9]+[^a-z][0-9]*$
 
 
-#    ########## END-USER PACKAGES ##########
-#
-#    ## dev packages
-#
-#    - <<: *default
-#      stage: pip_dev_package
-#      env: PYPI="https://test.pypi.org/legacy/" TRAVIS_NOCACHE=$TRAVIS_JOB_ID
-#      install:
-#        - unset PYENV_VERSION && pyenv global 3.6 2.7
-#        - doit package_build $PKG_TEST_PYTHON --test-group=all
-#      script: true #doit ecosystem=pip package_upload -u $TPPU -p $TPPP -r ${PYPI}
-#
-#    - &conda_default
-#      stage: conda_dev_package
-#      env: DESC="" TRAVIS_NOCACHE=$TRAVIS_JOB_ID
-#      before_install:
-#        # install doit/pyctdev and use to install miniconda...
-#        - pip install pyctdev && doit ecosystem=conda miniconda_install && pip uninstall -y doit pyctdev
-#        - export PATH="$HOME/miniconda/bin:$PATH" && hash -r
-#        - conda config --set always_yes True
-#        # ...and now install doit/pyctdev into miniconda
-#        - conda install -c pyviz/label/dev pyctdev && doit ecosystem=conda ecosystem_setup
-#      install: doit package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=all
-#      script: true #doit package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev
+    ########## END-USER PACKAGES ##########
+
+    ## dev packages
+
+    - <<: *default
+      stage: pip_dev_package
+      env: PYPI="https://test.pypi.org/legacy/" TRAVIS_NOCACHE=$TRAVIS_JOB_ID
+      install:
+        - unset PYENV_VERSION && pyenv global 3.6 2.7
+        - doit package_build $PKG_TEST_PYTHON --test-group=all
+      script: true #doit ecosystem=pip package_upload -u $TPPU -p $TPPP -r ${PYPI}
+
+    - &conda_default
+      stage: conda_dev_package
+      env: DESC="" TRAVIS_NOCACHE=$TRAVIS_JOB_ID
+      before_install:
+        # install doit/pyctdev and use to install miniconda...
+        - pip install pyctdev && doit ecosystem=conda miniconda_install && pip uninstall -y doit pyctdev
+        - export PATH="$HOME/miniconda/bin:$PATH" && hash -r
+        - conda config --set always_yes True
+        # ...and now install doit/pyctdev into miniconda
+        - conda install -c pyviz/label/dev pyctdev && doit ecosystem=conda ecosystem_setup
+      install: doit package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=all
+      script: true #doit package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev
