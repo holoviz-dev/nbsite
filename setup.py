@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import glob, pathlib
-from setuptools import setup
+import glob
+from setuptools import setup, find_packages
 
 import versioneer
-
-_tmplate_files = [pathlib.Path(x) for x in glob.glob("nbsite/tmplate/*.*") + glob.glob("nbsite/tmplate/*/*.*")]
 
 setup_args = dict(
     name='nbsite',
@@ -15,7 +13,7 @@ setup_args = dict(
     description='Build a tested, sphinx-based website from notebooks.',
     license='BSD-3',
     url='https://pyviz.github.io/nbsite/',
-    packages=['nbsite'],
+    packages=find_packages(),
     python_requires='>=3',
     install_requires=[
         'jupyter_client',
@@ -35,9 +33,6 @@ setup_args = dict(
                      'tests':[
         'flake8'                 
         ]},
-    package_data={'nbsite': [x.relative_to(x.parts[0]) for x in _tmplate_files]+\
-                            ['_shared_static/*.*']
-    },
     include_package_data=True,    
     classifiers=[
         'Development Status :: 3 - Alpha',
