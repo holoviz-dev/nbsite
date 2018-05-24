@@ -24,7 +24,7 @@ setup_args = dict(
         'nbconvert',
         'notebook',
         'graphviz',
-        'sphinx <1.7.4',
+        'sphinx',
         'beautifulsoup4',
         'graphviz',
     ],
