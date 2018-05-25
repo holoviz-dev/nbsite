@@ -42,7 +42,6 @@ setup_args = dict(
     ],
     scripts = glob.glob("scripts/*.py"),
     zip_safe=False,
-    cmdclass=versioneer.get_cmdclass()
 )
 
 if __name__=="__main__":
