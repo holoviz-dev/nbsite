@@ -14,9 +14,11 @@ env:
 stages:
   - test
   - name: conda_dev_package
-    if: tag =~ ^v(\d+|\.)*[a-z]\d*$
+    if: branch = use_pyctdev
+#    if: tag =~ ^v(\d+|\.)*[a-z]\d*$
   - name: pip_dev_package
-    if: tag =~ ^v(\d+|\.)*[a-z]\d*$
+    if: branch = use_pyctdev
+#    if: tag =~ ^v(\d+|\.)*[a-z]\d*$
   - name: conda_package
     if: tag =~ ^v(\d+|\.)*[^a-z]\d*$
   - name: pip_package
