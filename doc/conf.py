@@ -2,10 +2,18 @@
 
 from nbsite.shared_conf import *
 
-project = u'nbsite'
-authors = u'nbsite GitHub contributors'
-copyright = u'2017 ' + authors
-description = 'Build a tested, sphinx-based website from notebooks'
+project = 'nbsite'
+
+####
+# could put in nbsite.util and all projects could use
+from pkg_resources import get_distribution
+_pkg = get_distribution(project)
+_m = dict([ tuple(a.split(": ")[0:2]) for a in _pkg._get_metadata(_pkg.PKG_INFO) ])
+####
+
+authors = _m["Author"]
+copyright = authors
+description = _m['Summary']
 
 import nbsite
 version = release = nbsite.__version__
@@ -24,7 +32,7 @@ html_context.update({
     'PROJECT': project,
     'DESCRIPTION': description,
     'AUTHOR': authors,
-    'WEBSITE_SERVER': 'https://pyviz.github.io/nbsite',
+    'WEBSITE_SERVER': _m['Home-page'],
     'VERSION': version,
     'NAV': _NAV,
     'LINKS': _NAV,

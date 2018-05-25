@@ -9,9 +9,10 @@ import version
 setup_args = dict(
     name='nbsite',
     version=version.get_setup_version('nbsite'),
-    author='pyviz contributors',
+    author='PyViz',
     description='Build a tested, sphinx-based website from notebooks.',
-    license='BSD-3',
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",    
     url='https://pyviz.github.io/nbsite/',
     packages=find_packages(),
     python_requires='>=3',
