@@ -1,4 +1,4 @@
-include versioneer.py
-include nbsite/_version.py
+include version.py
+include nbsite/.version
 graft nbsite/_shared_static
 graft nbsite/tmplate

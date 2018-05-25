@@ -4,11 +4,11 @@
 import glob
 from setuptools import setup, find_packages
 
-import versioneer
+import version
 
 setup_args = dict(
     name='nbsite',
-    version=versioneer.get_version(),
+    version=version.get_setup_version('nbsite'),
     author='pyviz contributors',
     description='Build a tested, sphinx-based website from notebooks.',
     license='BSD-3',
