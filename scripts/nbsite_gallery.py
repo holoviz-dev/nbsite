@@ -4,7 +4,7 @@ import sys
 import os
 import glob
 import shutil
-import requests
+#import requests
 from nbsite.thumbnailer import notebook_thumbnail, execute
 
 # Try Python 3 first, otherwise load from Python 2
@@ -219,8 +219,8 @@ def generate_gallery(basepath, examples, title, folders):
 
                 shutil.copyfile(f, dest)
                 # Try to fetch thumbnail otherwise regenerate it
-                thumb_url = '/'.join([THUMBNAIL_URL, 'thumbnails', page, folder,
-                                      backend, '%s.png' % basename])
+                #thumb_url = '/'.join([THUMBNAIL_URL, 'thumbnails', page, folder,
+                #                      backend, '%s.png' % basename])
                 thumb = os.path.join(dest_dir, 'thumbnails',
                                      '%s.png' % basename)
                 # TODO: decide what to do about this

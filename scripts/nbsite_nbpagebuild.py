@@ -21,7 +21,6 @@ cell of notebooks).
 
 import os
 import glob
-import re
 import sys
 
 # if only someone had made a way to handle parameters
