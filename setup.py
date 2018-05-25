@@ -37,6 +37,7 @@ setup_args = dict(
         ]
     },
     include_package_data=True,
+    license='BSD-3',    
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Programming Language :: Python :: 3',
