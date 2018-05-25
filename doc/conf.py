@@ -2,10 +2,19 @@
 
 from nbsite.shared_conf import *
 
-project = u'nbsite'
-authors = u'nbsite GitHub contributors'
-copyright = u'2017 ' + authors
-description = 'Build a tested, sphinx-based website from notebooks'
+project = 'nbsite'
+
+####
+# could put in nbsite.util and all projects could use...and...surely there's a simpler way?
+from pkg_resources import get_distribution
+from email import message_from_string
+_pkg = get_distribution(project)
+_m = {m[0]:m[1] for m in message_from_string(_pkg.get_metadata(_pkg.PKG_INFO)).items()}
+####
+
+authors = _m["Author"]
+copyright = authors
+description = _m['Summary']
 
 import nbsite
 version = release = nbsite.__version__
@@ -24,7 +33,7 @@ html_context.update({
     'PROJECT': project,
     'DESCRIPTION': description,
     'AUTHOR': authors,
-    'WEBSITE_SERVER': 'https://pyviz.github.io/nbsite',
+    'WEBSITE_SERVER': _m['Home-page'],
     'VERSION': version,
     'NAV': _NAV,
     'LINKS': _NAV,

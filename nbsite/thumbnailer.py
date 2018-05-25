@@ -5,7 +5,6 @@ from nbconvert.preprocessors import Preprocessor
 from holoviews.ipython.preprocessors import OptsMagicProcessor, OutputMagicProcessor
 from holoviews.ipython.preprocessors import StripMagicsProcessor, wrap_cell_expression
 from holoviews.util.command import export_to_python
-import holoviews as hv
 from holoviews import Store, Dimensioned
 
 import matplotlib.pyplot as plt

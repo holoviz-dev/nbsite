@@ -33,10 +33,6 @@ test:
     {% endfor %}
   imports:
     - nbsite
-  commands:
-    - mkdir ./tmp
-    - nbsite_from_tmplate.py ./tmp
-    # TODO: fill in rest of commands
 
 about:
   home: {{ sdata['url'] }}
