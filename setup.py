@@ -41,7 +41,6 @@ setup_args = dict(
         'License :: OSI Approved :: BSD License',
     ],
     scripts = glob.glob("scripts/*.py"),
-    zip_safe=False,
 )
 
 if __name__=="__main__":
