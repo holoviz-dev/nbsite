@@ -12,7 +12,7 @@ setup_args = dict(
     author='PyViz',
     description='Build a tested, sphinx-based website from notebooks.',
     long_description=open("README.md").read(),
-    long_description_content_type="text/markdown",    
+    long_description_content_type="text/markdown",
     url='https://pyviz.github.io/nbsite/',
     packages=find_packages(),
     python_requires='>=3',
@@ -27,14 +27,16 @@ setup_args = dict(
         'beautifulsoup4',
         'graphviz',
     ],
-    extras_require= {'gallery':[
-        'selenium',
-        'phantomjs'        
+    extras_require= {
+        'gallery':[
+            'selenium',
+            'phantomjs'
         ],
-                     'tests':[
-        'flake8'                 
-        ]},
-    include_package_data=True,    
+        'tests':[
+            'flake8'
+        ]
+    },
+    include_package_data=True,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Programming Language :: Python :: 3',
