@@ -8,9 +8,6 @@
 
 import os
 import shutil
-
-import glob
-import re
 import sys
 
 # if only someone had made a way to handle parameters

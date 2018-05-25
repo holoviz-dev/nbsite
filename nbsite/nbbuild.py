@@ -25,20 +25,20 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os, string, glob, re, copy, ast, sys, shutil
+import os, string, glob, re, copy, sys, shutil
 
 from sphinx.util.compat import Directive
 from docutils import nodes
 from docutils.parsers.rst import directives
 from IPython.nbconvert import html, python
-from IPython.nbformat.current import read, write
+from IPython.nbformat.current import write
 
 import nbconvert
 import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor, CellExecutionError
 
 
-from nbformat.v4 import output_from_msg
+#from nbformat.v4 import output_from_msg
 class ExecutePreprocessor1000(ExecutePreprocessor):
     """Sigh"""
     _ipython_startup = None
@@ -50,7 +50,7 @@ class ExecutePreprocessor1000(ExecutePreprocessor):
     def kc(self,v):
         self._kc=v
         if self._ipython_startup is not None:
-            msg_id = self._kc.execute(
+            msg_id = self._kc.execute( # noqa: a mess
                 self._ipython_startup,silent=False,store_history=False,allow_stdin=False,stop_on_error=True)
 # you can attempt to debug your startup code with this hack...            
 #            exec_reply = self._wait_for_reply(msg_id, self._ipython_startup)
@@ -164,7 +164,7 @@ class NotebookDirective(Directive):
             raise self.warning('"%s" directive disabled.' % self.name)
 
         # Process paths and directories
-        project = self.arguments[0].lower()
+        #project = self.arguments[0].lower()
         rst_file = os.path.abspath(self.state.document.current_source)
         rst_dir = os.path.dirname(rst_file)
         nb_abs_path = os.path.abspath(os.path.join(rst_dir, self.arguments[1]))
@@ -355,23 +355,3 @@ def setup(app):
                  html=(visit_notebook_node, depart_notebook_node))
 
     app.add_directive('notebook', NotebookDirective)
-
-
-if __name__ == '__main__':
-    raise NoLongerUsingAsScript
-    import argparse, sys
-    path, filename = os.path.split(__file__)
-    sys.path.append(os.path.abspath(path))
-    sys.path.append(os.path.abspath(os.path.join("..", "..")))
-    parser = argparse.ArgumentParser()
-    parser.add_argument('nbpaths', nargs='*')
-    parser.add_argument('-d', '--dest', nargs=1)
-    parser.add_argument('-s', '--skip', action='store_true')
-    args = parser.parse_args()
-    dest_path = os.paths.abspath(args.dest) if args.dest else None
-    skip = args.skip
-    for nbpath in args.nbpaths:
-        nbpath = os.path.abspath(nbpath)
-        with open(nbpath[:-6] + '.html', 'w') as f:
-            nb_html = evaluate_notebook(nbpath, dest_path=dest_path, skip_exceptions=skip)
-            f.write(nb_html)

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# flake8: noqa (hacky way of sharing config, etc...)
 
 from nbsite.shared_conf import *
 
