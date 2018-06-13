@@ -46,8 +46,6 @@ setup_args = dict(
             'numpy',
 # gallery demo            
 #            'plotly'            
-#            'selenium',
-#            'phantomjs'
         ]
     },
     include_package_data=True,
