@@ -36,7 +36,7 @@ jobs:
       install:
         # TODO: env_create support for pip ecosystem
         #- doit env_create --python=$PYENV_VERSION
-        - doit develop_install
+        - doit develop_install -o examples -o tests
         - doit env_capture
       script: doit test_all
 
