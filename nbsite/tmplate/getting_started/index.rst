@@ -15,15 +15,18 @@ To see what can be done with Project, see our `Gallery
 We recommend you proceed through the following in order; it should
 take around 1 hour in total.
 
-* `Introduction <Introduction.html>`_
+* `Introduction <1-Introduction.html>`_
    What is Project?
 
-* `Installation <Installation.html>`_
+* `Installation <2-Installation.html>`_
    Install Project to run through this guide interactively.
 
-* `Tabular Datasets <Tabular_Datasets.html>`_
+* `Tabular Datasets <3-Tabular_Datasets.html>`_
    Introduction to working with tabular data.
 
+* `Gridded Datasets <4-Gridded_Datasets.html>`_
+   Introduction to working with tabular data.
+   
 * Etc...
 
 
@@ -32,6 +35,7 @@ take around 1 hour in total.
     :hidden:
     :maxdepth: 2
 
-    Introduction <Introduction>
-    Installation <Installation>
-    Tabular Datasets <Tabular_Datasets>
+    Introduction <1-Introduction>
+    Installation <2-Installation>
+    Tabular Datasets <3-Tabular_Datasets>
+    Gridded Datasets <4-Gridded_Datasets>

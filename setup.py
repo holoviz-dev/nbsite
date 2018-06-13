@@ -33,7 +33,21 @@ setup_args = dict(
             'phantomjs'
         ],
         'tests':[
-            'flake8'
+            'flake8',
+        ],
+        'examples':[
+            'sphinx_ioam_theme',
+            'holoviews',
+            'bokeh',
+            'pillow',
+            'matplotlib',
+            'xarray',
+            'pandas',
+            'numpy',
+# gallery demo            
+#            'plotly'            
+#            'selenium',
+#            'phantomjs'
         ]
     },
     include_package_data=True,
@@ -44,7 +58,13 @@ setup_args = dict(
         'Operating System :: OS Independent',
         'License :: OSI Approved :: BSD License',
     ],
+    # TODO: will be transferring to nbsite command...
     scripts = glob.glob("scripts/*.py"),
+    entry_points={
+        'console_scripts': [
+            'nbsite = nbsite.__main__:main'
+        ]
+    },
 )
 
 if __name__=="__main__":
