@@ -36,6 +36,7 @@ setup_args = dict(
             'flake8',
         ],
         'examples':[
+            'pyct',
             'sphinx_ioam_theme',
             'holoviews',
             'bokeh',
