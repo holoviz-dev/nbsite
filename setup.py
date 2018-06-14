@@ -14,7 +14,7 @@ except ImportError:
 
 setup_args = dict(
     name='nbsite',
-    version=version.get_setup_version('nbsite'),
+    version=pyctbuild.version.get_setup_version('nbsite'),
     author='PyViz',
     description='Build a tested, sphinx-based website from notebooks.',
     long_description=open("README.md").read(),
