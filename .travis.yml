@@ -16,7 +16,8 @@ env:
 stages:
   - test
   - name: conda_dev_package
-    if: tag =~ ^v(\d+|\.)*[a-z]\d*$
+    if: branch = import_tmphvdocs  
+#    if: tag =~ ^v(\d+|\.)*[a-z]\d*$
   - name: pip_dev_package
     if: branch = import_tmphvdocs  
 #    if: tag =~ ^v(\d+|\.)*[a-z]\d*$
