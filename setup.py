@@ -18,7 +18,7 @@ def get_setup_version(reponame):
     Helper to get the current version from either git describe or the
     .version file (if available).
     """
-    import json
+    import json,os
     basepath = os.path.split(__file__)[0]
     version_file_path = os.path.join(basepath, reponame, '.version')
     return param.version.Version.setup_version(basepath, reponame, archive_commit="$Format:%h$")
