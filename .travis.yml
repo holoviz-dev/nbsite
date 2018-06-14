@@ -79,13 +79,14 @@ jobs:
 
     ## dev packages
 
-    - <<: *default
+    - &pkg_default
+      <<: *default
       stage: pip_dev_package
-      env: PYPI="https://test.pypi.org/legacy/" DESC=""
+      env: DESC="" PYPI="https://test.pypi.org/legacy/" PYPIUSER=$TPPU PYPIPASS=$TPPP
       install:
         - unset PYENV_VERSION && pyenv global 3.6 2.7
         - doit package_build $PKG_TEST_PYTHON --test-group=all
-      script: doit package_upload -u $TPPU -p $TPPP -r ${PYPI}
+      script: doit package_upload -u $PYPIUSER -p $PYPIPASS -r ${PYPI}
 
     - &conda_default
       stage: conda_dev_package
@@ -104,13 +105,9 @@ jobs:
 
     ## release packages
 
-    - <<: *default
+    - <<: *pkg_default
       stage: pip_package
-      env: PYPI="https://upload.pypi.org/legacy/" DESC=""
-      install:
-        - unset PYENV_VERSION && pyenv global 3.6 2.7
-        - doit package_build $PKG_TEST_PYTHON --test-group=all
-      script: doit package_upload -u $PPU -p $PPP -r ${PYPI}
+      env: DESC="" PYPI="https://upload.pypi.org/legacy/" PYPIUSER=$PPU PYPIPASS=$PPP
 
     - <<: *conda_default
       stage: conda_package
