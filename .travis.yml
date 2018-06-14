@@ -93,7 +93,8 @@ jobs:
         - conda config --set always_yes True
         # ...and now install doit/pyctdev into miniconda
         - conda install -c pyviz/label/dev pyctdev && doit ecosystem=conda ecosystem_setup
-      install: doit ecosystem=conda package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=all
+      # TODO: there's no test yet of the package without the example deps
+      install: doit ecosystem=conda package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=all --test-requires=examples
       script: doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev
 
     ## release packages
@@ -108,5 +109,5 @@ jobs:
 
     - <<: *conda_default
       stage: conda_package
-      install: doit ecosystem=conda package_build $CHANS_REL $PKG_TEST_PYTHON --test-group=all
+      install: doit ecosystem=conda package_build $CHANS_REL $PKG_TEST_PYTHON --test-group=all --test-requires=examples
       script: doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev --label=main
