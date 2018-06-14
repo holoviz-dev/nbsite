@@ -20,6 +20,8 @@ build:
 requirements:
   host:
     - python
+    - pyctbuild   # build requirements copied from pyproject.toml
+    - setuptools
   run:
     - python {{ sdata['python_requires'] }}
     {% for dep in sdata.get('install_requires',{}) %}
