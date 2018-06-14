@@ -32,7 +32,7 @@ requirements:
 
 test:
   requires:
-    {% for dep in sdata.get('tests_require',{}) %}
+    {% for dep in sdata['extras_require']['tests'] %}
     - {{ dep }}
     {% endfor %}
   imports:
