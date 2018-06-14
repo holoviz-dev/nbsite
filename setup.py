@@ -34,6 +34,7 @@ setup_args = dict(
         ],
         'tests':[
             'flake8',
+            'pytest'
         ],
         'examples':[
             'pyct',
