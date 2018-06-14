@@ -7,7 +7,8 @@ from setuptools import setup, find_packages
 # Temporary until build requirements as specified in pyproject.toml
 # are widely supported
 try:
-    import pyctbuild
+    import pyctbuild.version
+    import pyctbuild.examples
 except ImportError:
     raise ImportError("Parambokeh requires pyctbuild to build; please upgrade to pip>=10 and try again (or alternatively, install pyctbuild manually first (e.g. `conda install -c pyviz pyctbuild` or `pip install pyctbuild`)")
 
