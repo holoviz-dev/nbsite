@@ -16,10 +16,10 @@ env:
 stages:
   - test
   - name: conda_dev_package
-    if: branch = import_tmphvdocs
-#    if: tag =~ ^v(\d+|\.)*[a-z]\d*$
-  - name: pip_dev_package
     if: tag =~ ^v(\d+|\.)*[a-z]\d*$
+  - name: pip_dev_package
+    if: branch = import_tmphvdocs  
+#    if: tag =~ ^v(\d+|\.)*[a-z]\d*$
   - name: conda_package
     if: tag =~ ^v(\d+|\.)*[^a-z]\d*$
   - name: pip_package
@@ -85,7 +85,9 @@ jobs:
       env: DESC="" PYPI="https://test.pypi.org/legacy/" PYPIUSER=$TPPU PYPIPASS=$TPPP
       install:
         - unset PYENV_VERSION && pyenv global 3.6 2.7
-        - doit package_build $PKG_TEST_PYTHON --test-group=all
+        - doit package_build $PKG_TEST_PYTHON --test-group=unit
+        # TODO: pyctdev doesn't yet support pypi channels during packaging
+        #- doit ... --test-group=examples --test-requires=examples
       script: doit package_upload -u $PYPIUSER -p $PYPIPASS -r ${PYPI}
 
     - &conda_default
@@ -100,7 +102,7 @@ jobs:
         - conda install -c pyviz/label/dev pyctdev && doit ecosystem=conda ecosystem_setup
       install:
         - doit ecosystem=conda package_build $CHANS $PKG_TEST_PYTHON --test-group=unit
-        - doit ecosystem=conda package_test  $CHANS $PKG_TEST_PYTHON --test-group=all --test-requires=examples
+        - doit ecosystem=conda package_test  $CHANS $PKG_TEST_PYTHON --test-group=examples --test-requires=examples
       script: doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN $LABELS
 
     ## release packages
