@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 # Temporary until build requirements as specified in pyproject.toml
 # are widely supported
 try:
-    import param.version
+    import pyctbuild.version
     import pyctbuild.examples
 except ImportError:
     raise ImportError("Parambokeh requires pyctbuild to build; please upgrade to pip>=10 and try again (or alternatively, install pyctbuild manually first (e.g. `conda install -c pyviz pyctbuild` or `pip install pyctbuild`)")
@@ -21,7 +21,7 @@ def get_setup_version(reponame):
     import json,os
     basepath = os.path.split(__file__)[0]
     version_file_path = os.path.join(basepath, reponame, '.version')
-    return param.version.Version.setup_version(basepath, reponame, archive_commit="$Format:%h$")
+    return pyctbuild.version.Version.setup_version(basepath, reponame, archive_commit="$Format:%h$")
 
 
 setup_args = dict(
