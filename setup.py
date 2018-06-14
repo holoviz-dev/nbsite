@@ -7,15 +7,26 @@ from setuptools import setup, find_packages
 # Temporary until build requirements as specified in pyproject.toml
 # are widely supported
 try:
-    import pyctbuild.version
+    import param.version
     import pyctbuild.examples
 except ImportError:
     raise ImportError("Parambokeh requires pyctbuild to build; please upgrade to pip>=10 and try again (or alternatively, install pyctbuild manually first (e.g. `conda install -c pyviz pyctbuild` or `pip install pyctbuild`)")
 
 
+def get_setup_version(reponame):
+    """
+    Helper to get the current version from either git describe or the
+    .version file (if available).
+    """
+    import json
+    basepath = os.path.split(__file__)[0]
+    version_file_path = os.path.join(basepath, reponame, '.version')
+    return param.version.Version.setup_version(basepath, reponame, archive_commit="$Format:%h$")
+
+
 setup_args = dict(
     name='nbsite',
-    version=pyctbuild.version.get_setup_version('nbsite'),
+    version=get_setup_version('nbsite'),
     author='PyViz',
     description='Build a tested, sphinx-based website from notebooks.',
     long_description=open("README.md").read(),
