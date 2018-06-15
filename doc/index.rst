@@ -11,8 +11,8 @@ nbsite
 
 Nbsite lets you build a website from a set of notebooks plus a minimal
 amount of config. Sites built with nbsite include
-`<http://pyviz.github.io/pyviz/>`_ and
-`<https://bokeh.github.io/datashader-docs/>`_.
+`<http://pyviz.org/>`_ and
+`<https://datashader.org/>`_.
 
 The idea behind nbsite is that notebooks can simultaneously be
 documentation (things you want to tell people about), examples (a
@@ -50,34 +50,22 @@ Notes for nbsite developers: `Development <Development.html>`_
 Work-in-progress sites built using nbsite (currently present to keep
 keep track; will eventually remove):
   
-  * `<https://ioam.github.io/parambokeh/>`_ (`parambokeh
-    <https://github.com/ioam/parambokeh>`_)
+  * `<https://ioam.github.io/parambokeh/>`_ (parambokeh)
 
-  * `<https://ioam.github.io/geoviews/>`_ (`geoviews
-    <https://github.com/ioam/geoviews>`_)
+  * `<http://geoviews.org/>`_ (geoviews)
     
-  * `<https://bokeh.github.io/datashader-docs/>`_ (`datashader
-    <https://github.com/bokeh/datashader/>`_)
+  * `<http://datashader.org/`_ (datashader)
     
-  * `<https://pyviz.github.io/pyviz/>`_ (`pyviz
-    <https://github.com/pyviz/pyviz>`_)
+  * `<http://pyviz.org/>`_ (pyviz)
 
-  * `<https://ceball.github.io/>`_ (`tmp demo site
-    <https://github.com/ContinuumIO/tmphvdocs/tree/tmphvdocs>`_; note:
-    built from scratch, starting from nbsite template)
+  * `<https://pyviz.github.io/nbsite/>`_ (nbsite; this project)
 
-  * `<https://pyviz.github.io/nbsite/>`_ (`nbsite
-    <https://github.com/pyviz/nbsite>`_; this site)
-
-  * `<https://bokeh.github.io/colorcet/>`_ (`colorcet
-    <https://github.com/bokeh/colorcet>`_)
+  * `<https://bokeh.github.io/colorcet/>`_ (colorcet)
     
   * `<https://ceball.github.io/xarray_filters/>`_ (`xarray_filters
     <https://github.com/ContinuumIO/xarray_filters>`_)
 
-  * `<https://ioam.github.io/paramnb/>`_ (`paramnb
-    <https://github.com/ioam/paramnb>`_)
-
+  * `<https://pyviz.github.io/holoplot/>`_ (holoplot)
 
 
 .. raw:: html
