@@ -27,9 +27,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os, string, glob, re, copy, sys, shutil
 
-from sphinx.util.compat import Directive
 from docutils import nodes
-from docutils.parsers.rst import directives
+from docutils.parsers.rst import directives, Directive
 from IPython.nbconvert import html, python
 from IPython.nbformat.current import write
 
