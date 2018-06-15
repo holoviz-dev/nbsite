@@ -22,6 +22,7 @@ setup_args = dict(
     packages=find_packages(),
     python_requires='>=3',
     install_requires=[
+        'pyviz_comms',
         'jupyter_client',
         'ipykernel',
         'nbformat',
@@ -56,7 +57,7 @@ setup_args = dict(
         ]
     },
     include_package_data=True,
-    license='BSD-3',    
+    license='BSD-3',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Programming Language :: Python :: 3',
