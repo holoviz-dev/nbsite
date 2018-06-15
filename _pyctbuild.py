@@ -551,7 +551,6 @@ def get_setup_version2():
 #########################################################################
 ### pyctbuild.examples
 
-import os
 import shutil
 
 def examples(path, root, verbose=False, force=False):
