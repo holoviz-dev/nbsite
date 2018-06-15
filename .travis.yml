@@ -18,8 +18,7 @@ stages:
   - name: conda_dev_package
     if: tag =~ ^v(\d+|\.)*[a-z]\d*$
   - name: pip_dev_package
-    if: branch = import_tmphvdocs  
-#    if: tag =~ ^v(\d+|\.)*[a-z]\d*$
+    if: tag =~ ^v(\d+|\.)*[a-z]\d*$
   - name: conda_package
     if: tag =~ ^v(\d+|\.)*[^a-z]\d*$
   - name: pip_package
@@ -36,12 +35,12 @@ jobs:
       stage: test
       env: DESC="dev test_all"
       before_install: pip install pyctdev && doit ecosystem_setup
-      install: true
-#        # TODO: env_create support for pip ecosystem
-#        #- doit env_create --python=$PYENV_VERSION
-#        - doit develop_install -o examples -o tests -c testpypi
-#        - doit env_capture
-      script: true #doit test_all
+      install:
+        # TODO: env_create support for pip ecosystem
+        #- doit env_create --python=$PYENV_VERSION
+        - doit develop_install -o examples -o tests -c testpypi
+        - doit env_capture
+      script: doit test_all
 
     - <<: *default
       stage: docs
