@@ -1,3 +1,7 @@
+#########################################################################
+#########################################################################
+### pyctbuild.version
+
 """Provide consistent and up-to-date ``__version__`` strings for Python
 packages.
 
@@ -524,6 +528,47 @@ class Version(object):
         return info['version_string']
 
 
-# TODO: submit PR to autover for full get_setup_version fn?
 def get_setup_version(reponame, pkgname=None):
     return Version.setup_version(os.path.dirname(__file__),reponame,pkgname=pkgname,archive_commit="$Format:%h$")
+
+
+########## CB put here; everything above is autover master ##########
+
+def get_setup_version2():
+#    import pdb;pdb.set_trace()
+    import configparser # py2 also?
+    config = configparser.ConfigParser()
+    config.read("setup.cfg")
+    reponame = config['tool:autover']['reponame']
+    pkgname = config['tool:autover'].get('pkgname',reponame)
+
+    # TODO: is this right? or I need the other stuff from projects' get_setup_version()?
+    # and hacked the setup path
+    return Version.setup_version(os.path.dirname(os.path.abspath("setup.cfg")),reponame,pkgname=pkgname,archive_commit="$Format:%h$")
+
+
+#########################################################################
+#########################################################################
+### pyctbuild.examples
+
+import shutil
+
+def examples(path, root, verbose=False, force=False):
+    """
+    Copies the notebooks to the supplied path.
+    """
+    filepath = os.path.abspath(os.path.dirname(root))
+    example_dir = os.path.join(filepath, './examples')
+    if not os.path.exists(example_dir):
+        example_dir = os.path.join(filepath, '../examples')
+    if os.path.exists(path):
+        if not force:
+            print('%s directory already exists, either delete it or set the force flag' % path)
+            return
+        shutil.rmtree(path)
+    ignore = shutil.ignore_patterns('.ipynb_checkpoints', '*.pyc', '*~')
+    tree_root = os.path.abspath(example_dir)
+    if os.path.isdir(tree_root):
+        shutil.copytree(tree_root, path, ignore=ignore, symlinks=True)
+    else:
+        print('Cannot find %s' % tree_root)

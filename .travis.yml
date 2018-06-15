@@ -7,8 +7,10 @@ env:
   global:
     - PYENV_VERSION=3.6
     # conda-forge for phantomjs on linux (https://github.com/AnacondaRecipes/aggregate/issues/38)
-    - CHANS_DEV="-c pyviz/label/dev -c conda-forge"
+    - CHANS_DEV="-c pyviz/label/dev -c defaults -c conda-forge"
     - CHANS_REL="-c pyviz -c conda-forge"
+    - LABELS_DEV="--label=dev"
+    - LABELS_REL="--label=dev --label=main"
     - PKG_TEST_PYTHON="--test-python=py36"
 
 stages:
@@ -36,7 +38,7 @@ jobs:
       install:
         # TODO: env_create support for pip ecosystem
         #- doit env_create --python=$PYENV_VERSION
-        - doit develop_install
+        - doit develop_install -o examples -o tests -c testpypi
         - doit env_capture
       script: doit test_all
 
@@ -76,16 +78,20 @@ jobs:
 
     ## dev packages
 
-    - <<: *default
+    - &pkg_default
+      <<: *default
       stage: pip_dev_package
-      env: PYPI="https://test.pypi.org/legacy/" DESC=""
+      env: DESC="" PYPI="https://test.pypi.org/legacy/" PYPIUSER=$TPPU PYPIPASS=$TPPP
       install:
         - unset PYENV_VERSION && pyenv global 3.6 2.7
-        - doit package_build $PKG_TEST_PYTHON --test-group=all
-      script: doit package_upload -u $TPPU -p $TPPP -r ${PYPI}
+        - doit package_build $PKG_TEST_PYTHON --test-group=unit
+        # TODO: pyctdev doesn't yet support pypi channels during packaging
+        #- doit ... --test-group=examples --test-requires=examples
+      script: doit package_upload -u $PYPIUSER -p $PYPIPASS -r ${PYPI}
 
     - &conda_default
       stage: conda_dev_package
+      env: CHANS=$CHANS_DEV LABELS=$LABELS_DEV
       before_install:
         # install doit/pyctdev and use to install miniconda...
         - pip install pyctdev && doit ecosystem=conda miniconda_install && pip uninstall -y doit pyctdev
@@ -93,20 +99,17 @@ jobs:
         - conda config --set always_yes True
         # ...and now install doit/pyctdev into miniconda
         - conda install -c pyviz/label/dev pyctdev && doit ecosystem=conda ecosystem_setup
-      install: doit ecosystem=conda package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=all
-      script: doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev
+      install:
+        - doit ecosystem=conda package_build $CHANS $PKG_TEST_PYTHON --test-group=unit
+        - doit ecosystem=conda package_test  $CHANS $PKG_TEST_PYTHON --test-group=examples --test-requires=examples
+      script: doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN $LABELS
 
     ## release packages
 
-    - <<: *default
+    - <<: *pkg_default
       stage: pip_package
-      env: PYPI="https://upload.pypi.org/legacy/" DESC=""
-      install:
-        - unset PYENV_VERSION && pyenv global 3.6 2.7
-        - doit package_build $PKG_TEST_PYTHON --test-group=all
-      script: doit package_upload -u $PPU -p $PPP -r ${PYPI}
+      env: DESC="" PYPI="https://upload.pypi.org/legacy/" PYPIUSER=$PPU PYPIPASS=$PPP
 
     - <<: *conda_default
       stage: conda_package
-      install: doit ecosystem=conda package_build $CHANS_REL $PKG_TEST_PYTHON --test-group=all
-      script: doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev --label=main
+      env: CHANS=$CHANS_REL LABELS=$LABELS_REL

@@ -1,5 +1,8 @@
 include LICENSE
-include version.py
+include README.md
 include nbsite/.version
+include _pyctbuild.py
+graft examples
+graft nbsite/examples
 graft nbsite/_shared_static
 graft nbsite/tmplate
