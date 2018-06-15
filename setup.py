@@ -14,6 +14,11 @@ setup_args = dict(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url='https://pyviz.github.io/nbsite/',
+    project_urls={
+        'Documentation': 'https://pyviz.github.io/nbsite/',
+        'Source Code': 'https://github.com/pyviz/nbsite',
+        'Bug Tracker': 'https://github.com/pyviz/nbsite/issues'        
+    }
     packages=find_packages(),
     python_requires='>=3',
     install_requires=[
