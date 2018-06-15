@@ -4,29 +4,11 @@
 import glob
 from setuptools import setup, find_packages
 
-# Temporary until build requirements as specified in pyproject.toml
-# are widely supported
-try:
-    import pyctbuild.version
-    import pyctbuild.examples
-except ImportError:
-    raise ImportError("Parambokeh requires pyctbuild to build; please upgrade to pip>=10 and try again (or alternatively, install pyctbuild manually first (e.g. `conda install -c pyviz pyctbuild` or `pip install pyctbuild`)")
-
-
-def get_setup_version(reponame):
-    """
-    Helper to get the current version from either git describe or the
-    .version file (if available).
-    """
-    import json,os
-    basepath = os.path.split(__file__)[0]
-    version_file_path = os.path.join(basepath, reponame, '.version')
-    return pyctbuild.version.Version.setup_version(basepath, reponame, archive_commit="$Format:%h$")
-
+import _pyctbuild
 
 setup_args = dict(
     name='nbsite',
-    version=get_setup_version('nbsite'),
+    version=_pyctbuild.get_setup_version2(),
     author='PyViz',
     description='Build a tested, sphinx-based website from notebooks.',
     long_description=open("README.md").read(),
@@ -93,11 +75,10 @@ if __name__=="__main__":
     example_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 'nbsite','examples')
     if 'develop' not in sys.argv:
-        import pyctbuild.examples
-        pyctbuild.examples.examples(example_path, __file__, force=True)
+        import _pyctbuild
+        _pyctbuild.examples(example_path, __file__, force=True)
     
     setup(**setup_args)
 
     if os.path.isdir(example_path):
         shutil.rmtree(example_path)
-

@@ -1,5 +1,4 @@
 [build-system]
 requires = [
-    "pyctbuild",
     "setuptools"
 ]

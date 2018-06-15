@@ -20,8 +20,6 @@ build:
 requirements:
   host:
     - python
-    - pyctbuild   # build requirements copied from pyproject.toml
-    - param
     - setuptools
   run:
     - python {{ sdata['python_requires'] }}

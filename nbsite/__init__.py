@@ -1,6 +1,6 @@
 # version comes from git if available, otherwise from .version file
 try:
-    from pyctbuild.version import Version
+    from _pyctbuild import Version
     __version__ = str(Version(fpath=__file__,archive_commit="$Format:%h$",reponame="nbsite"))
 except:
     import os,json
