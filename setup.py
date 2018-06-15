@@ -18,7 +18,7 @@ setup_args = dict(
         'Documentation': 'https://pyviz.github.io/nbsite/',
         'Source Code': 'https://github.com/pyviz/nbsite',
         'Bug Tracker': 'https://github.com/pyviz/nbsite/issues'        
-    }
+    },
     packages=find_packages(),
     python_requires='>=3',
     install_requires=[
