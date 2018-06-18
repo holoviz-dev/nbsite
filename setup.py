@@ -34,7 +34,7 @@ setup_args = dict(
     extras_require= {
         'refman':[
             'graphviz',
-        ]
+        ],
         'gallery':[
             'selenium',
             'phantomjs'
