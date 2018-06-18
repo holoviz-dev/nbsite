@@ -12,9 +12,9 @@ build:
   script: python setup.py install --single-version-externally-managed --record=record.txt
   entry_points:
     {% for group,epoints in sdata.get("entry_points",{}).items() %}
-    {% for entry_point in epoints %}
+     {% for entry_point in epoints %}
     - {{ entry_point }}
-    {% endfor %}
+     {% endfor %}
     {% endfor %}  
 
 requirements:
@@ -27,9 +27,14 @@ requirements:
     - {{ dep }}
     {% endfor %}
 
-    {% for dep in sdata['extras_require']['gallery'] %}
+    {% for option in sdata.get('extras_require',{}) %}
+     {% for dep in sdata['extras_require'][option] %}
     - {{ dep }}
+     {% endfor %}
     {% endfor %}
+
+    # until we decide what to do about namespaces
+    - python-graphviz
 
 test:
   requires:
