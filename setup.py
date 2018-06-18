@@ -28,12 +28,13 @@ setup_args = dict(
         'nbformat',
         'nbconvert',
         'notebook',
-        'graphviz',
         'sphinx',
         'beautifulsoup4',
-        'graphviz',
     ],
     extras_require= {
+        'refman':[
+            'graphviz',
+        ],
         'gallery':[
             'selenium',
             'phantomjs'
