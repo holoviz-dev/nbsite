@@ -1,1 +1,1 @@
-nbsite/_version.py export-subst
+nbsite/__init__.py export-subst
