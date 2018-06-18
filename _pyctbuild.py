@@ -535,7 +535,6 @@ def get_setup_version(reponame, pkgname=None):
 ########## CB put here; everything above is autover master ##########
 
 def get_setup_version2():
-#    import pdb;pdb.set_trace()
     import configparser # py2 also?
     config = configparser.ConfigParser()
     config.read("setup.cfg")
