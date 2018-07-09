@@ -63,7 +63,7 @@ jobs:
           on:
             tags: true
             all_branches: true
-            condition: $TRAVIS_TAG =~ [0-9]+[a-z][0-9]*$
+            condition: $TRAVIS_TAG =~ [0-9]+[a-z][0-9]+$
         - provider: pages
           skip_cleanup: true
           github_token: $GITHUB_TOKEN
@@ -72,7 +72,7 @@ jobs:
           on:
             tags: true
             all_branches: true
-            condition: $TRAVIS_TAG =~ [0-9]+[^a-z][0-9]*$
+            condition: $TRAVIS_TAG =~ [0-9]+[^a-z][0-9]+$
 
 
     ########## END-USER PACKAGES ##########
