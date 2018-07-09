@@ -82,13 +82,13 @@ jobs:
     - &pkg_default
       <<: *default
       stage: pip_dev_package
-      env: DESC="" PYPI="https://test.pypi.org/legacy/" PYPIUSER=$TPPU PYPIPASS=$TPPP
+      env: DESC="" PYPI=pypi PYPIUSER=$TPPU PYPIPASS=$TPPP
       install:
         - unset PYENV_VERSION && pyenv global 3.6 2.7
         - doit package_build $PKG_TEST_PYTHON --test-group=unit
         # TODO: pyctdev doesn't yet support pypi channels during packaging
         #- doit ... --test-group=examples --test-requires=examples
-      script: doit package_upload -u $PYPIUSER -p $PYPIPASS -r ${PYPI}
+      script: doit package_upload -u $PYPIUSER -p $PYPIPASS --pypi ${PYPI}
 
     - &conda_default
       stage: conda_dev_package
@@ -109,7 +109,7 @@ jobs:
 
     - <<: *pkg_default
       stage: pip_package
-      env: DESC="" PYPI="https://upload.pypi.org/legacy/" PYPIUSER=$PPU PYPIPASS=$PPP
+      env: DESC="" PYPI=testpypi PYPIUSER=$PPU PYPIPASS=$PPP
 
     - <<: *conda_default
       stage: conda_package
