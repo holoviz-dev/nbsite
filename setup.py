@@ -13,9 +13,9 @@ setup_args = dict(
     description='Build a tested, sphinx-based website from notebooks.',
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url='https://pyviz.github.io/nbsite/',
+    url='https://nbsite.pyviz.org/',
     project_urls={
-        'Documentation': 'https://pyviz.github.io/nbsite/',
+        'Documentation': 'https://nbsite.pyviz.org/',
         'Source Code': 'https://github.com/pyviz/nbsite',
         'Bug Tracker': 'https://github.com/pyviz/nbsite/issues'        
     },
