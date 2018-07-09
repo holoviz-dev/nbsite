@@ -80,13 +80,14 @@ def generate_rst(
             rst_file.write('*'*len(title)+'\n\n')
             rst_file.write(".. notebook:: %s %s" % (project,os.path.relpath(examples_path,start=dirname)+'/'+fromhere+"\n"))
             rst_file.write("    :offset: %s\n" % offset)
-            examples = os.path.relpath(examples_path,start=os.getcwd()) # hack
             if all([git_host,git_org,git_repo,git_branch,not_doing_index]):
+                # TODO: this is a hack! paths need to be cleaned up. assume examples/ at same level as module
+                examples = os.path.relpath(examples_path,os.path.join(os.path.dirname(__import__(project).__file__),".."))
                 rst_file.write('\n\n-------\n\n')
                 rst_file.write('`Right click to download this notebook from ' + git_host + '.'
                                ' <%s/%s/%s/%s/%s/%s>`_\n' % (git_hosts[git_host],git_org,git_repo,git_branch,examples,fromhere))
             if not not_doing_index:
-                rst_file.write("%s\n"%_toctree(os.path.dirname(filename),os.path.dirname(fullpath),examples))
+                rst_file.write("%s\n"%_toctree(os.path.dirname(filename),os.path.dirname(fullpath),os.path.relpath(examples_path,start=os.getcwd())))
 
 def _toctree(nbpath,docpath,examples):
     dirs = sorted(set([os.path.dirname(os.path.relpath(x,start=examples)) for x in glob.glob(os.path.join(nbpath,"**","index.ipynb"))]))
