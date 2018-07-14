@@ -26,9 +26,10 @@ def build(what,examples_path,doc_path,output,assets="assets"):
 
     # temp hack
     os.system('sphinx-build -b %s %s %s'%(what,doc_path,output))
-    
-    copy_files(os.path.join(examples_path,assets),
-               os.path.join(output,assets))
+
+    if assets!='':
+        copy_files(os.path.join(examples_path,assets),
+                   os.path.join(output,assets))
 
     fix_links(output)
 
