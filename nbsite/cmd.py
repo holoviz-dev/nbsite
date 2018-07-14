@@ -13,7 +13,40 @@ git_hosts = {
     'GitHub': 'https://raw.githubusercontent.com'
 }
 
+
+# TODO: clean up these fns + related arg parsing: parameterize, and
+# maybe add task dependencies
+
+def create_site(project,
+        examples_path="./examples",
+        doc_path="./doc",
+#        title_formatter=None,
+        git_host='GitHub',
+        git_org=None,        
+        git_repo=None,
+        git_branch='master',
+        # legacy support
+        offset=0,        
+        overwrite=False
+
+def fix_links(output):
+    # temp hack
+    os.system("nbsite_fix_links.py %s"%output)
+
+def build(what,examples_path,doc_path,output,assets="assets"):
+    # TODO: also have an overwrite flag
+
+    # temp hack
+    os.system('sphinx-build -b %s %s %s'%(what,doc_path,output))
+    
+    copy_files(os.path.join(examples_path,assets),
+               os.path.join(output,assets))
+
+    fix_links(output)
+
+
 # TODO: really needs cleaning up! Currently just prototyping new behavior.
+# rename to something like scaffold?
 def generate_rst(
         project,
         examples_path="./examples",
