@@ -28,8 +28,8 @@ def main(args=None):
     build_parser.add_argument('--examples-path',type=str,help='where to init doc',default='examples')
     build_parser.add_argument('--doc-path',type=str,help='where to init doc',default='doc')
     build_parser.add_argument('--output',type=str,help='where to init doc',default="builtdocs")
-    
-    build_parser.set_defaults(func=lambda args: build(args.what,args.examples_path,args.doc_path,args.output))
+    build_parser.add_argument('--assets',type=str,help='where to init doc',default="assets")    
+    build_parser.set_defaults(func=lambda args: build(args.what,args.examples_path,args.doc_path,args.output,args.assets))
     
     
     # add commands from pyct, for examples
