@@ -17,18 +17,6 @@ git_hosts = {
 # TODO: clean up these fns + related arg parsing: parameterize, and
 # maybe add task dependencies
 
-def create_site(project,
-        examples_path="./examples",
-        doc_path="./doc",
-#        title_formatter=None,
-        git_host='GitHub',
-        git_org=None,        
-        git_repo=None,
-        git_branch='master',
-        # legacy support
-        offset=0,        
-        overwrite=False
-
 def fix_links(output):
     # temp hack
     os.system("nbsite_fix_links.py %s"%output)
