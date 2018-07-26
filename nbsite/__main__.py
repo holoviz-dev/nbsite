@@ -18,10 +18,10 @@ def main(args=None):
     generaterst_parser.add_argument('--repo',type=str,help='where to init doc',default='pyviz')
     generaterst_parser.add_argument('--examples-path',type=str,help='where to init doc',default='examples')
     generaterst_parser.add_argument('--doc-path',type=str,help='where to init doc',default='doc')
-    generaterst_parser.add_argument('--offset',type=int,help='where to init doc',default=1)
+    generaterst_parser.add_argument('--offset',type=int,help='where to init doc',default=0)
     generaterst_parser.add_argument('--overwrite',type=int,help='where to init doc',default=False)
     
-    generaterst_parser.set_defaults(func=lambda args: generate_rst(args.project,args.examples_path,args.doc_path,args.org,args.repo,args.offset,args.overwrite))
+    generaterst_parser.set_defaults(func=lambda args: generate_rst(project=args.project,examples_path=args.examples_path,doc_path=args.doc_path,git_org=args.org,git_repo=args.repo,offset=args.offset,overwrite=args.overwrite))
 
     build_parser = subparsers.add_parser("build", help=inspect.getdoc(build))
     build_parser.add_argument('--what',type=str,help='where to init doc',default='html')
@@ -35,12 +35,9 @@ def main(args=None):
     # add commands from pyct, for examples
     try:
         import pyct.cmd
+        pyct.cmd.add_commands(subparsers,'nbsite',cmds=None,args=args)
     except ImportError:
-        import sys
-        from . import _missing_cmd
-        print(_missing_cmd())
-        sys.exit(1)
-    pyct.cmd.add_commands(subparsers,'nbsite',cmds=None,args=args)
+        pass
 
     args = parser.parse_args()
     return args.func(args) if hasattr(args,'func') else parser.error("must supply command to run") 
