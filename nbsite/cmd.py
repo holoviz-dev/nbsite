@@ -34,7 +34,9 @@ def build(what,output,project_root='',doc='doc',examples='examples',examples_ass
     # TODO: temp hack
     os.system('sphinx-build -b %s %s %s'%(what,paths['doc'],output))
     if 'examples_assets' in paths:
-        copy_files(paths['examples_assets'], paths['doc_assets'])
+        build_assets = os.path.join(output,examples_assets)
+        print("Copying examples assets from %s to %s"%(paths['examples_assets'],build_assets))
+        copy_files(paths['examples_assets'],build_assets)
     fix_links(output)
 
 
@@ -48,7 +50,6 @@ def _prepare_paths(root,examples='',doc='',examples_assets=''):
         paths['doc'] = doc if os.path.isabs(doc) else os.path.join(paths['project'],doc)
     if examples_assets!='':
         paths['examples_assets'] = os.path.join(paths['examples'], examples_assets)
-        paths['doc_assets'] = os.path.join(paths['doc'], examples_assets)
     return paths
 
 def _is_root(x,root):
