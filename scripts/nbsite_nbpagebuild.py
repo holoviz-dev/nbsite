@@ -19,6 +19,9 @@ if len(sys.argv) > 6:
     
 generate_rst(
     project,
-    examples_path,doc_path,
-    git_org = org, git_repo=project,
-    offset=offset,overwrite=bool(overwrite))
+    examples=examples_path,
+    doc=doc_path,
+    org = org,
+    repo=project,
+    offset=offset,
+    overwrite=bool(overwrite))

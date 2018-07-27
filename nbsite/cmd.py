@@ -1,143 +1,213 @@
 import os
 import glob
+import re
+import sys
+from os.path import dirname
+from collections import ChainMap
 
 from .util import copy_files
 
-def init(path):
-    tmplate = os.path.join(os.path.dirname(__file__),'tmplate')
-    copy_files(tmplate,path)
+def init(project_root='',doc='doc'):
+    """Start an nbsite project: create a doc folder containing nbsite
+template files
 
+    """
+    paths = _prepare_paths(project_root,doc=doc)
+    copy_files(os.path.join(dirname(__file__),'tmplate2'),
+               paths['doc'])
 
-git_hosts = {
+hosts = {
     # no trailing slash
     'GitHub': 'https://raw.githubusercontent.com'
 }
-
 
 # TODO: clean up these fns + related arg parsing: parameterize, and
 # maybe add task dependencies
 
 def fix_links(output):
-    # temp hack
+    # TODO: temp hack
     os.system("nbsite_fix_links.py %s"%output)
 
-def build(what,examples_path,doc_path,output,assets="assets"):
+def build(what,output,project_root='',doc='doc',examples='examples',examples_assets="assets"):
     # TODO: also have an overwrite flag
-
-    # temp hack
-    os.system('sphinx-build -b %s %s %s'%(what,doc_path,output))
-
-    if assets!='':
-        copy_files(os.path.join(examples_path,assets),
-                   os.path.join(output,assets))
-
+    paths = _prepare_paths(project_root,examples=examples,doc=doc,examples_assets=examples_assets)
+    # TODO: temp hack
+    os.system('sphinx-build -b %s %s %s'%(what,paths['doc'],output))
+    if 'examples_assets' in paths:
+        copy_files(paths['examples_assets'], paths['doc_assets'])
     fix_links(output)
 
 
-# TODO: really needs cleaning up! Currently just prototyping new behavior.
-# rename to something like scaffold?
+def _prepare_paths(root,examples='',doc='',examples_assets=''):
+    if root=='':
+        root = os.getcwd()
+    paths = {'project': os.path.abspath(root)}
+    if examples!='':
+        paths['examples'] = examples if os.path.isabs(examples) else os.path.join(paths['project'],examples)
+    if doc!='':
+        paths['doc'] = doc if os.path.isabs(doc) else os.path.join(paths['project'],doc)
+    if examples_assets!='':
+        paths['examples_assets'] = os.path.join(paths['examples'], examples_assets)
+        paths['doc_assets'] = os.path.join(paths['doc'], examples_assets)
+    return paths
+
+def _is_root(x,root):
+    return os.path.abspath(x) == os.path.abspath(root)
+
+# TODO: needs cleaning up; currently just prototyping new behavior.
+# TODO: rename to something like scaffold?
 def generate_rst(
-        project,
-        examples_path="./examples",
-        doc_path="./doc",
+        project_name,
+        project_root='',        # if not supplied, will default to os.getcwd()
+        examples="examples",    # relative to project_root
+        doc="doc",              # relative to project_root
 #        title_formatter=None,
-        git_host='GitHub',
-        git_org=None,        
-        git_repo=None,
-        git_branch='master',
-        # legacy support
-        offset=0,        
+        host='GitHub',
+        org='',
+        repo='',                # if not supplied, will default to project_name
+        branch='master',
+        offset=0,
         overwrite=False):
-    """Auto-generates the rst files corresponding to the Notebooks in
-    examples_path
+    """Auto-generates notebook-including rsts from notebooks in examples.
 
-    Takes title from filename, replacing underscores with spaces:
-    The_Title.ipynb -> The Title
-    01_The_Title.ipynb -> 01 The Title
-    01_Hyphen-Conscious_Title.ipynb -> 01 Hyphen-Conscious Title
+    rst file takes title from notebook filename in general, replacing
+    underscores with spaces and converting to title case. E.g.
 
-    and index.ipynb gets title from directory
+      * The_Title.ipynb -> The Title
+      * 01_The_Title.ipynb -> 01 The Title
+      * 01_Hyphen-Conscious_Title.ipynb -> 01 Hyphen-Conscious Title
+      * 1_some_title.ipynb -> 1 Some Title
 
-    Legacy options:
+    But: index.ipynb gets title from its containing directory in
+    general, except at the root, where index.ipynb gets the
+    project_name as title.
+
+
+    toctree generation
+    ==================
+
+    If there's no index.rst already, the generated index.rst will
+    contain a generated toctree, with entries sorted as follows:
+
+      * number-prefixed items grouped before others, sorted first by number
+
+      * after dealing with numeric prefixes, items in
+        default_pyviz_ordering ("Introduction","Getting Started","User
+        Guide","Topics","FAQ","API") grouped first, in that order
+
+      * remaining items appear at the end, sorted by text
+
+
+    overriding titles and toctrees
+    ==============================
+
+    Generated rst files won't be overwritten on a subsequent run, so
+    can be edited and committed.
+
+
+    Other options:
       * offset: allows to skip leading n cells
-      * overwrite: will replace existing rst files
+      * overwrite: will overwrite existing rst files
+
     """
-    if git_repo is None:
-        git_repo = project
-    print("Making rst for notebooks in %s and putting them %s..."%(examples_path,doc_path))
-    for filename in glob.iglob(os.path.join(examples_path,"**","*.ipynb"), recursive=True):
-        fromhere = filename.split(examples_path)[1].lstrip('/')
+    assert project_name!=''
+
+    if repo=='':
+        repo = project_name
+
+    paths=_prepare_paths(project_root,examples=examples,doc=doc)
+
+    print("Project='%s': Converting notebooks at '%s' to rst at '%s'..."%(project_name,paths['examples'],paths['doc']))
+    for filename in glob.iglob(os.path.join(paths['examples'],"**","*.ipynb"), recursive=True):
+        fromhere = filename.split(paths['examples'])[1].lstrip('/') # TODO: not win
         # TODO: decide what to do about gallery later
         if fromhere.startswith('gallery'):
-            continue    
-        fullpath = os.path.abspath(os.path.join(doc_path,fromhere))
-        dirname = os.path.dirname(fullpath)
-        os.makedirs(dirname, exist_ok=True)
-        title = os.path.basename(fullpath)[:-6]
-        fullpathrst = os.path.join(dirname, title) + '.rst'
-        not_doing_index = True
-        if title == 'index':
-            not_doing_index = False
-            # if path is the doc root, use project for title, otherwise use dir
-            if dirname==doc_path:
-                title = project
-            else:            
-                title = os.path.split(os.path.dirname(fullpath))[1]
-            # because pyviz has been capitalizing file names but not directory names...
-            title = title.title()
-        # title is filename with spaces for underscores
-        title = title.replace("_", ' ')
-        # and no digits- prefix
-        #title = re.match('(\d*-)?(?P<title>.*)',title).group('title')
-        #fullpathrst = fullpathrst.replace(' ','_')
-        if os.path.exists(fullpathrst):
+            continue
+
+        rst = os.path.splitext(os.path.join(paths['doc'],fromhere))[0] + ".rst"
+        pretitle = _file2pretitle(rst)
+        os.makedirs(dirname(rst), exist_ok=True)
+
+        if pretitle != 'index':
+            title = _to_title(pretitle)
+        else:
+            if _is_root(dirname(rst),paths['doc']):
+                title = project_name
+            else:
+                title = _filepath2pretitle(rst,paths['doc'])
+            title = _to_title(title,apply_title_case=True)
+
+        if os.path.exists(rst):
             if not overwrite:
-                print("...skipping %s"%fullpathrst)
+                print("...skipping %s"%rst)
                 continue
 
-        print("...writing %s"%fullpathrst)
-        with open(fullpathrst, 'w') as rst_file:
-            rst_file.write('*'*len(title)+'\n')        
+        print("...writing %s"%rst)
+        with open(rst, 'w') as rst_file:
+            import nbsite
+            rst_file.write('..\n   Originally generated by nbsite (%s):\n     %s\n   Will not subsequently be overwritten by nbsite, so can be edited.\n\n'%(nbsite.__version__,' '.join(sys.argv)))
+            rst_file.write('*'*len(title)+'\n')
             rst_file.write(title+'\n')
             rst_file.write('*'*len(title)+'\n\n')
-            rst_file.write(".. notebook:: %s %s" % (project,os.path.relpath(examples_path,start=dirname)+'/'+fromhere+"\n"))
+            rst_file.write(".. notebook:: %s %s" % (project_name,os.path.relpath(paths['examples'],start=dirname(rst))+'/'+fromhere+"\n"))
             rst_file.write("    :offset: %s\n" % offset)
-            if all([git_host,git_org,git_repo,git_branch,not_doing_index]):
-                # TODO: this is a hack! paths need to be cleaned up. assume examples/ at same level as module
-                examples = os.path.relpath(examples_path,os.path.join(os.path.dirname(__import__(project).__file__),".."))
-                rst_file.write('\n\n-------\n\n')
-                rst_file.write('`Right click to download this notebook from ' + git_host + '.'
-                               ' <%s/%s/%s/%s/%s/%s>`_\n' % (git_hosts[git_host],git_org,git_repo,git_branch,examples,fromhere))
-            if not not_doing_index:
-                rst_file.write("%s\n"%_toctree(os.path.dirname(filename),os.path.dirname(fullpath),os.path.relpath(examples_path,start=os.getcwd())))
 
-def _toctree(nbpath,docpath,examples):
-    dirs = sorted(set([os.path.dirname(os.path.relpath(x,start=examples)) for x in glob.glob(os.path.join(nbpath,"**","index.ipynb"))]))
-    nbs = set([os.path.splitext(os.path.basename(x))[0] for x in glob.iglob(os.path.join(nbpath,'*.ipynb'), recursive=False)])
-    rst = set([os.path.splitext(os.path.basename(x))[0] for x in glob.iglob(os.path.join(docpath,'*.rst'), recursive=False)])
-    if 'index' in rst or 'index' in nbs: 
-        try:
-            rst.remove('index')
-        except:
-            pass
-        try:
-            nbs.remove('index')
-        except:
-            pass
-        if 'Introduction' not in nbs:
-            rst.add('Introduction <self>')
+            if pretitle=='index':
+                rst_file.write("%s\n"%_toctree(dirname(filename),paths['examples']))
+            elif all([host,org,repo,branch]):
+                rst_file.write('\n\n-------\n\n')
+                rst_file.write('`Right click to download this notebook from ' + host + '.'
+                               ' <%s/%s/%s/%s/%s/%s>`_\n' % (hosts[host],org,repo,branch,examples,fromhere))
+
+
+def _to_title(name,apply_title_case=False):
+    # allow to apply title case for directories, which pyviz has as lower case
+    title = name.replace("_"," ")
+    if apply_title_case:
+        title = title.title()
+    return title
+
+def _filepath2pretitle(filepath,root):
+    return os.path.relpath(dirname(filepath),start=root)
+
+def _file2pretitle(file_):
+    return os.path.splitext(os.path.basename(file_))[0]
+
+default_pyviz_ordering = ["Introduction","Getting Started","User Guide","Topics","FAQ","API"]
+def _title_key(title):
+    leading_digits = re.match(r"\d+",title)
+    return (0,int(leading_digits.group(0)),title) if leading_digits else (1,default_pyviz_ordering.index(title) if title in default_pyviz_ordering else float("inf"),title)
+
+def _toctree(nbpath,examples_path):
+    #
+    # rst:
+    # ipynb:
+    # dir: dir containing index.ipynb
+
+    tocmap = {}
+    for ftype in ('ipynb','rst'):
+        tocmap[ftype] = {_to_title(k):"<%s>"%k for k in [_file2pretitle(f) for f in glob.iglob(os.path.join(nbpath,'*.'+ftype), recursive=False)]}
+
+    tocmap['dir'] = {_to_title(k,apply_title_case=True):"<%s/index>"%k for k in [_filepath2pretitle(x,examples_path) for x in glob.glob(os.path.join(nbpath,"**","index.ipynb"))]}
+
+    # index shouldn't explicitly appear in toctree...
+    if 'index' in tocmap['rst'] or 'index' in tocmap['ipynb']:
+        tocmap['rst'].pop('index',None)
+        tocmap['ipynb'].pop('index',None)
+    # ...except at root (where it gets called Introduction)
+    if _is_root(nbpath,examples_path):
+        assert not any(['Introduction' in tocmap[x] for x in tocmap]), "index will be shown as Introduction, but Introduction already exists in %s"%examples
+        tocmap['rst']['Introduction'] ='<self>'
+
+    titles = ChainMap(*[tocmap[x] for x in tocmap])
 
     toctree = """
 .. toctree::
     :titlesonly:
     :maxdepth: 2
 """
-    for entry in sorted(nbs.union(rst)):
+    for title in sorted(titles,key=_title_key):
         toctree += """
-    %s"""%entry
+    %s %s"""%(title,titles[title])
 
-    for entry in dirs:
-        toctree += """
-    %s <%s/index>"""%(entry.replace("_"," ").title(),entry)
-        
     return toctree
