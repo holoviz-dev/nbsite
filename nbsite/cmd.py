@@ -70,6 +70,9 @@ def generate_rst(
         overwrite=False):
     """Auto-generates notebook-including rsts from notebooks in examples.
 
+    titles
+    ======
+
     rst file takes title from notebook filename in general, replacing
     underscores with spaces and converting to title case. E.g.
 
@@ -89,11 +92,13 @@ def generate_rst(
     If there's no index.rst already, the generated index.rst will
     contain a generated toctree, with entries sorted as follows:
 
-      * number-prefixed items grouped before others, sorted first by number
+      * number-prefixed items grouped before others, sorted first by
+        number
 
       * after dealing with numeric prefixes, items in
         default_pyviz_ordering ("Introduction","Getting Started","User
-        Guide","Topics","FAQ","API") grouped first, in that order
+        Guide","Topics","FAQ","API") grouped next, sorted in that
+        order
 
       * remaining items appear at the end, sorted by text
 
@@ -105,9 +110,12 @@ def generate_rst(
     can be edited and committed.
 
 
-    Other options:
+    Other options
+    =============
+
       * offset: allows to skip leading n cells
       * overwrite: will overwrite existing rst files
+      * ...
 
     """
     assert project_name!=''
@@ -196,7 +204,7 @@ def _toctree(nbpath,examples_path):
         tocmap['ipynb'].pop('index',None)
     # ...except at root (where it gets called Introduction)
     if _is_root(nbpath,examples_path):
-        assert not any(['Introduction' in tocmap[x] for x in tocmap]), "index will be shown as Introduction, but Introduction already exists in %s"%examples
+        assert not any(['Introduction' in tocmap[x] for x in tocmap]), "index will be shown as Introduction, but Introduction already exists in %s"%examples_path
         tocmap['rst']['Introduction'] ='<self>'
 
     titles = ChainMap(*[tocmap[x] for x in tocmap])
