@@ -19,12 +19,14 @@ stages:
     if: tag =~ ^v(\d+|\.)+[a-z]\d+$
   - name: pip_dev_package
     if: tag =~ ^v(\d+|\.)+[a-z]\d+$
+  - name: website_dev
+    if: tag =~ ^v(\d+|\.)+[a-z]\d+$ OR tag = website_dev    
   - name: conda_package
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
   - name: pip_package
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
-  - name: docs
-    if: tag =~ ^v(\d+|\.)+.*\d+$
+  - name: website_release
+    if: tag =~ ^v(\d+|\.)+[^a-z]\d+$ OR tag = website
 
 jobs:
   include:
@@ -36,16 +38,18 @@ jobs:
       env: DESC="dev test_all"
       before_install: pip install pyctdev && doit ecosystem_setup
       install:
-        # TODO: env_create support for pip ecosystem
+        # TODO: pyctdev does not yet have env_create support for pip ecosystem
         #- doit env_create --python=$PYENV_VERSION
-        - doit develop_install -o examples -o tests -c testpypi
+        - doit develop_install -o examples -o tests
         - doit env_capture
       script: doit test_all
 
-    - <<: *default
-      stage: docs
+    - &website
+      <<: *default
+      stage: website_release
       env: DESC=""
       script:
+        # TODO: this script should be updated to use new interface
         - pip install sphinx_ioam_theme
         - cd doc
         - nbsite_nbpagebuild.py pyviz nbsite . .
@@ -59,20 +63,23 @@ jobs:
           skip_cleanup: true
           github_token: $GITHUB_TOKEN
           local_dir: ./doc/_build/html
-          repo: ioam-docs/nbsite-dev
-          on:
-            tags: true
-            all_branches: true
-            condition: $TRAVIS_TAG =~ [0-9]+[a-z][0-9]+$
-        - provider: pages
-          skip_cleanup: true
-          github_token: $GITHUB_TOKEN
-          local_dir: ./doc/_build/html
           fqdn: nbsite.pyviz.org
           on:
             tags: true
             all_branches: true
-            condition: $TRAVIS_TAG =~ [0-9]+[^a-z][0-9]+$
+
+    - <<: *website
+      stage: website_dev
+      env: DESC=""
+      deploy:
+        - provider: pages
+          skip_cleanup: true
+          github_token: $GITHUB_TOKEN
+          local_dir: ./doc/_build/html
+          repo: ioam-docs/nbsite-dev
+          on:
+            tags: true
+            all_branches: true
 
 
     ########## END-USER PACKAGES ##########
