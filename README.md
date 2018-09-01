@@ -5,5 +5,8 @@
 **Build a tested, sphinx-based website from notebooks**
 
 This project is currently an early work in progress. See the
-documentation at [pyviz.github.io/nbsite](https://pyviz.github.io/nbsite) for
+documentation at [nbsite.pyviz.org](https://nbsite.pyviz.org) for
 more information.
+
+Developers can see the latest dev release's docs at
+https://ioam-docs.github.io/nbsite-dev/
