@@ -36,9 +36,9 @@ jobs:
       env: DESC="dev test_all"
       before_install: pip install pyctdev && doit ecosystem_setup
       install:
-        # TODO: env_create support for pip ecosystem
+        # TODO: pyctdev does not yet have env_create support for pip ecosystem
         #- doit env_create --python=$PYENV_VERSION
-        - doit develop_install -o examples -o tests -c testpypi
+        - doit develop_install -o examples -o tests
         - doit env_capture
       script: doit test_all
 
