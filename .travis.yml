@@ -89,7 +89,7 @@ jobs:
     - &pkg_default
       <<: *default
       stage: pip_dev_package
-      env: DESC="" PYPI=pypi PYPIUSER=$TPPU PYPIPASS=$TPPP
+      env: DESC="" PYPI=testpypi PYPIUSER=$TPPU PYPIPASS=$TPPP
       install:
         - unset PYENV_VERSION && pyenv global 3.6 2.7
         - doit package_build $PKG_TEST_PYTHON --test-group=unit
@@ -116,7 +116,7 @@ jobs:
 
     - <<: *pkg_default
       stage: pip_package
-      env: DESC="" PYPI=testpypi PYPIUSER=$PPU PYPIPASS=$PPP
+      env: DESC="" PYPI=pypi PYPIUSER=$PPU PYPIPASS=$PPP
 
     - <<: *conda_default
       stage: conda_package
