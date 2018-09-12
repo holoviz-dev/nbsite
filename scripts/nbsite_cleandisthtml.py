@@ -29,8 +29,11 @@ def IGetFiles(d):
             
 for folder in (".doctrees", "_sources"):
     d = os.path.join(htmldir,folder)
-    print("removing %s"%d)
-    shutil.rmtree(d)
+    try:
+        print("removing %s"%d)
+        shutil.rmtree(d)
+    except:
+        pass
 
 for file_ in ("objects.inv",):
     f = os.path.join(htmldir,file_)
