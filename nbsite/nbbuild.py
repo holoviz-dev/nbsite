@@ -45,6 +45,10 @@ class ExecutePreprocessor1000(ExecutePreprocessor):
     def kc(self):
         return self._kc
 
+    @kc.deleter
+    def kc(self):
+        del self._kc
+    
     @kc.setter
     def kc(self,v):
         self._kc=v
