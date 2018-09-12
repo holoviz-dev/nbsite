@@ -26,7 +26,8 @@ def IGetFiles(d):
             yield thing.path
 
 # I think it's ok to assume these exist for a sphinx site...
-            
+
+# (.doctrees in build folder by default only for sphinx<1.8)
 for folder in (".doctrees", "_sources"):
     d = os.path.join(htmldir,folder)
     try:
