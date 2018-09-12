@@ -42,9 +42,7 @@ jobs:
         #- doit env_create --python=$PYENV_VERSION
         - doit develop_install -o examples -o tests
         - doit env_capture
-      script:
-        - doit test_all
-        - cat /tmp/sphinx-err-*.log
+      script: doit test_all
 
     - &website
       <<: *default
