@@ -38,8 +38,11 @@ for folder in (".doctrees", "_sources"):
 
 for file_ in ("objects.inv",):
     f = os.path.join(htmldir,file_)
-    print("removing %s"%f)
-    os.remove(f)
+    try:
+        print("removing %s"%f)
+        os.remove(f)
+    except:
+        pass
 
 for path in IGetFiles(htmldir):
     if os.path.splitext(path)[1].lower() == '.ipynb':
