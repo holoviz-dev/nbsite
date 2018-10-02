@@ -1,12 +1,5 @@
-# version comes from git if available, otherwise from .version file
-try:
-    from _pyctbuild import Version
-    __version__ = str(Version(fpath=__file__,archive_commit="$Format:%h$",reponame="nbsite"))
-except:
-    import os, json
-    __version__ = json.load(open(os.path.join(os.path.dirname(__file__),'.version'),'r'))['version_string']
-    del os, json
-
+import param
+__version__ = str(param.Version(fpath=__file__,archive_commit="$Format:%h$",reponame="nbsite"))
 
 # make pyct's example/data commands available if possible
 from functools import partial
