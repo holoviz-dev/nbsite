@@ -92,7 +92,7 @@ jobs:
       env: DESC="" PYPI=testpypi PYPIUSER=$TPPU PYPIPASS=$TPPP
       install:
         - unset PYENV_VERSION && pyenv global 3.6 2.7
-        - doit package_build $PKG_TEST_PYTHON --test-group=unit
+        - doit package_build $PKG_TEST_PYTHON --test-group=unit --sdist-install-build-deps
         # TODO: pyctdev doesn't yet support pypi channels during packaging
         #- doit ... --test-group=examples --test-requires=examples
       script: doit package_upload -u $PYPIUSER -p $PYPIPASS --pypi ${PYPI}
