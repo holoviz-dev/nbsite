@@ -55,20 +55,6 @@ class ExecutePreprocessor1000(ExecutePreprocessor):
         if self._ipython_startup is not None:
             msg_id = self._kc.execute( # noqa: a mess
                 self._ipython_startup,silent=False,store_history=False,allow_stdin=False,stop_on_error=True)
-# you can attempt to debug your startup code with this hack...            
-#            exec_reply = self._wait_for_reply(msg_id, self._ipython_startup)
-#            while True:
-#                msg = self.kc.iopub_channel.get_msg()
-#                if msg['parent_header'].get('msg_id') != msg_id:
-#                    continue
-#                else:
-#                    try:
-#                        output = output_from_msg(msg)
-#                    except:
-#                        continue
-#                    if output.output_type == 'error':
-#                        raise ValueError("Startup code failed: %s %s\n%s"%(output.ename,output.evalue,output.traceback))
-#                    break
 
 
 try:

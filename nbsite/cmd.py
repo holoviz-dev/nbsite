@@ -2,6 +2,7 @@ import os
 import glob
 import re
 import sys
+import subprocess
 from os.path import dirname
 from collections import ChainMap
 
@@ -25,14 +26,13 @@ hosts = {
 # maybe add task dependencies
 
 def fix_links(output):
-    # TODO: temp hack
-    os.system("nbsite_fix_links.py %s"%output)
+    subprocess.check_call(["nbsite_fix_links.py",output])
+
 
 def build(what,output,project_root='',doc='doc',examples='examples',examples_assets="assets"):
     # TODO: also have an overwrite flag
     paths = _prepare_paths(project_root,examples=examples,doc=doc,examples_assets=examples_assets)
-    # TODO: temp hack
-    os.system('sphinx-build -b %s %s %s'%(what,paths['doc'],output))
+    subprocess.check_call(["sphinx-build","-b",what,paths['doc'],output])
     if 'examples_assets' in paths:
         build_assets = os.path.join(output,examples_assets)
         print("Copying examples assets from %s to %s"%(paths['examples_assets'],build_assets))
