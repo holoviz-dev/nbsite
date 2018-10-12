@@ -26,7 +26,7 @@ setup_args = dict(
         'jupyter_client',
         'ipykernel',
         'nbformat',
-        'nbconvert',
+        'nbconvert <5.4', # see https://github.com/pyviz/nbsite/issues/84
         'notebook',
         'sphinx',
         'beautifulsoup4',
