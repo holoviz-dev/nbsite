@@ -25,7 +25,7 @@ setup_args = dict(
         'pyviz_comms',
         'jupyter_client',
         'ipykernel',
-        'nbformat',
+        'nbformat <5.4', # see https://github.com/pyviz/nbsite/issues/84
         'nbconvert',
         'notebook',
         'sphinx',
