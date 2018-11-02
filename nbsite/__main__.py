@@ -32,15 +32,16 @@ def main(args=None):
     generaterst_parser.add_argument('--branch',type=str,help='where to init doc',default='master')
     generaterst_parser.add_argument('--offset',type=int,help='where to init doc',default=0)
     generaterst_parser.add_argument('--overwrite',type=int,help='where to init doc',default=False)
+    generaterst_parser.add_argument('--skip',type=str,help=' notebooks to skip running; comma separated case insensitive re to match')
     _set_defaults(generaterst_parser,generate_rst)
 
     build_parser = subparsers.add_parser("build", help=inspect.getdoc(build))
     build_parser.add_argument('--what',type=str,help='where to init doc',default='html')
     build_parser.add_argument('--output',type=str,help='where to init doc',default="builtdocs")
     _add_common_args(build_parser,'--project-root','--doc','--examples')
-    build_parser.add_argument('--examples-assets',type=str,help='where to init doc',default="assets")    
+    build_parser.add_argument('--examples-assets',type=str,help='where to init doc',default="assets")
     _set_defaults(build_parser,build)
-    
+
     # add commands from pyct, for examples
     try:
         import pyct.cmd
@@ -49,7 +50,7 @@ def main(args=None):
         pass
 
     args = parser.parse_args()
-    return args.func(args) if hasattr(args,'func') else parser.error("must supply command to run") 
+    return args.func(args) if hasattr(args,'func') else parser.error("must supply command to run")
 
 if __name__ == "__main__":
     main()

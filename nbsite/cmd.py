@@ -68,7 +68,8 @@ def generate_rst(
         repo='',                # if not supplied, will default to project_name
         branch='master',
         offset=0,
-        overwrite=False):
+        overwrite=False,
+        skip=''):
     """Auto-generates notebook-including rsts from notebooks in examples.
 
     titles
@@ -132,7 +133,9 @@ def generate_rst(
         # TODO: decide what to do about gallery later
         if fromhere.startswith('gallery'):
             continue
-
+        if _should_skip(skip, fromhere):
+            print('...deliberately skipping', fromhere)
+            continue
         rst = os.path.splitext(os.path.join(paths['doc'],fromhere))[0] + ".rst"
         pretitle = _file2pretitle(rst)
         os.makedirs(dirname(rst), exist_ok=True)
@@ -168,6 +171,11 @@ def generate_rst(
                 rst_file.write('`Right click to download this notebook from ' + host + '.'
                                ' <%s/%s/%s/%s/%s/%s>`_\n' % (hosts[host],org,repo,branch,examples,fromhere))
 
+def _should_skip(skip, filename):
+    if skip == '':
+        return False
+    skip_patterns = [p.strip() for p in skip.strip('[]').split(',')]
+    return any([re.match(p,filename,re.IGNORECASE) for p in skip_patterns])
 
 def _to_title(name,apply_title_case=False):
     # allow to apply title case for directories, which pyviz has as lower case
