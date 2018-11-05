@@ -38,7 +38,8 @@ def build(what,output,project_root='',doc='doc',examples='examples',examples_ass
         print("Copying examples assets from %s to %s"%(paths['examples_assets'],build_assets))
         copy_files(paths['examples_assets'],build_assets)
     fix_links(output)
-
+    # create a .nojekyll file in output for github compatibility
+    subprocess.check_call(["touch", os.path.join(output, '.nojekyll')])
 
 def _prepare_paths(root,examples='',doc='',examples_assets=''):
     if root=='':
