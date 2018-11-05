@@ -29,7 +29,7 @@ def fix_links(output):
     subprocess.check_call(["nbsite_fix_links.py",output])
 
 
-def build(what,output,project_root='',doc='doc',examples='examples',examples_assets="assets"):
+def build(what,output,project_root='',doc='doc',examples='examples',examples_assets="assets", for_github=False):
     # TODO: also have an overwrite flag
     paths = _prepare_paths(project_root,examples=examples,doc=doc,examples_assets=examples_assets)
     subprocess.check_call(["sphinx-build","-b",what,paths['doc'],output])
@@ -38,7 +38,8 @@ def build(what,output,project_root='',doc='doc',examples='examples',examples_ass
         print("Copying examples assets from %s to %s"%(paths['examples_assets'],build_assets))
         copy_files(paths['examples_assets'],build_assets)
     fix_links(output)
-
+    if for_github:
+        subprocess.check_call(["touch", os.path.join(output, '.nojekyll')])
 
 def _prepare_paths(root,examples='',doc='',examples_assets=''):
     if root=='':

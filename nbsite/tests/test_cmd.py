@@ -197,3 +197,12 @@ def test_build_with_just_one_rst(tmp_project_with_docs_skeleton):
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
     assert (project / "builtdocs" / "Example_Notebook_0.html").is_file()
     assert not (project / "builtdocs" / "Example_Notebook_1.html").is_file()
+    assert not (project / "builtdocs" / ".nojekyll").is_file()
+
+@pytest.mark.slow
+def test_build_with_for_github_and_just_one_rst(tmp_project_with_docs_skeleton):
+    project = tmp_project_with_docs_skeleton
+    (project / "doc" / "Example_Notebook_0.rst").write_text(EXAMPLE_0_RST)
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='', for_github=True)
+    assert (project / "builtdocs" / "Example_Notebook_0.html").is_file()
+    assert (project / "builtdocs" / ".nojekyll").is_file()
