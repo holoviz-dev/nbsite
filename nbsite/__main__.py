@@ -38,7 +38,6 @@ def main(args=None):
     build_parser = subparsers.add_parser("build", help=inspect.getdoc(build))
     build_parser.add_argument('--what',type=str,help='where to init doc',default='html')
     build_parser.add_argument('--output',type=str,help='where to init doc',default="builtdocs")
-    build_parser.add_argument('--for-github',action='store_true',help='whether to touch a nojekyll file for github compatability')
     _add_common_args(build_parser,'--project-root','--doc','--examples')
     build_parser.add_argument('--examples-assets',type=str,help='where to init doc',default="assets")
     _set_defaults(build_parser,build)
