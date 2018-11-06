@@ -17,7 +17,7 @@ setup_args = dict(
     project_urls={
         'Documentation': 'https://nbsite.pyviz.org/',
         'Source Code': 'https://github.com/pyviz/nbsite',
-        'Bug Tracker': 'https://github.com/pyviz/nbsite/issues'        
+        'Bug Tracker': 'https://github.com/pyviz/nbsite/issues'
     },
     packages=find_packages(),
     python_requires='>=3',
@@ -41,7 +41,8 @@ setup_args = dict(
         ],
         'tests':[
             'flake8',
-            'pytest'
+            'pytest',
+            'pyct'
         ],
         'examples':[
             'pyct',
@@ -53,8 +54,8 @@ setup_args = dict(
             'xarray',
             'pandas',
             'numpy',
-# gallery demo            
-#            'plotly'            
+# gallery demo
+#            'plotly'
         ]
     },
     include_package_data=True,
@@ -84,7 +85,7 @@ if __name__=="__main__":
     if 'develop' not in sys.argv:
         import _pyctbuild
         _pyctbuild.examples(example_path, __file__, force=True)
-    
+
     setup(**setup_args)
 
     if os.path.isdir(example_path):
