@@ -42,10 +42,10 @@ setup_args = dict(
         'tests':[
             'flake8',
             'pytest >=3.9.1',
-            'pyct >=0.4.5'
+            'pyct[cmd] >=0.4.5'
         ],
         'examples':[
-            'pyct >=0.4.5',
+            'pyct[cmd] >=0.4.5',
             'sphinx_ioam_theme',
             'holoviews',
             'bokeh',
