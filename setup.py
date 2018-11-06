@@ -41,11 +41,11 @@ setup_args = dict(
         ],
         'tests':[
             'flake8',
-            'pytest',
-            'pyct'
+            'pytest >=3.9.1',
+            'pyct >=0.4.5'
         ],
         'examples':[
-            'pyct',
+            'pyct >=0.4.5',
             'sphinx_ioam_theme',
             'holoviews',
             'bokeh',
