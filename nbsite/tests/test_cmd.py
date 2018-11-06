@@ -162,55 +162,6 @@ def test_generate_rst_with_skip_one_notebook(tmp_project):
     assert not (project / "doc" / "Example_Notebook_0.rst").is_file()
     assert (project / "doc" / "Example_Notebook_1.rst").is_file()
 
-
-def test_generate_rst_without_nblink(tmp_project):
-
-    expected = ['******************',
-                'Example Notebook 1',
-                '******************',
-                '', '.. notebook:: test_project ../examples/Example_Notebook_1.ipynb',
-                '    :offset: 0']
-    project = tmp_project
-    generate_rst("test_project", project_root=str(project),
-                 nblink='none', skip='.*Notebook_0.*')
-    assert not (project / "doc" / "Example_Notebook_0.rst").is_file()
-    rstpath = (project / "doc" / "Example_Notebook_1.rst")
-    assert rstpath.is_file()
-    with open(rstpath, 'r') as f:
-        contents = f.read().splitlines()
-        assert  contents[5:] == expected
-
-def test_generate_rst_with_nblink_top(tmp_project):
-
-    expected = ['`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/Example_Notebook_1.ipynb>`_',
-                '.. notebook:: test_project ../examples/Example_Notebook_1.ipynb',
-                '    :offset: 0']
-
-    project = tmp_project
-    generate_rst("test_project", project_root=str(project),
-                 host='GitHub', org='pyviz', repo='nbsite', branch='master', nblink='top', skip='.*Notebook_0.*')
-    assert not (project / "doc" / "Example_Notebook_0.rst").is_file()
-    rstpath = (project / "doc" / "Example_Notebook_1.rst")
-    assert rstpath.is_file()
-    with open(rstpath, 'r') as f:
-        contents = f.read().splitlines()
-        assert  contents[-3:] == expected
-
-def test_generate_rst_with_nblink_bottom(tmp_project):
-
-    expected = ['-------', '',
-                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/Example_Notebook_1.ipynb>`_']
-
-    project = tmp_project
-    generate_rst("test_project", project_root=str(project),
-                 host='GitHub', org='pyviz', repo='nbsite', branch='master', nblink='bottom', skip='.*Notebook_0.*')
-    assert not (project / "doc" / "Example_Notebook_0.rst").is_file()
-    rstpath = (project / "doc" / "Example_Notebook_1.rst")
-    assert rstpath.is_file()
-    with open(rstpath, 'r') as f:
-        contents = f.read().splitlines()
-        assert  contents[-3:] == expected
-
 def test_generate_rst_with_skip_list_of_notebooks(tmp_project):
     project = tmp_project
     generate_rst("test_project", project_root=str(project), skip='.*Notebook_0.*, .*Notebook_1.*')
@@ -228,6 +179,64 @@ def test_generate_rst_with_skip_glob_matching_both_notebooks_undercase(tmp_proje
     generate_rst("test_project", project_root=str(project), skip='.*example.*')
     assert not (project / "doc" / "Example_Notebook_0.rst").is_file()
     assert not (project / "doc" / "Example_Notebook_1.rst").is_file()
+
+def test_generate_rst_with_nblink_as_none(tmp_project):
+
+    expected = ['******************',
+                'Example Notebook 1',
+                '******************',
+                '', '.. notebook:: test_project ../examples/Example_Notebook_1.ipynb',
+                '    :offset: 0']
+    project = tmp_project
+    generate_rst("test_project", project_root=str(project), nblink='none',
+                 host='GitHub', org='pyviz', repo='nbsite', branch='master')
+    rstpath = (project / "doc" / "Example_Notebook_1.rst")
+    assert rstpath.is_file()
+    with open(rstpath, 'r') as f:
+        contents = f.read().splitlines()
+        assert  contents[5:] == expected
+
+def test_generate_rst_with_nblink_top(tmp_project):
+
+    expected = ['`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/Example_Notebook_1.ipynb>`_',
+                '.. notebook:: test_project ../examples/Example_Notebook_1.ipynb',
+                '    :offset: 0']
+
+    project = tmp_project
+    generate_rst("test_project", project_root=str(project), nblink='top',
+                 host='GitHub', org='pyviz', repo='nbsite', branch='master')
+    rstpath = (project / "doc" / "Example_Notebook_1.rst")
+    assert rstpath.is_file()
+    with open(rstpath, 'r') as f:
+        contents = f.read().splitlines()
+        assert  contents[-3:] == expected
+
+def test_generate_rst_with_nblink_bottom(tmp_project):
+
+    expected = ['-------', '',
+                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/Example_Notebook_1.ipynb>`_']
+
+    project = tmp_project
+    generate_rst("test_project", project_root=str(project), nblink='bottom',
+                 host='GitHub', org='pyviz', repo='nbsite', branch='master')
+    rstpath = (project / "doc" / "Example_Notebook_1.rst")
+    assert rstpath.is_file()
+    with open(rstpath, 'r') as f:
+        contents = f.read().splitlines()
+        assert  contents[-3:] == expected
+
+def test_generate_rst_with_no_nblink_set_defaults_to_bottom(tmp_project):
+    expected = ['-------', '',
+                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/Example_Notebook_1.ipynb>`_']
+
+    project = tmp_project
+    generate_rst("test_project", project_root=str(project),
+                 host='GitHub', org='pyviz', repo='nbsite', branch='master')
+    rstpath = (project / "doc" / "Example_Notebook_1.rst")
+    assert rstpath.is_file()
+    with open(rstpath, 'r') as f:
+        contents = f.read().splitlines()
+        assert  contents[-3:] == expected
 
 #### Don't need to do much testing of build it depends on sphinx
 @pytest.mark.slow
