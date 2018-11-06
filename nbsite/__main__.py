@@ -32,6 +32,7 @@ def main(args=None):
     generaterst_parser.add_argument('--branch',type=str,help='where to init doc',default='master')
     generaterst_parser.add_argument('--offset',type=int,help='where to init doc',default=0)
     generaterst_parser.add_argument('--overwrite',type=int,help='where to init doc',default=False)
+    generaterst_parser.add_argument('--nblink',type=int,help='where to to place notebook links',default='bottom')
     generaterst_parser.add_argument('--skip',type=str,help=' notebooks to skip running; comma separated case insensitive re to match',default='')
     _set_defaults(generaterst_parser,generate_rst)
 
