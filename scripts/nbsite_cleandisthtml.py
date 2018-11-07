@@ -24,7 +24,7 @@ def IGetFiles(d):
 
 # I think it's ok to assume these exist for a sphinx site...
 if dry_run:
-    print("This is just a dry-run of removing files from: ", htmldir)
+    print("This is just a dry-run of removing files from:", htmldir)
 else:
     print("Removing files from:", htmldir)
 
@@ -33,9 +33,9 @@ for folder in (".doctrees", "_sources"):
     d = os.path.join(htmldir,folder)
     try:
         if dry_run:
-            print("would remove %s"%folder)
+            print("would remove", folder)
         else:
-            print("removing %s"%folder)
+            print("removing", folder)
             shutil.rmtree(d)
     except:
         pass
@@ -44,9 +44,9 @@ for file_ in ("objects.inv",):
     f = os.path.join(htmldir,file_)
     try:
         if dry_run:
-            print("would remove %s"%file_)
+            print("would remove", file_)
         else:
-            print("removing %s"%file_)
+            print("removing", file_)
             os.remove(f)
     except:
         pass
@@ -55,7 +55,7 @@ for path in IGetFiles(htmldir):
     if os.path.splitext(path)[1].lower() == '.ipynb':
         name = path.split(output)[-1]
         if dry_run:
-            print("would remove %s"%name)
+            print("would remove", name)
         else:
-            print("removing %s"%name)
+            print("removing", name)
             os.remove(path)
