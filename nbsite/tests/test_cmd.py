@@ -198,7 +198,12 @@ def test_generate_rst_with_nblink_as_none(tmp_project):
 
 def test_generate_rst_with_nblink_top(tmp_project):
 
-    expected = ['`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/Example_Notebook_1.ipynb>`_',
+    expected = ['******************',
+                'Example Notebook 1',
+                '******************',
+                '',
+                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/Example_Notebook_1.ipynb>`_',
+                '', '', '-------', '',
                 '.. notebook:: test_project ../examples/Example_Notebook_1.ipynb',
                 '    :offset: 0']
 
@@ -209,11 +214,39 @@ def test_generate_rst_with_nblink_top(tmp_project):
     assert rstpath.is_file()
     with open(rstpath, 'r') as f:
         contents = f.read().splitlines()
-        assert  contents[-3:] == expected
+        assert  contents[5:] == expected
+
+def test_generate_rst_with_nblink_both(tmp_project):
+
+    expected = ['******************',
+                'Example Notebook 1',
+                '******************',
+                '',
+                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/Example_Notebook_1.ipynb>`_',
+                '', '', '-------', '',
+                '.. notebook:: test_project ../examples/Example_Notebook_1.ipynb',
+                '    :offset: 0',
+                '', '', '-------', '',
+                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/Example_Notebook_1.ipynb>`_']
+
+    project = tmp_project
+    generate_rst("test_project", project_root=str(project), nblink='both',
+                 host='GitHub', org='pyviz', repo='nbsite', branch='master')
+    rstpath = (project / "doc" / "Example_Notebook_1.rst")
+    assert rstpath.is_file()
+    with open(rstpath, 'r') as f:
+        contents = f.read().splitlines()
+        assert  contents[5:] == expected
 
 def test_generate_rst_with_nblink_bottom(tmp_project):
 
-    expected = ['-------', '',
+    expected = ['******************',
+                'Example Notebook 1',
+                '******************',
+                '',
+                '.. notebook:: test_project ../examples/Example_Notebook_1.ipynb',
+                '    :offset: 0',
+                '', '', '-------', '',
                 '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/Example_Notebook_1.ipynb>`_']
 
     project = tmp_project
@@ -223,10 +256,16 @@ def test_generate_rst_with_nblink_bottom(tmp_project):
     assert rstpath.is_file()
     with open(rstpath, 'r') as f:
         contents = f.read().splitlines()
-        assert  contents[-3:] == expected
+        assert  contents[5:] == expected
 
 def test_generate_rst_with_no_nblink_set_defaults_to_bottom(tmp_project):
-    expected = ['-------', '',
+    expected = ['******************',
+                'Example Notebook 1',
+                '******************',
+                '',
+                '.. notebook:: test_project ../examples/Example_Notebook_1.ipynb',
+                '    :offset: 0',
+                '', '', '-------', '',
                 '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/Example_Notebook_1.ipynb>`_']
 
     project = tmp_project
@@ -236,7 +275,7 @@ def test_generate_rst_with_no_nblink_set_defaults_to_bottom(tmp_project):
     assert rstpath.is_file()
     with open(rstpath, 'r') as f:
         contents = f.read().splitlines()
-        assert  contents[-3:] == expected
+        assert  contents[5:] == expected
 
 #### Don't need to do much testing of build it depends on sphinx
 @pytest.mark.slow
@@ -247,6 +286,18 @@ def test_build(tmp_project_with_docs_skeleton):
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
     assert (project / "builtdocs" / "Example_Notebook_0.html").is_file()
     assert (project / "builtdocs" / "Example_Notebook_1.html").is_file()
+
+@pytest.mark.slow
+def test_build_with_nblink_at_top_succeeds(tmp_project_with_docs_skeleton):
+    project = tmp_project_with_docs_skeleton
+    generate_rst("test_project", project_root=str(project), nblink='top',
+                 host='GitHub', org='pyviz', repo='nbsite', branch='master')
+    rstpath = (project / "doc" / "Example_Notebook_1.rst")
+    assert rstpath.is_file()
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    assert (project / "builtdocs" / "Example_Notebook_1.html").is_file()
+    html = (project / "builtdocs" / "Example_Notebook_1.html").read_text()
+    assert not html
 
 @pytest.mark.slow
 def test_build_with_just_one_rst(tmp_project_with_docs_skeleton):
