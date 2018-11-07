@@ -46,10 +46,8 @@ def build(what,output,project_root='',doc='doc',examples='examples',examples_ass
 
 def clean(output, dry_run=False):
     if dry_run:
-        print("This is just a dry-run:")
         subprocess.check_call(["nbsite_cleandisthtml.py",output])
     else:
-        print("Removing files from the output: {}".format(output))
         subprocess.check_call(["nbsite_cleandisthtml.py",output,'take_a_chance'])
 
 def _prepare_paths(root,examples='',doc='',examples_assets=''):
