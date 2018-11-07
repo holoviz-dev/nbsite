@@ -173,22 +173,23 @@ def generate_rst(
             rst_file.write(title+'\n')
             rst_file.write('*'*len(title)+'\n\n')
 
-            if nblink == 'top':
+            if nblink in ['top', 'both']:
                 add_nblink(rst_file, host,org,repo, branch, examples, fromhere)
+                rst_file.write('\n\n-------\n\n')
 
             rst_file.write(".. notebook:: %s %s" % (project_name,os.path.relpath(paths['examples'],start=dirname(rst))+'/'+fromhere+"\n"))
             rst_file.write("    :offset: %s\n" % offset)
 
             if pretitle=='index':
                 rst_file.write("%s\n"%_toctree(dirname(filename),paths['examples']))
-            if nblink == 'bottom':
+            if nblink in ['bottom', 'both']:
+                rst_file.write('\n\n-------\n\n')
                 add_nblink(rst_file, host,org,repo, branch, examples, fromhere)
 
 
 def add_nblink(rst_file, host,org,repo,branch,examples, fromhere):
     if all([host,org,repo,branch]):
         info = (hosts[host],org,repo,branch,examples,fromhere)
-        rst_file.write('\n\n-------\n\n')
         rst_file.write('`Right click to download this notebook from ' + host + '.'
                        ' <%s/%s/%s/%s/%s/%s>`_\n' % info)
 
