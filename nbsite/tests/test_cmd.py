@@ -297,7 +297,8 @@ def test_build_with_nblink_at_top_succeeds(tmp_project_with_docs_skeleton):
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
     assert (project / "builtdocs" / "Example_Notebook_1.html").is_file()
     html = (project / "builtdocs" / "Example_Notebook_1.html").read_text()
-    assert not html
+    assert 'This is another temporary notebook that gets created for tests' in html, \
+           "The notebook did not get build to html properly - look for sphinx warnings and errors"
 
 @pytest.mark.slow
 def test_build_with_just_one_rst(tmp_project_with_docs_skeleton):
