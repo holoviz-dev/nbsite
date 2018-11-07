@@ -11,12 +11,9 @@ import shutil
 import sys
 
 # if only someone had made a way to handle parameters
-htmldir = os.path.abspath(sys.argv[1])
-
-if not (len(sys.argv)>2 and sys.argv[2] == 'take_a_chance'):
-    print("This quickly thrown together script will delete things from your computer; you should check it yourself before you run it. Once you've done so, pass 'take_a_chance' as the second argument.")
-    sys.exit(1)
-
+output = sys.argv[1]
+htmldir = os.path.abspath(output)
+dry_run =  not (len(sys.argv)>2 and sys.argv[2] == 'take_a_chance')
 
 def IGetFiles(d):
     for thing in os.scandir(d):
@@ -31,20 +28,29 @@ def IGetFiles(d):
 for folder in (".doctrees", "_sources"):
     d = os.path.join(htmldir,folder)
     try:
-        print("removing %s"%d)
-        shutil.rmtree(d)
+        if dry_run:
+            print("would remove %s"%d.split(output)[-1])
+        else:
+            print("removing %s"%d)
+            shutil.rmtree(d)
     except:
         pass
 
 for file_ in ("objects.inv",):
     f = os.path.join(htmldir,file_)
     try:
-        print("removing %s"%f)
-        os.remove(f)
+        if dry_run:
+            print("would remove %s"%f.split(output)[-1])
+        else:
+            print("removing %s"%f)
+            os.remove(f)
     except:
         pass
 
 for path in IGetFiles(htmldir):
     if os.path.splitext(path)[1].lower() == '.ipynb':
-        print("removing %s"%path)
-        os.remove(path)
+        if dry_run:
+            print("would remove %s"%path.split(output)[-1])
+        else:
+            print("removing %s"%path)
+            os.remove(path)

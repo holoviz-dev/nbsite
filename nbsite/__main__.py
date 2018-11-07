@@ -41,6 +41,7 @@ def main(args=None):
     build_parser.add_argument('--output',type=str,help='where to init doc',default="builtdocs")
     _add_common_args(build_parser,'--project-root','--doc','--examples')
     build_parser.add_argument('--examples-assets',type=str,help='where to init doc',default="assets")
+    build_parser.add_argument('--clean-dry-run',action='store_true',help='whether to not actually delete files when cleaning')
     _set_defaults(build_parser,build)
 
     # add commands from pyct, for examples
