@@ -159,8 +159,7 @@ class NotebookDirective(Directive):
         nb_abs_path = os.path.abspath(os.path.join(rst_dir, self.arguments[1]))
         nb_filepath, nb_basename = os.path.split(nb_abs_path)
 
-        rel_dir = os.path.relpath(rst_dir, setup.confdir)
-        dest_dir = rst_dir #os.path.join(setup.app.builder.outdir, rel_dir)
+        dest_dir = rst_dir
         dest_path = os.path.join(dest_dir, nb_basename)
 
         if not os.path.exists(dest_dir):
@@ -169,7 +168,6 @@ class NotebookDirective(Directive):
         # Process file inclusion options
         include_opts = self.arguments[2:]
         include_nb = True if 'ipynb' in include_opts else False
-        include_eval = True if 'eval' in include_opts else False
         include_script = True if 'py' in include_opts else False
 
         link_rst = ''
