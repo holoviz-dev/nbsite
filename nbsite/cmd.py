@@ -29,7 +29,7 @@ def fix_links(output):
     subprocess.check_call(["nbsite_fix_links.py",output])
 
 
-def build(what,output,project_root='',doc='doc',examples='examples',examples_assets="assets", clean_force=False):
+def build(what,output,project_root='',doc='doc',examples='examples',examples_assets="assets", clean_dry_run=False):
     # TODO: also have an overwrite flag
     paths = _prepare_paths(project_root,examples=examples,doc=doc,examples_assets=examples_assets)
     subprocess.check_call(["sphinx-build","-b",what,paths['doc'],output])
@@ -40,11 +40,11 @@ def build(what,output,project_root='',doc='doc',examples='examples',examples_ass
     fix_links(output)
     # create a .nojekyll file in output for github compatibility
     subprocess.check_call(["touch", os.path.join(output, '.nojekyll')])
-    if not clean_force:
-        print("Call `nbsite build` with `--clean-force` to actually delete files.")
-    clean(output, not clean_force)
+    if not clean_dry_run:
+        print("Call `nbsite build` with `--clean-dry-run` to not actually delete files.")
+    clean(output, clean_dry_run)
 
-def clean(output, dry_run=True):
+def clean(output, dry_run=False):
     if dry_run:
         subprocess.check_call(["nbsite_cleandisthtml.py",output])
     else:
