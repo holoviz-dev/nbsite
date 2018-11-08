@@ -269,7 +269,7 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
 
     if not os.path.isfile(dest_path):
         # TODO but this isn't true, is it? it's running the originl nb
-        print('INFO: Writing evalutated notebook to {dest_path!s}'.format(
+        print('INFO: Writing evaluated notebook to {dest_path!s}'.format(
             dest_path=os.path.abspath(dest_path)))
         try:
             if not skip_execute:
