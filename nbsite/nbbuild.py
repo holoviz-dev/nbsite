@@ -29,12 +29,12 @@ import os, string, glob, re, copy, sys, shutil
 
 from docutils import nodes
 from docutils.parsers.rst import directives, Directive
-from IPython.nbconvert import html, python
-from IPython.nbformat.current import write
 
-import nbconvert
 import nbformat
-from nbconvert.preprocessors import ExecutePreprocessor, CellExecutionError
+
+from nbconvert import NotebookExporter, PythonExporter, HTMLExporter
+from nbconvert.preprocessors import (ExecutePreprocessor, CellExecutionError,
+                                     Preprocessor)
 
 
 #from nbformat.v4 import output_from_msg
@@ -55,16 +55,6 @@ class ExecutePreprocessor1000(ExecutePreprocessor):
         if self._ipython_startup is not None:
             msg_id = self._kc.execute( # noqa: a mess
                 self._ipython_startup,silent=False,store_history=False,allow_stdin=False,stop_on_error=True)
-
-
-try:
-    from nbconvert.preprocessors import Preprocessor
-except ImportError:
-    try:
-        from IPython.nbconvert.preprocessors import Preprocessor
-    except ImportError:
-        # IPython < 2.0
-        from IPython.nbconvert.transformers import Transformer as Preprocessor
 
 
 class SkipOutput(Preprocessor):
@@ -233,15 +223,15 @@ class notebook_node(nodes.raw):
 
 def nb_to_python(nb_path):
     """convert notebook to python script"""
-    exporter = python.PythonExporter()
+    exporter = PythonExporter()
     output, resources = exporter.from_filename(nb_path)
     return output
 
 
 def nb_to_html(nb_path, preprocessors=[]):
     """convert notebook to html"""
-    exporter = html.HTMLExporter(template_file='basic',
-                                 preprocessors=preprocessors)
+    exporter = HTMLExporter(template_file='basic',
+                            preprocessors=preprocessors)
     output, resources = exporter.from_filename(nb_path)
     return output
 
@@ -284,9 +274,9 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
         os.chdir(cwd)
 
         if skip_execute:
-            write(notebook, open(dest_path, 'w'), 'json')
+            nbformat.write(notebook, open(dest_path, 'w'))
         else:
-            ne = nbconvert.NotebookExporter()
+            ne = NotebookExporter()
             newnb, _ = ne.from_notebook_node(notebook)
             with open(dest_path,'w') as f:
                 f.write(newnb)

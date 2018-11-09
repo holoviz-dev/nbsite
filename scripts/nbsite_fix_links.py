@@ -52,7 +52,7 @@ def find_autolinkable():
         import holoviews as hv
         import param
     except ImportError:
-        print('no holoviews and/or param: skipping autolinks')        
+        print('no holoviews and/or param: skipping autolinks')
         return {}
 
     # Class names for auto-linking
@@ -90,7 +90,7 @@ def cleanup_links(path):
 #            text = text.replace(k, v)
 
     text = component_links(text, path)
-    soup = BeautifulSoup(text)
+    soup = BeautifulSoup(text, features="lxml")
     for a in soup.findAll('a'):
         href = a.get('href', '')
         if '.ipynb' in href and 'http' not in href:
