@@ -48,7 +48,7 @@ class ExecutePreprocessor1000(ExecutePreprocessor):
     @kc.deleter
     def kc(self):
         del self._kc
-    
+
     @kc.setter
     def kc(self,v):
         self._kc=v
@@ -159,8 +159,7 @@ class NotebookDirective(Directive):
         nb_abs_path = os.path.abspath(os.path.join(rst_dir, self.arguments[1]))
         nb_filepath, nb_basename = os.path.split(nb_abs_path)
 
-        rel_dir = os.path.relpath(rst_dir, setup.confdir)
-        dest_dir = os.path.join(setup.app.builder.outdir, rel_dir)
+        dest_dir = rst_dir
         dest_path = os.path.join(dest_dir, nb_basename)
 
         if not os.path.exists(dest_dir):
@@ -169,7 +168,6 @@ class NotebookDirective(Directive):
         # Process file inclusion options
         include_opts = self.arguments[2:]
         include_nb = True if 'ipynb' in include_opts else False
-        include_eval = True if 'eval' in include_opts else False
         include_script = True if 'py' in include_opts else False
 
         link_rst = ''
@@ -178,13 +176,6 @@ class NotebookDirective(Directive):
 
         if include_nb:
             link_rst += formatted_link(nb_basename) + '; '
-
-        if include_eval:
-            dest_path_eval = string.replace(dest_path, '.ipynb', '_evaluated.ipynb')
-            rel_path_eval = string.replace(nb_basename, '.ipynb', '_evaluated.ipynb')
-            link_rst += formatted_link(rel_path_eval) + ('; ' if include_script else '')
-        else:
-            dest_path_eval = os.path.join(dest_dir, 'temp_evaluated.ipynb')
 
         if include_script:
             dest_path_script = string.replace(dest_path, '.ipynb', '.py')
@@ -202,13 +193,8 @@ class NotebookDirective(Directive):
         # Evaluate Notebook and insert into Sphinx doc
         skip_exceptions = 'skip_exceptions' in self.options
 
-        # Make temp_evaluated.ipynb include the notebook name
-        nb_name = os.path.split(nb_abs_path)[1].replace('.ipynb','')
-        dest_path_eval = dest_path_eval.replace('temp_evaluated.ipynb',
-                               '{nb_name}_temp_evaluated.ipynb'.format(nb_name=nb_name))
-
         # Parse slice
-        evaluated_text = evaluate_notebook(nb_abs_path, dest_path_eval,
+        evaluated_text = evaluate_notebook(nb_abs_path, dest_path,
                                            skip_exceptions=skip_exceptions,
                                            substring=self.options.get('substring'),
                                            end=self.options.get('end'),
@@ -283,7 +269,7 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
 
     if not os.path.isfile(dest_path):
         # TODO but this isn't true, is it? it's running the originl nb
-        print('INFO: Running temp notebook {dest_path!s}'.format(
+        print('INFO: Writing evaluated notebook to {dest_path!s}'.format(
             dest_path=os.path.abspath(dest_path)))
         try:
             if not skip_execute:
@@ -308,9 +294,8 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
                 for f in glob.glob(os.path.join(os.path.dirname(nb_path),pattern)):
                     print("mv %s %s"%(f, os.path.dirname(dest_path)))
                     shutil.move(f,os.path.dirname(dest_path))
-            
     else:
-        print('INFO: Skipping existing temp notebook {dest_path!s}'.format(
+        print('INFO: Skipping existing evaluated notebook {dest_path!s}'.format(
             dest_path=os.path.abspath(dest_path)))
 
     preprocessors = [] if substring is None and not offset else [NotebookSlice(substring, end, offset)]
@@ -339,7 +324,7 @@ def setup(app):
     app.add_config_value('nbbuild_cell_timeout',300,'html')
     app.add_config_value('nbbuild_ipython_startup',"from nbsite.ipystartup import *",'html')
     app.add_config_value('nbbuild_patterns_to_take_along',["*.json"],'html')
-    
+
     app.add_node(notebook_node,
                  html=(visit_notebook_node, depart_notebook_node))
 

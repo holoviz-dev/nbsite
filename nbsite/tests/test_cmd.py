@@ -284,6 +284,8 @@ def test_build(tmp_project_with_docs_skeleton):
     (project / "doc" / "Example_Notebook_0.rst").write_text(EXAMPLE_0_RST)
     (project / "doc" / "Example_Notebook_1.rst").write_text(EXAMPLE_1_RST)
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    assert (project / "doc" / "Example_Notebook_0.ipynb").is_file()
+    assert (project / "doc" / "Example_Notebook_1.ipynb").is_file()
     assert (project / "builtdocs" / "Example_Notebook_0.html").is_file()
     assert (project / "builtdocs" / "Example_Notebook_1.html").is_file()
 
@@ -310,21 +312,21 @@ def test_build_with_just_one_rst(tmp_project_with_docs_skeleton):
     assert (project / "builtdocs" / ".nojekyll").is_file()
 
 @pytest.mark.slow
-def test_build_does_not_deletes_by_default(tmp_project_with_docs_skeleton):
+def test_build_deletes_by_default(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton
     (project / "doc" / "Example_Notebook_0.rst").write_text(EXAMPLE_0_RST)
     (project / "doc" / "Example_Notebook_1.rst").write_text(EXAMPLE_1_RST)
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
-    assert (project / "builtdocs" / "Example_Notebook_1_temp_evaluated.ipynb").is_file()
+    assert not (project / "builtdocs" / ".doctrees").is_dir()
     assert (project / "builtdocs" / "Example_Notebook_1.html").is_file()
-    assert len(list((project / "builtdocs").iterdir())) == 14
+    assert len(list((project / "builtdocs").iterdir())) == 9
 
 @pytest.mark.slow
-def test_build_with_clean_force_deletes(tmp_project_with_docs_skeleton):
+def test_build_with_clean_dry_run_does_not_delere(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton
     (project / "doc" / "Example_Notebook_0.rst").write_text(EXAMPLE_0_RST)
     (project / "doc" / "Example_Notebook_1.rst").write_text(EXAMPLE_1_RST)
-    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='', clean_force=True)
-    assert not (project / "builtdocs" / "Example_Notebook_1_temp_evaluated.ipynb").is_file()
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='', clean_dry_run=True)
+    assert (project / "builtdocs" / ".doctrees").is_dir()
     assert (project / "builtdocs" / "Example_Notebook_1.html").is_file()
-    assert len(list((project / "builtdocs").iterdir())) == 9
+    assert len(list((project / "builtdocs").iterdir())) == 12
