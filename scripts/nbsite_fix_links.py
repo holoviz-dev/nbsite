@@ -52,13 +52,13 @@ def find_autolinkable():
         import holoviews as hv
         import param
     except ImportError:
-        print('no holoviews and/or param: skipping autolinks')        
+        print('no holoviews and/or param: skipping autolinks')
         return {}
 
     # Class names for auto-linking
     excluded_names = { 'UniformNdMapping', 'NdMapping', 'MultiDimensionalMapping',
                        'Empty', 'CompositeOverlay', 'Collator', 'AdjointLayout'}
-    dimensioned = set(param.concrete_descendents(hv.Dimensioned).keys())
+    dimensioned = set(param.concrete_descendents(hv.core.Dimensioned).keys())
 
     all_elements = set(param.concrete_descendents(hv.Element).keys())
     all_streams = set(param.concrete_descendents(hv.streams.Stream).keys())
