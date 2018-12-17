@@ -1,26 +1,24 @@
 import os
+import glob
 import shutil
 
 ####
 # TODO: should replace with some existing copy fn!
 
-def _IGetFiles(d):
-    for thing in os.scandir(d):
-        if thing.is_dir():
-            yield from _IGetFiles(thing.path)
-        else:
-            yield thing.path
-
-def copy_files(from_,to_):
-    for path in _IGetFiles(from_):
-        d = os.path.join(to_,os.path.dirname(path.split(from_)[1][1:]))
+def copy_files(src, dest, pattern='**'):
+    """Copy every file matching pattern from src to dest
+    """
+    for path in glob.glob(os.path.join(src, pattern), recursive=True):
+        if not os.path.isfile(path):
+            continue
+        d = os.path.join(dest, os.path.dirname(path.split(src)[1][1:]))
         if not os.path.exists(d):
             print('mkdir %s'%d)
             os.makedirs(d)
-        f = os.path.join(to_,path.split(from_)[1][1:])
+        f = os.path.join(dest, path.split(src)[1][1:])
         if not os.path.exists(f):
-            print("cp %s %s"%(path,f))
-            shutil.copy(path,f)
+            print("cp %s %s"%(path, f))
+            shutil.copy(path, f)
 ####
 
 

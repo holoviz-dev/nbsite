@@ -33,10 +33,12 @@ def build(what,output,project_root='',doc='doc',examples='examples',examples_ass
     # TODO: also have an overwrite flag
     paths = _prepare_paths(project_root,examples=examples,doc=doc,examples_assets=examples_assets)
     subprocess.check_call(["sphinx-build","-b",what,paths['doc'],output])
+    print('Copying json blobs (used for holomaps) from {} to {}'.format(paths['doc'], output))
+    copy_files(paths['doc'], output, '**/*.json')
     if 'examples_assets' in paths:
-        build_assets = os.path.join(output,examples_assets)
+        build_assets = os.path.join(output, examples_assets)
         print("Copying examples assets from %s to %s"%(paths['examples_assets'],build_assets))
-        copy_files(paths['examples_assets'],build_assets)
+        copy_files(paths['examples_assets'], build_assets)
     fix_links(output)
     # create a .nojekyll file in output for github compatibility
     subprocess.check_call(["touch", os.path.join(output, '.nojekyll')])

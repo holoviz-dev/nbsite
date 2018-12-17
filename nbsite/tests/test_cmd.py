@@ -322,7 +322,7 @@ def test_build_deletes_by_default(tmp_project_with_docs_skeleton):
     assert len(list((project / "builtdocs").iterdir())) == 9
 
 @pytest.mark.slow
-def test_build_with_clean_dry_run_does_not_delere(tmp_project_with_docs_skeleton):
+def test_build_with_clean_dry_run_does_not_delete(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton
     (project / "doc" / "Example_Notebook_0.rst").write_text(EXAMPLE_0_RST)
     (project / "doc" / "Example_Notebook_1.rst").write_text(EXAMPLE_1_RST)
@@ -330,3 +330,15 @@ def test_build_with_clean_dry_run_does_not_delere(tmp_project_with_docs_skeleton
     assert (project / "builtdocs" / ".doctrees").is_dir()
     assert (project / "builtdocs" / "Example_Notebook_1.html").is_file()
     assert len(list((project / "builtdocs").iterdir())) == 12
+
+@pytest.mark.slow
+def test_build_copies_json(tmp_project_with_docs_skeleton):
+    project = tmp_project_with_docs_skeleton
+    (project / "doc" / "Example_Notebook_0.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "example_json_blob.json").write_text("some json")
+    (project / "doc" / "topics").mkdir()
+    (project / "doc" / "topics" / "nested_example_json_blob.json").write_text("some json")
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    assert (project / "builtdocs" / "example_json_blob.json").is_file()
+    assert (project / "builtdocs" / "topics").is_dir()
+    assert (project / "builtdocs" / "topics" / "nested_example_json_blob.json").is_file()
