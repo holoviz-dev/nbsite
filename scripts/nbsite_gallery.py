@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/Users/philippjfr/miniconda/envs/anacondaviz/bin/python
 
 import sys
 import os
 import glob
 import shutil
-#import requests
+import requests
 from nbsite.thumbnailer import notebook_thumbnail, execute
 
 # Try Python 3 first, otherwise load from Python 2
@@ -105,23 +105,25 @@ HIDE_JS = """
 
 skip_execute_nbs = ['DynamicMap.ipynb']
 
-def generate_file_rst(src_dir, examples, backend, skip):
+def generate_file_rst(src_dir, dest_dir, examples, backend, skip):
     files = (glob.glob(os.path.join(src_dir, '*.ipynb'))+
              glob.glob(os.path.join(src_dir, '*.py')))
     for f in files:
         extension = f.split('.')[-1]
         basename = os.path.basename(f)
-        rst_path = f[:-len(extension)].replace(' ', '_') + 'rst'
+        rel_path = os.path.join('../../../..', 'examples', dest_dir[2:], basename)
+        rst_path = os.path.join(dest_dir, basename[:-len(extension)].replace(' ', '_') + 'rst')
         title = basename[:-(len(extension)+1)].replace('_', ' ').capitalize()
-        if os.path.isfile(rst_path):
+        if False :#os.path.isfile(rst_path):
             continue
+
         with open(rst_path, 'w') as rst_file:
             rst_file.write('.. _%s_gallery_%s:\n\n' % (backend, basename[:-(len(extension)+1)]))
             rst_file.write(title+'\n')
             rst_file.write('_'*len(title)+'\n\n')
             if extension == 'ipynb':
                 ftype = 'notebook'
-                rst_file.write(".. notebook:: %s %s" % ('holoviews', basename))
+                rst_file.write(".. notebook:: %s %s" % ('holoviews', rel_path))
                 if skip or any(basename.strip().endswith(skipped) for skipped in skip_execute_nbs):
                     rst_file.write('\n    :skip_execute: True\n')
             else:
@@ -132,7 +134,7 @@ def generate_file_rst(src_dir, examples, backend, skip):
             rst_file.write('\n\n-------\n\n')
             rst_file.write('`Download this %s from GitHub (right-click to download).'
                            ' <https://raw.githubusercontent.com/ioam/holoviews/master/%s/%s/%s>`_'
-                           % (ftype, examples, src_dir[2:], basename))
+                           % (ftype, examples, dest_dir[2:], basename))
 
 
 def _thumbnail_div(full_dir, fname, snippet, backend, extension):
@@ -166,7 +168,7 @@ guide and for more detailed documentation our `User Guide
 <../user_guide/index.html>`_.
 """
 
-INTRO_PARAGRAPH = {'Reference': REFERENCE_INTRO, 'Gallery': GALLERY_INTRO}
+INTRO_PARAGRAPH = {'Reference Guide': REFERENCE_INTRO, 'Gallery': GALLERY_INTRO}
 
 def generate_gallery(basepath, examples, title, folders):
     """
@@ -175,9 +177,10 @@ def generate_gallery(basepath, examples, title, folders):
     and copies the notebooks to doc/gallery/ relative to the supplied
     basepath. Also generates thumbnails and an overall index.
     """
-    #title = 'Reference Guide' if title=='Reference' else title
+    page = title.lower()
+    title = 'Reference Guide' if title=='Reference' else title
     gallery_rst = title + '\n' + '_'*len(title)
-    #gallery_rst += '\n' + INTRO_PARAGRAPH[title]
+    gallery_rst += '\n' + INTRO_PARAGRAPH[title]
 
     buttons = []
     for n, backend in enumerate(backends):
@@ -186,7 +189,6 @@ def generate_gallery(basepath, examples, title, folders):
 
     gallery_rst += BUTTON_GROUP_TEMPLATE.format(buttons=''.join(buttons), backends=backends)
 
-    page = title.lower()
     for heading, folder in sorted(folders.items()):
         if isinstance(folder, dict):
             skip = folder.get('skip', False)
@@ -210,27 +212,26 @@ def generate_gallery(basepath, examples, title, folders):
                 print("\n\nGenerating %d %s %s examples for %s backend\n"
                       "__________________________________________________"
                       % (len(notebooks), heading, title, backend))
-            for f in notebooks:
+            for f in sorted(notebooks):
                 # Get ipynb file and copy it to doc
                 extension = f.split('.')[-1]
                 basename = os.path.basename(f)[:-(len(extension)+1)]
                 ftitle = basename.replace('_', ' ').capitalize()
                 dest = os.path.join(dest_dir, os.path.basename(f))
 
-                shutil.copyfile(f, dest)
                 # Try to fetch thumbnail otherwise regenerate it
-                #thumb_url = '/'.join([THUMBNAIL_URL, 'thumbnails', page, folder,
-                #                      backend, '%s.png' % basename])
+                thumb_url = '/'.join([THUMBNAIL_URL, 'thumbnails', page, folder,
+                                      backend, '%s.png' % basename])
                 thumb = os.path.join(dest_dir, 'thumbnails',
                                      '%s.png' % basename)
                 # TODO: decide what to do about this
-                thumb_req = False #requests.get(thumb_url)
-                thumb_req2 = False # requests.get(thumb_url[:-4]+'.gif')
+                thumb_req = requests.get(thumb_url)
+                thumb_req2 = requests.get(thumb_url[:-4]+'.gif')
                 if os.path.isfile(thumb):
                     thumb_extension = 'png'
                     verb = 'Used existing'
                     retcode = 0
-                elif False and thumb_req.status_code == 200:
+                elif thumb_req.status_code == 200:
                     thumb_extension = 'png'
                     verb = 'Successfully downloaded'
                     thumb_dir = os.path.dirname(thumb)
@@ -239,7 +240,7 @@ def generate_gallery(basepath, examples, title, folders):
                     with open(thumb, 'wb') as thumb_f:
                         thumb_f.write(thumb_req.content)
                     retcode = 0
-                elif False and thumb_req2.status_code == 200:
+                elif thumb_req2.status_code == 200:
                     thumb_extension = 'gif'
                     verb = 'Successfully downloaded'
                     thumb_dir = os.path.dirname(thumb)
@@ -270,7 +271,7 @@ def generate_gallery(basepath, examples, title, folders):
                     this_entry = _thumbnail_div(dest_dir, basename, ftitle,
                                                 backend, thumb_extension)
                 gallery_rst += this_entry
-            generate_file_rst(dest_dir, examples, backend, skip)
+            generate_file_rst(path, dest_dir, examples, backend, skip)
         # clear at the end of the section
         gallery_rst += """.. raw:: html\n\n
         <div style='clear:both'></div>\n\n"""
@@ -313,11 +314,10 @@ if __name__ == '__main__':
             
     # CONFIGURATION
     gallery_conf = {
-        'Gallery': Gallery
-    #    'Reference': {'Apps': 'apps', 'Containers': 'containers',
-    #                  'Elements': 'elements',
-    #                  'Streams': {'path': 'streams', 'skip': True}}
+        'Gallery': {'Apps': 'apps', 'Notebooks': 'demos'},
+        'Reference': {'Containers': 'containers',
+                      'Elements': 'elements',
+                      'Streams': {'path': 'streams', 'skip': True}}
     }
-        
     for title, folders in sorted(gallery_conf.items()):
         generate_gallery(basepath, examples, title, folders)
