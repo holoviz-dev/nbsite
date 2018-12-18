@@ -114,7 +114,7 @@ def generate_file_rst(src_dir, dest_dir, examples, backend, skip):
         rel_path = os.path.join('../../../..', 'examples', dest_dir[2:], basename)
         rst_path = os.path.join(dest_dir, basename[:-len(extension)].replace(' ', '_') + 'rst')
         title = basename[:-(len(extension)+1)].replace('_', ' ').capitalize()
-        if False :#os.path.isfile(rst_path):
+        if os.path.isfile(rst_path):
             continue
 
         with open(rst_path, 'w') as rst_file:
