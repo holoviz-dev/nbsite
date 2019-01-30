@@ -11,6 +11,10 @@
 *.lock
 *.doit*
 
+# autover
+*/.version
+pip-wheel-metadata/*
+
 # nbsite
 # these files normally shouldn't be checked in as they should be
 # dynamically built from notebooks

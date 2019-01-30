@@ -1,2 +1,2 @@
 nbsite/__init__.py export-subst
-_pyctbuild.py export-subst
+setup.py export-subst
