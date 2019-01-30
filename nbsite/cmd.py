@@ -143,9 +143,6 @@ def generate_rst(
     print("Project='%s': Converting notebooks at '%s' to rst at '%s'..."%(project_name,paths['examples'],paths['doc']))
     for filename in glob.iglob(os.path.join(paths['examples'],"**","*.ipynb"), recursive=True):
         fromhere = filename.split(paths['examples'])[1].lstrip('/') # TODO: not win
-        # TODO: decide what to do about gallery later
-        if fromhere.startswith('gallery'):
-            continue
         if _should_skip(skip, fromhere):
             print('...deliberately skipping', fromhere)
             continue

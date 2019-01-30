@@ -105,36 +105,6 @@ HIDE_JS = """
 
 skip_execute_nbs = ['DynamicMap.ipynb']
 
-def generate_file_rst(src_dir, examples, backend, skip):
-    files = (glob.glob(os.path.join(src_dir, '*.ipynb'))+
-             glob.glob(os.path.join(src_dir, '*.py')))
-    for f in files:
-        extension = f.split('.')[-1]
-        basename = os.path.basename(f)
-        rst_path = f[:-len(extension)].replace(' ', '_') + 'rst'
-        title = basename[:-(len(extension)+1)].replace('_', ' ').capitalize()
-        if os.path.isfile(rst_path):
-            continue
-        with open(rst_path, 'w') as rst_file:
-            rst_file.write('.. _%s_gallery_%s:\n\n' % (backend, basename[:-(len(extension)+1)]))
-            rst_file.write(title+'\n')
-            rst_file.write('_'*len(title)+'\n\n')
-            if extension == 'ipynb':
-                ftype = 'notebook'
-                rst_file.write(".. notebook:: %s %s" % ('holoviews', basename))
-                if skip or any(basename.strip().endswith(skipped) for skipped in skip_execute_nbs):
-                    rst_file.write('\n    :skip_execute: True\n')
-            else:
-                ftype = 'script'
-                rst_file.write('.. literalinclude:: %s\n\n' % basename)
-                url = 'http://assets.holoviews.org/gifs/%s/%s.gif' % (src_dir[2:], basename[:-3])
-                rst_file.write('.. figure:: %s\n\n' % url)
-            rst_file.write('\n\n-------\n\n')
-            rst_file.write('`Download this %s from GitHub (right-click to download).'
-                           ' <https://raw.githubusercontent.com/ioam/holoviews/master/%s/%s/%s>`_'
-                           % (ftype, examples, src_dir[2:], basename))
-
-
 def _thumbnail_div(full_dir, fname, snippet, backend, extension):
     """Generates RST to place a thumbnail in a gallery"""
     thumb = os.path.join(full_dir, 'thumbnails',
@@ -270,7 +240,7 @@ def generate_gallery(basepath, examples, title, folders):
                     this_entry = _thumbnail_div(dest_dir, basename, ftitle,
                                                 backend, thumb_extension)
                 gallery_rst += this_entry
-            generate_file_rst(dest_dir, examples, backend, skip)
+            os.remove(dest)
         # clear at the end of the section
         gallery_rst += """.. raw:: html\n\n
         <div style='clear:both'></div>\n\n"""
@@ -310,7 +280,7 @@ if __name__ == '__main__':
         Gallery['Apps'] = Apps
     if Notebooks!='None':
         Gallery['Notebooks'] = Notebooks
-            
+
     # CONFIGURATION
     gallery_conf = {
         'Gallery': Gallery
@@ -318,6 +288,6 @@ if __name__ == '__main__':
     #                  'Elements': 'elements',
     #                  'Streams': {'path': 'streams', 'skip': True}}
     }
-        
+
     for title, folders in sorted(gallery_conf.items()):
         generate_gallery(basepath, examples, title, folders)
