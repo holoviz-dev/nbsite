@@ -2,11 +2,12 @@ import sys
 import os
 import glob
 import shutil
-import requests
+import logging
 
 from distutils.version import LooseVersion
 
-import sphinx
+import requests
+import sphinx.util
 
 from .thumbnailer import notebook_thumbnail, execute
 
@@ -20,12 +21,11 @@ except ImportError:
 
 if LooseVersion(sphinx.__version__) >= '1.6':
     getLogger = sphinx.util.logging.getLogger
-    status_iterator = sphinx.util.status_iterator
 else:
     getLogger = _app_get_logger
-    status_iterator = _app_status_iterator
 
 logger = getLogger('nbsite-gallery')
+logging.getLogger(requests.packages.urllib3.__package__).setLevel(logging.ERROR)
 
 BUTTON_GROUP_TEMPLATE = """
 .. raw:: html
@@ -59,6 +59,7 @@ BUTTON_TEMPLATE = """
 
 HIDE_JS = """
 .. raw:: html
+
     <script>
         $(document).ready(function () {{
             backends = {backends};
@@ -126,11 +127,11 @@ guide and for more detailed documentation our `User Guide
 THUMBNAIL_TEMPLATE = """
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer {backend}_example" tooltip="{snippet}">
+    <div class="sphx-glr-thumbcontainer {backend}_example" tooltip="{label}">
 
 .. figure:: /{thumbnail}
 
-    :ref:`{ref_name} <_{backend}_gallery_{ref_name}>`
+    :ref:`{ref_name} <{backend}_gallery_{ref_name}>`
 
 .. raw:: html
 
@@ -139,6 +140,7 @@ THUMBNAIL_TEMPLATE = """
 """
 
 DEFAULT_GALLERY_CONF = {
+    'backends': None,
     'galleries': {
         'gallery': {
             'backends': [],
@@ -161,7 +163,7 @@ DEFAULT_GALLERY_CONF = {
 }
 
 
-def generate_file_rst(app, src_dir, dest_dir, page, section, backend, skip):
+def generate_file_rst(app, src_dir, dest_dir, page, section, backend, img_extension, skip):
     gallery_conf = app.config.nbsite_gallery_conf
     content = gallery_conf['galleries'][page]
     org = gallery_conf['github_org']
@@ -202,26 +204,27 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend, skip):
                     rst_file.write('\n    :skip_execute: True\n')
             else:
                 ftype = 'script'
-                rst_file.write('.. literalinclude:: %s\n\n' % basename)
-                url = '%s/gifs/%s/%s.gif' % (thumbnail_url, src_dir[2:], basename[:-3])
+                rst_file.write('.. literalinclude:: %s\n\n' % rel_path)
+                url = os.path.join('thumbnails', '%s.%s' % (basename[:-(len(extension)+1)], img_extension))
                 rst_file.write('.. figure:: %s\n\n' % url)
             rst_file.write('\n\n-------\n\n')
             if org and proj:
-                rst_file.write('`Download this %s from GitHub (right-click to download).'
+                rst_file.write('`Download this {ftype} from GitHub (right-click to download).'
                                ' <https://raw.githubusercontent.com/{org}/{proj}/master/{path}/{basename}>`_'.format(
-                                   org=org, proj=proj, path='/'.join(components), basename=basename))
+                                   org=org, proj=proj, path='/'.join(components),
+                                   basename=basename, ftype=ftype))
 
 
-def _thumbnail_div(full_dir, fname, snippet, backend, extension):
+def _thumbnail_div(path_components, backend, fname, extension):
     """Generates RST to place a thumbnail in a gallery"""
-    thumb = os.path.join(full_dir, 'thumbnails',
-                         '%s.%s' % (fname, extension))
+    label = fname.replace('_', ' ').title()
+    thumb = os.path.join(*path_components+['thumbnails', '%s.%s' % (fname, extension)])
 
     # Inside rst files forward slash defines paths
     thumb = thumb.replace(os.sep, "/")
-    template = THUMBNAIL_TEMPLATE
-    return template.format(snippet=escape(snippet), backend=backend,
-                           thumbnail=thumb[2:], ref_name=fname)
+
+    return THUMBNAIL_TEMPLATE.format(
+        backend=backend, thumbnail=thumb, ref_name=fname, label=label)
 
 
 def generate_gallery(app, page):
@@ -234,7 +237,8 @@ def generate_gallery(app, page):
     # Get config
     gallery_conf = app.config.nbsite_gallery_conf
     content = gallery_conf['galleries'][page]
-    
+    backends = gallery_conf.get('backends', [])
+
     # Get directories
     doc_dir = app.builder.srcdir
     examples_dir = os.path.join(doc_dir, gallery_conf['examples_dir'])
@@ -244,11 +248,11 @@ def generate_gallery(app, page):
         sections = content['sections']
     else:
         sections = [s for s in glob.glob(os.path.join(gallery_dir, '*'))
-                    if os.path.isdir(os.path.join(gallery_dir, s))]
+                    if os.path.isdir(os.path.join(gallery_dir, s)) and
+                    not any(s.endswith(b) for b in backends)]
         if not sections:
             sections = ['']
 
-    backends = content.get('backends', None)
     extensions = content.get('extensions', gallery_conf['default_extensions'])
     sort_fn = gallery_conf['within_subsection_order']
     thumbnail_url = gallery_conf['thumbnail_url']
@@ -257,7 +261,7 @@ def generate_gallery(app, page):
 
     # Write gallery index
     title = content['title']
-    gallery_rst = title + '\n' + '_'*len(title)
+    gallery_rst = title + '\n' + '_'*len(title) + '\n'
     if 'intro' in content:
         gallery_rst += '\n' + content['intro']
 
@@ -269,23 +273,22 @@ def generate_gallery(app, page):
         gallery_rst += BUTTON_GROUP_TEMPLATE.format(buttons=''.join(buttons), backends=backends)
 
     for section in sections:
-        heading = section.title()
         if isinstance(section, dict):
+            section_backends = section.get('backends', backends)
             skip = section.get('skip', False)
-            heading = section.get('title', heading)
+            heading = section.get('title', section['path'])
             section = section['path']
         else:
+            heading = section.title()
             skip = False
-
-        #asset_dir = os.path.join(basepath, examples, page, folder, 'assets')
-        #asset_dest = os.path.join('.', page, folder, 'assets')
-        #if os.path.isdir(asset_dir) and not os.path.isdir(asset_dest):
-        #    shutil.copytree(asset_dir, asset_dest)
+            section_backends = backends
 
         if heading:
             gallery_rst += heading + '\n' + '='*len(heading) + '\n\n'
+        else:
+            gallery_rst += '\n\n.. raw:: html\n\n    <div class="section"></div><br>\n\n'
 
-        for backend in (backends or ('',)):
+        for backend in (section_backends or ('',)):
             path_components = [page]
             if section:
                 path_components.append(section)
@@ -328,41 +331,43 @@ def generate_gallery(app, page):
                 url_components.append('%s.png' % basename)
                 thumb_url = '/'.join(url_components)
 
-                if download:
-                    thumb_req_png = requests.get(thumb_url)
-                    if thumb_req_png.status_code == 200:
-                        thumb_req_gif = requests.get(thumb_url[:-4]+'.gif')
-                    else:
-                        thumb_req_gif = None
-                else:
-                    thumb_req_png = None
-                    thumb_req_gif = None
-
                 thumb_dir = os.path.join(dest_dir, 'thumbnails')
                 if not os.path.isdir(thumb_dir):
                     os.makedirs(thumb_dir)
                 thumb_path = os.path.join(thumb_dir, '%s.png' % basename)
 
+                # Try existing file
+                retcode = 1
                 if os.path.isfile(thumb_path):
                     thumb_extension = 'png'
                     verb = 'Used existing'
                     retcode = 0
-                elif thumb_req_png and thumb_req_png.status_code == 200:
-                    thumb_extension = 'png'
+
+                # Try download
+                if download and retcode:
+                    thumb_req = requests.get(thumb_url)
                     verb = 'Successfully downloaded'
-                    with open(thumb_path, 'wb') as thumb_f:
-                        thumb_f.write(thumb_req.content)
-                    retcode = 0
-                elif thumb_req_gif and thumb_req_gif.status_code == 200:
-                    thumb_extension = 'gif'
-                    verb = 'Successfully downloaded'
-                    with open(thumb_path[:-4]+'.gif', 'wb') as thumb_f:
-                        thumb_f.write(thumb_req_gif.content)
-                    retcode = 0
+                    if thumb_req.status_code == 200:
+                        thumb_extension = 'png'
+                        verb = 'Successfully downloaded'
+                        retcode = 0
+                    else:
+                        thumb_req = requests.get(thumb_url[:-4]+'.gif')
+                        if thumb_req.status_code == 200:
+                            thumb_extension = 'gif'
+                            thumb_path = thumb_path[:-4]+'.gif'
+                            retcode = 0
+                    if not retcode:
+                        with open(thumb_path, 'wb') as thumb_f:
+                            thumb_f.write(thumb_req.content)
+
+                # Generate thumbnail
+                if not retcode:
+                    pass
                 elif extension == 'ipynb':
                     thumb_extension = 'png'
                     verb = 'Successfully generated'
-                    code = notebook_thumbnail(f, os.path.join(*path_components))
+                    code = notebook_thumbnail(f, os.path.join(*(['doc']+path_components)))
                     code = script_prefix + code
                     my_env = os.environ.copy()
                     retcode = execute(code.encode('utf8'), env=my_env, cwd=os.path.split(f)[0])
@@ -374,18 +379,20 @@ def generate_gallery(app, page):
                     if extension == 'py':
                         continue
                     this_entry = THUMBNAIL_TEMPLATE.format(
-                        snippet=escape(ftitle), backend=backend,
-                        thumbnail='../_static/images/logo.png',
-                        ref_name=basename)
+                        backend=backend, thumbnail='../_static/images/logo.png',
+                        ref_name=basename, label=basename.replace('_', ' ').title())
                 else:
                     logger.info('%s %s thumbnail' % (verb, basename))
-                    this_entry = _thumbnail_div(dest_dir, basename, ftitle,
-                                                backend, thumb_extension)
+                    this_entry = _thumbnail_div(path_components, backend,
+                                                basename, thumb_extension)
+
                 gallery_rst += this_entry
-            generate_file_rst(app, path, dest_dir, page, section, backend, skip)
+            generate_file_rst(app, path, dest_dir, page, section,
+                              backend, thumb_extension, skip)
         # clear at the end of the section
         gallery_rst += CLEAR_DIV
-    if backends:
+
+    if backends or section_backends:
         gallery_rst += HIDE_JS.format(backends=repr(backends[1:]))
     with open(os.path.join(doc_dir, page, 'index.rst'), 'w') as f:
         f.write(gallery_rst)
