@@ -6,7 +6,6 @@ from holoviews.core import Dimensioned, Store
 from holoviews.ipython.preprocessors import OptsMagicProcessor, OutputMagicProcessor
 from holoviews.ipython.preprocessors import StripMagicsProcessor, wrap_cell_expression
 from holoviews.util.command import export_to_python
-from holoviews.core import Store, Dimensioned
 
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')

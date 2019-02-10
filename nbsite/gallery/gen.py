@@ -1,10 +1,6 @@
-import sys
 import os
 import glob
-import shutil
 import logging
-
-from distutils.version import LooseVersion
 
 import requests
 import sphinx.util
@@ -19,12 +15,7 @@ except ImportError:
     from xml.sax.saxutils import escape
     escape = partial(escape, entities={'"': '&quot;'})
 
-if LooseVersion(sphinx.__version__) >= '1.6':
-    getLogger = sphinx.util.logging.getLogger
-else:
-    getLogger = _app_get_logger
-
-logger = getLogger('nbsite-gallery')
+logger = sphinx.util.logging.getLogger('nbsite-gallery')
 logging.getLogger(requests.packages.urllib3.__package__).setLevel(logging.ERROR)
 
 BUTTON_GROUP_TEMPLATE = """
@@ -169,7 +160,6 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend, img_extens
     org = gallery_conf['github_org']
     proj = gallery_conf['github_project']
     examples_dir = gallery_conf['examples_dir']
-    thumbnail_url = gallery_conf['thumbnail_url']
     skip_execute = gallery_conf['skip_execute']
     extensions = content.get('extensions', gallery_conf['default_extensions'])
 
@@ -319,8 +309,6 @@ def generate_gallery(app, page):
             for f in sorted(files, key=sort_fn):
                 extension = f.split('.')[-1]
                 basename = os.path.basename(f)[:-(len(extension)+1)]
-                ftitle = basename.replace('_', ' ').capitalize()
-                dest = os.path.join(dest_dir, os.path.basename(f))
 
                 # Try to fetch thumbnail otherwise regenerate it
                 url_components = [thumbnail_url, page]
