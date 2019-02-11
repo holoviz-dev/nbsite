@@ -13,7 +13,6 @@ def setup(app):
 
     nbbuild.setup(app)
 
-
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
@@ -28,9 +27,9 @@ extensions = [
 inheritance_graph_attrs = dict(rankdir="LR", size='"12.0, 12.0"', fontsize=18)
 
 default_edge_attrs = {
-        'arrowsize': 1.0,
-        'style': '"setlinewidth(0.5)"',
-    }
+    'arrowsize': 1.0,
+    'style': '"setlinewidth(0.5)"',
+}
 
 source_suffix = '.rst'
 master_doc = 'index'

@@ -132,6 +132,9 @@ THUMBNAIL_TEMPLATE = """
 
 DEFAULT_GALLERY_CONF = {
     'backends': None,
+    'default_extensions': ['*.ipynb', '*.py'],
+    'enable_download': True,
+    'examples_dir': os.path.join('..', 'examples'),
     'galleries': {
         'gallery': {
             'backends': [],
@@ -141,16 +144,13 @@ DEFAULT_GALLERY_CONF = {
             'sections': [],
         }
     },
-    'skip_execute': [],
-    'examples_dir': os.path.join('..', 'examples'),
-    'thumbnail_url': THUMBNAIL_URL,
-    'within_subsection_order': lambda key: key,
-    'script_prefix': PREFIX,
-    'thumbnail_size': (400, 280),
-    'default_extensions': ['*.ipynb', '*.py'],
-    'enable_download': True,
     'github_org': None,
-    'github_project': None
+    'github_project': None,
+    'script_prefix': PREFIX,
+    'skip_execute': [],
+    'thumbnail_url': THUMBNAIL_URL,
+    'thumbnail_size': (400, 280),
+    'within_subsection_order': lambda key: key,
 }
 
 
