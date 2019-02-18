@@ -10,6 +10,10 @@
 *.out
 *.lock
 *.doit*
+pip-wheel-metadata
+
+# autover
+*/.version
 
 # nbsite
 # these files normally shouldn't be checked in as they should be
