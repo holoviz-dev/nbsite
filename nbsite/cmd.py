@@ -25,11 +25,14 @@ hosts = {
 # TODO: clean up these fns + related arg parsing: parameterize, and
 # maybe add task dependencies
 
-def fix_links(output):
-    subprocess.check_call(["nbsite_fix_links.py",output])
+def fix_links(output, inspect_links):
+    args = ["nbsite_fix_links.py", output]
+    if inspect_links:
+        args.append( "--inspect-links")
+    subprocess.check_call(args)
 
 
-def build(what,output,project_root='',doc='doc',examples='examples',examples_assets="assets", clean_dry_run=False):
+def build(what,output,project_root='',doc='doc',examples='examples',examples_assets="assets", clean_dry_run=False, inspect_links=False):
     # TODO: also have an overwrite flag
     paths = _prepare_paths(project_root,examples=examples,doc=doc,examples_assets=examples_assets)
     subprocess.check_call(["sphinx-build","-b",what,paths['doc'],output])
@@ -39,7 +42,7 @@ def build(what,output,project_root='',doc='doc',examples='examples',examples_ass
         build_assets = os.path.join(output, examples_assets)
         print("Copying examples assets from %s to %s"%(paths['examples_assets'],build_assets))
         copy_files(paths['examples_assets'], build_assets)
-    fix_links(output)
+    fix_links(output, inspect_links)
     # create a .nojekyll file in output for github compatibility
     subprocess.check_call(["touch", os.path.join(output, '.nojekyll')])
     if not clean_dry_run:
