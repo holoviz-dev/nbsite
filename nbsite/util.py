@@ -2,9 +2,6 @@ import os
 import glob
 import shutil
 
-####
-# TODO: should replace with some existing copy fn!
-
 def copy_files(src, dest, pattern='**'):
     """Copy every file matching pattern from src to dest
     """
@@ -19,6 +16,3 @@ def copy_files(src, dest, pattern='**'):
         if not os.path.exists(f):
             print("cp %s %s"%(path, f))
             shutil.copy(path, f)
-####
-
-

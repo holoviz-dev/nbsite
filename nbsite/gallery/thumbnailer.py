@@ -2,10 +2,10 @@ from __future__ import unicode_literals
 import os, sys, subprocess
 from nbconvert.preprocessors import Preprocessor
 
+from holoviews.core import Dimensioned, Store
 from holoviews.ipython.preprocessors import OptsMagicProcessor, OutputMagicProcessor
 from holoviews.ipython.preprocessors import StripMagicsProcessor, wrap_cell_expression
 from holoviews.util.command import export_to_python
-from holoviews.core import Store, Dimensioned
 
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
@@ -25,7 +25,7 @@ class ThumbnailProcessor(Preprocessor):
 
     def preprocess_cell(self, cell, resources, index):
         if cell['cell_type'] == 'code':
-            template = 'from nbsite.thumbnailer import thumbnail;thumbnail({{expr}}, {basename!r})'
+            template = 'from nbsite.gallery.thumbnailer import thumbnail;thumbnail({{expr}}, {basename!r})'
             cell['source'] = wrap_cell_expression(cell['source'],
                                                   template.format(
                                                       basename=self.basename))
