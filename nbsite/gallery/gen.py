@@ -3,9 +3,6 @@ import glob
 import logging
 
 import requests
-
-from html import escape
-
 import sphinx.util
 
 from .thumbnailer import notebook_thumbnail, execute
