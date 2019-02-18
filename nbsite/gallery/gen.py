@@ -222,7 +222,7 @@ def generate_gallery(app, page):
     # Get config
     gallery_conf = app.config.nbsite_gallery_conf
     content = gallery_conf['galleries'][page]
-    backends = gallery_conf.get('backends', [])
+    backends = content.get('backends', gallery_conf.get('backends', []))
 
     # Get directories
     doc_dir = app.builder.srcdir
@@ -260,13 +260,15 @@ def generate_gallery(app, page):
     for section in sections:
         if isinstance(section, dict):
             section_backends = section.get('backends', backends)
-            skip = section.get('skip', False)
+            skip = section.get('skip', content.get('skip', False))
             heading = section.get('title', section['path'])
             section = section['path']
+            subsection_order = section.get('within_subsection_order', sort_fn)
         else:
             heading = section.title()
-            skip = False
+            skip = content.get('skip', False)
             section_backends = backends
+            subsection_order = sort_fn
 
         if heading:
             gallery_rst += heading + '\n' + '='*len(heading) + '\n\n'
@@ -301,7 +303,7 @@ def generate_gallery(app, page):
                             "__________________________________________________"
                             % (len(files), heading, title, backend_str))
 
-            for f in sorted(files, key=sort_fn):
+            for f in sorted(files, key=subsection_order):
                 extension = f.split('.')[-1]
                 basename = os.path.basename(f)[:-(len(extension)+1)]
 
