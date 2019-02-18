@@ -25,8 +25,8 @@ def main(args=None):
 
     generaterst_parser = subparsers.add_parser("generate-rst", help=inspect.getdoc(generate_rst))
     _add_common_args(generaterst_parser,'--project-root','--doc','--examples')
-    generaterst_parser.add_argument('project-name', type=str, help='name of project')
-    generaterst_parser.add_argument('--host',type=str,help='where to init doc',default='GitHub')
+    generaterst_parser.add_argument('--project-name', type=str, help='name of project')
+    generaterst_parser.add_argument('--host',type=str,help='host to use when generating notebook links',default='GitHub')
     generaterst_parser.add_argument('--org',type=str,help='github organization',default='')
     generaterst_parser.add_argument('--repo',type=str,help='name of repo',default='')
     generaterst_parser.add_argument('--branch',type=str,help='branch to point to in notebook links',default='master')
