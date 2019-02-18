@@ -5,7 +5,6 @@ import shutil
 def copy_files(src, dest, pattern='**'):
     """Copy every file matching pattern from src to dest
     """
-    print(os.path.join(src, pattern))
     for path in glob.glob(os.path.join(src, pattern), recursive=True):
         if not os.path.isfile(path):
             continue

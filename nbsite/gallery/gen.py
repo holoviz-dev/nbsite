@@ -3,17 +3,12 @@ import glob
 import logging
 
 import requests
+
+from html import escape
+
 import sphinx.util
 
 from .thumbnailer import notebook_thumbnail, execute
-
-# Try Python 3 first, otherwise load from Python 2
-try:
-    from html import escape
-except ImportError:
-    from functools import partial
-    from xml.sax.saxutils import escape
-    escape = partial(escape, entities={'"': '&quot;'})
 
 logger = sphinx.util.logging.getLogger('nbsite-gallery')
 logging.getLogger(requests.packages.urllib3.__package__).setLevel(logging.ERROR)
