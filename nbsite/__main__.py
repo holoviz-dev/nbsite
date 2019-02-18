@@ -5,9 +5,9 @@ from .cmd import init, generate_rst, build
 
 def _add_common_args(parser,*names):
     common = {
-        '--project-root': dict(type=str,help='Defaults to current working directory',default=''),
-        '--examples': dict(type=str,help='If relative, should be relative to project-root',default='examples'),
-        '--doc': dict(type=str,help='If relative, should be releative to project-root',default='doc')
+        '--project-root': dict(type=str,help='defaults to current working directory',default=''),
+        '--examples': dict(type=str,help='if relative, should be relative to project-root',default='examples'),
+        '--doc': dict(type=str,help='if relative, should be releative to project-root',default='doc')
         }
     for name in names:
         parser.add_argument(name,**common[name])
@@ -25,22 +25,23 @@ def main(args=None):
 
     generaterst_parser = subparsers.add_parser("generate-rst", help=inspect.getdoc(generate_rst))
     _add_common_args(generaterst_parser,'--project-root','--doc','--examples')
-    generaterst_parser.add_argument('--project-name',type=str,help='where to init doc',default='')
+    generaterst_parser.add_argument('project-name', type=str, help='name of project')
     generaterst_parser.add_argument('--host',type=str,help='where to init doc',default='GitHub')
-    generaterst_parser.add_argument('--org',type=str,help='where to init doc',default='')
-    generaterst_parser.add_argument('--repo',type=str,help='where to init doc',default='')
-    generaterst_parser.add_argument('--branch',type=str,help='where to init doc',default='master')
-    generaterst_parser.add_argument('--offset',type=int,help='where to init doc',default=0)
-    generaterst_parser.add_argument('--overwrite',type=int,help='where to init doc',default=False)
+    generaterst_parser.add_argument('--org',type=str,help='github organization',default='')
+    generaterst_parser.add_argument('--repo',type=str,help='name of repo',default='')
+    generaterst_parser.add_argument('--branch',type=str,help='branch to point to in notebook links',default='master')
+    generaterst_parser.add_argument('--offset',type=int,help='number of cells to delete from top of notebooks',default=0)
+    generaterst_parser.add_argument('--overwrite',type=int,help='whether to overwrite any pre-existing rst [DANGEROUS]',default=False)
     generaterst_parser.add_argument('--nblink',type=str,help='where to place notebook links',choices=['bottom', 'top', 'both', 'none'], default='bottom')
     generaterst_parser.add_argument('--skip',type=str,help='notebooks to skip running; comma separated case insensitive re to match',default='')
     _set_defaults(generaterst_parser,generate_rst)
 
     build_parser = subparsers.add_parser("build", help=inspect.getdoc(build))
-    build_parser.add_argument('--what',type=str,help='where to init doc',default='html')
-    build_parser.add_argument('--output',type=str,help='where to init doc',default="builtdocs")
+    build_parser.add_argument('--what',type=str,help='type of output to generate',default='html')
+    build_parser.add_argument('--output',type=str,help='where to place output',default="builtdocs")
     _add_common_args(build_parser,'--project-root','--doc','--examples')
-    build_parser.add_argument('--examples-assets',type=str,help='where to init doc',default="assets")
+    build_parser.add_argument('--examples-assets',type=str,default="assets",
+                              help='dir in which assets for examples are located - if relative, should be releative to project-root')
     build_parser.add_argument('--clean-dry-run',action='store_true',help='whether to not actually delete files from output (useful for uploading)')
     build_parser.add_argument('--inspect-links',action='store_true',help='whether to not to print all links')
     _set_defaults(build_parser,build)
@@ -49,6 +50,7 @@ def main(args=None):
     try:
         import pyct.cmd
         pyct.cmd.add_commands(subparsers,'nbsite',cmds=None,args=args)
+        # pyct.cmd.add_version(parser, 'nbsite') #  once pyct.cmd 0.5.0 lands
     except ImportError:
         pass
 

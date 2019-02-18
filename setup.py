@@ -2,22 +2,28 @@
 # -*- coding: utf-8 -*-
 
 import glob
+import os
 from setuptools import setup, find_packages
 
-import _pyctbuild
+# import pyct.build
+import param
+
+NAME = 'nbsite'
+DESCRIPTION = 'Build a tested, sphinx-based website from notebooks.'
 
 setup_args = dict(
-    name='nbsite',
-    version=_pyctbuild.get_setup_version2(),
+    name=NAME,
+    # version=pyct.build.get_setup_version(__file__, NAME),
+    version=param.version.get_setup_version(__file__, NAME),
     author='PyViz',
-    description='Build a tested, sphinx-based website from notebooks.',
+    description=DESCRIPTION,
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url='https://nbsite.pyviz.org/',
+    url='https://{}.pyviz.org/'.format(NAME),
     project_urls={
-        'Documentation': 'https://nbsite.pyviz.org/',
-        'Source Code': 'https://github.com/pyviz/nbsite',
-        'Bug Tracker': 'https://github.com/pyviz/nbsite/issues'
+        'Documentation': 'https://{}.pyviz.org/'.format(NAME),
+        'Source Code': 'https://github.com/pyviz/{}'.format(NAME),
+        'Bug Tracker': 'https://github.com/pyviz/{}/issues'.format(NAME)
     },
     packages=find_packages(),
     python_requires='>=3',
@@ -54,8 +60,12 @@ setup_args = dict(
             'xarray',
             'pandas',
             'numpy',
-# gallery demo
-#            'plotly'
+            # 'plotly'  # gallery demo
+        ],
+        'build': [
+            "setuptools",
+            "param >=1.6.1",
+            # "pyct[build] >0.5.0",
         ]
     },
     include_package_data=True,
@@ -76,17 +86,5 @@ setup_args = dict(
 )
 
 if __name__=="__main__":
-
-    # TODO: hope to eliminate the examples handling from here too
-    # (i.e. all lines except setup()), moving it to pyctbuild
-    import os, sys, shutil
-    example_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                'nbsite','examples')
-    if 'develop' not in sys.argv:
-        import _pyctbuild
-        _pyctbuild.examples(example_path, __file__, force=True)
-
     setup(**setup_args)
 
-    if os.path.isdir(example_path):
-        shutil.rmtree(example_path)

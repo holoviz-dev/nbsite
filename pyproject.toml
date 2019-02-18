@@ -1,4 +1,7 @@
 [build-system]
 requires = [
-    "setuptools"
+    "param >=1.7.0",
+    "pyct >0.4.5",
+    "setuptools >=30.3.0",
+    "wheel"
 ]
