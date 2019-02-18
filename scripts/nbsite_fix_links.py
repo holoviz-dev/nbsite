@@ -81,7 +81,10 @@ def component_links(text, path):
     return text
 
 
-def cleanup_links(path):
+def cleanup_links(path, inspect_links=False):
+    """
+    Use inspect_links to get a list of all the external links in the site
+    """
     with open(path) as f:
         text = f.read()
 
@@ -90,7 +93,7 @@ def cleanup_links(path):
 #            text = text.replace(k, v)
 
     text = component_links(text, path)
-    soup = BeautifulSoup(text)
+    soup = BeautifulSoup(text, features="html.parser")
     for a in soup.findAll('a'):
         href = a.get('href', '')
         if '.ipynb' in href and 'http' not in href:
@@ -104,18 +107,20 @@ def cleanup_links(path):
                 a['href'] = '/'.join(parts[:-1]+[parts[-1][2:-5]+'html'])
             else:
                 a['href'] = href.replace('.ipynb', '.html')
-    html = soup.prettify("utf-8").decode('utf-8')
+        if inspect_links and 'http' in a['href']:
+            print(a['href'])
     with open(path, 'w') as f:
-        f.write(html)
+        f.write(str(soup))
 
 if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument('build_dir', help="Build Directory")
+    parser.add_argument('--inspect-links', action='store_true', help="Whether or not to print out all the links on the website")
     args = parser.parse_args()
 
     for root, dirs, files in os.walk(args.build_dir):
         for file_path in files:
             if file_path.endswith(".html"):
-                soup = cleanup_links(os.path.join(root, file_path))
+                soup = cleanup_links(os.path.join(root, file_path), args.inspect_links)
