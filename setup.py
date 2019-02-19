@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import glob
-import os
 from setuptools import setup, find_packages
 
-# import pyct.build
+import pyct.build
 import param
 
 NAME = 'nbsite'
@@ -15,10 +14,13 @@ setup_args = dict(
     name=NAME,
     # version=pyct.build.get_setup_version(__file__, NAME),
     version=param.version.get_setup_version(__file__, NAME),
-    author='PyViz',
     description=DESCRIPTION,
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
+    author='PyViz developers',
+    author_email='developers@pyviz.org',
+    maintainer='PyViz developers',
+    maintainer_email='developers@pyviz.org',
     url='https://{}.pyviz.org/'.format(NAME),
     project_urls={
         'Documentation': 'https://{}.pyviz.org/'.format(NAME),
@@ -28,6 +30,7 @@ setup_args = dict(
     packages=find_packages(),
     python_requires='>=3',
     install_requires=[
+        'param >=1.7.0',
         'pyviz_comms',
         'jupyter_client',
         'ipykernel',
@@ -48,7 +51,6 @@ setup_args = dict(
         'tests':[
             'flake8',
             'pytest >=3.9.1',
-            'pyct[cmd] >=0.4.5'
         ],
         'examples':[
             'pyct[cmd] >=0.4.5',
@@ -65,7 +67,7 @@ setup_args = dict(
         'build': [
             "setuptools",
             "param >=1.6.1",
-            # "pyct[build] >0.5.0",
+            "pyct[build]",
         ]
     },
     include_package_data=True,
@@ -75,6 +77,8 @@ setup_args = dict(
         'Programming Language :: Python :: 3',
         'Operating System :: OS Independent',
         'License :: OSI Approved :: BSD License',
+        'Intended Audience :: Developers',
+        'Natural Language :: English',
     ],
     # TODO: will be transferring to nbsite command...
     scripts = glob.glob("scripts/*.py"),
@@ -86,5 +90,17 @@ setup_args = dict(
 )
 
 if __name__=="__main__":
+    # TODO: hope to eliminate the examples handling from here too
+    # (i.e. all lines except setup()), moving it to pyct.build.setup
+
+    import os, sys, shutil
+
+    example_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                NAME,'examples')
+    if 'develop' not in sys.argv:
+        pyct.build.examples(example_path, __file__, force=True)
+
     setup(**setup_args)
 
+    if os.path.isdir(example_path):
+        shutil.rmtree(example_path)

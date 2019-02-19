@@ -11,6 +11,7 @@
 *.lock
 *.doit*
 pip-wheel-metadata
+.tox
 
 # autover
 */.version
