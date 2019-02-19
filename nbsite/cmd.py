@@ -148,12 +148,11 @@ def generate_rst(
       * ...
 
     """
-    if repo == '' and project_name != '':
-        repo = project_name
-    elif repo != '' and project_name == '':
-        project_name = repo
-    else:
+    if repo == '' and project_name == '':
         raise ValueError("Must set at least one of repo or project-name")
+    elif repo == '' or project_name == '':
+        project_name = repo = project_name or repo
+
     if org == '':
         org = repo
 
