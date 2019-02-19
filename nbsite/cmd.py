@@ -32,9 +32,21 @@ def fix_links(output, inspect_links):
     subprocess.check_call(args)
 
 
-def build(what,output,project_root='',doc='doc',examples='examples',examples_assets="assets", clean_dry_run=False, inspect_links=False):
+def build(what='html',
+          output='builtdocs',
+          project_root='',
+          doc='doc',
+          examples='examples',
+          examples_assets='assets',
+          clean_dry_run=False,
+          inspect_links=False):
+    """
+    Build the site from the rst files and the notebooks
+
+    Usually this is run after `nbsite scaffold`
+    """
     # TODO: also have an overwrite flag
-    paths = _prepare_paths(project_root,examples=examples,doc=doc,examples_assets=examples_assets)
+    paths = _prepare_paths(project_root, examples=examples, doc=doc, examples_assets=examples_assets)
     subprocess.check_call(["sphinx-build","-b",what,paths['doc'],output])
     print('Copying json blobs (used for holomaps) from {} to {}'.format(paths['doc'], output))
     copy_files(paths['doc'], output, '**/*.json')
@@ -73,13 +85,13 @@ def _is_root(x,root):
 # TODO: needs cleaning up; currently just prototyping new behavior.
 # TODO: rename to something like scaffold?
 def generate_rst(
-        project_name,
+        project_name='',        # if not supplied, will default to repo
         project_root='',        # if not supplied, will default to os.getcwd()
         examples="examples",    # relative to project_root
         doc="doc",              # relative to project_root
 #        title_formatter=None,
         host='GitHub',
-        org='',
+        org='',                 # if not supplied, will default to project_name, or repo
         repo='',                # if not supplied, will default to project_name
         branch='master',
         offset=0,
@@ -132,14 +144,17 @@ def generate_rst(
     =============
 
       * offset: allows to skip leading n cells
-      * overwrite: will overwrite existing rst files
+      * overwrite: will overwrite existing rst files [DANGEROUS]
       * ...
 
     """
-    assert project_name!=''
+    if repo == '' and project_name == '':
+        raise ValueError("Must set at least one of repo or project-name")
+    elif repo == '' or project_name == '':
+        project_name = repo = project_name or repo
 
-    if repo=='':
-        repo = project_name
+    if org == '':
+        org = repo
 
     paths=_prepare_paths(project_root,examples=examples,doc=doc)
 
