@@ -2,33 +2,42 @@
 nbsite
 ******
 
-.. raw:: html
-
-   <div style="width: 65%; float:left">
-
-	 
 **Build a tested, sphinx-based website from notebooks**
 
 Nbsite lets you build a website from a set of notebooks plus a minimal
 amount of config. Sites built with nbsite include
-`<http://pyviz.org/>`_ and
-`<https://datashader.org/>`_.
+`pyviz.org <http://pyviz.org/>`_,
+`datashader.org <http://datashader.org/>`_, and `hvplot.pyviz.org <http:/hvplot.pyviz.org/>`_.
 
 The idea behind nbsite is that notebooks can simultaneously be
 documentation (things you want to tell people about), examples (a
 starting point for people to run and use themselves), and test cases.
 
-To get started using nbsite, please see the `user guide
-<Usage.html>`_. However, please note that this is a pre-release
+To get started using nbsite, please see `Getting Started
+<getting_started.html>`_. However, please note that this is a pre-release
 version of nbsite. If you use nbsite, you may subsequently have to
 change your config on upgrading to a newer version of nbsite. You will
-likely encounter limitations (not all of the above 'idea behind
-nbsite' is easily available yet via this project) and
+likely encounter limitations and
 problems. However, please file issues or ask questions on `GitHub
-<https://github.com/pyviz/nbsite/issues>`_
+<https://github.com/pyviz/nbsite/issues>`_.
 
-At some point soon we will describe when you should or should not
-consider using nbsite instead of various alternatives, including:
+.. _when_to_use:
+
+When to use nbsite
+==================
+
+Nbsite is recommended for users who want to generate a static site from
+content in notebooks. It is especially useful if those notebooks contain
+bokeh plots.
+
+.. _when_not_to_use:
+
+When not to use nbsite
+======================
+
+Nbsite is not recommended if you don't mind writing rst, don't have bokeh
+plots or are primarily interested in live notebooks. There are other projects
+to consider instead if that is your case:
 
   * static site generators with support for notebooks: nikola,
     pelican, jupytersite, hugo, (whatever
@@ -44,33 +53,26 @@ consider using nbsite instead of various alternatives, including:
   * live notebook hosting: mybinder
     (e.g. `<https://mybinder.org/v2/gh/pyviz/pyviz/master?filepath=notebooks%2F12-parameters-and-widgets.ipynb>`_);
     ...?
-    
-Notes for nbsite developers: `Development <Development.html>`_
 
-Work-in-progress sites built using nbsite (currently present to keep
-keep track; will eventually remove):
-  
-  * `<https://ioam.github.io/parambokeh/>`_ (parambokeh)
+.. _examples:
 
-  * `<http://geoviews.org/>`_ (geoviews)
-    
-  * `<http://datashader.org/`_ (datashader)
-    
-  * `<http://pyviz.org/>`_ (pyviz)
+Examples
+========
 
-  * `<https://pyviz.github.io/nbsite/>`_ (nbsite; this project)
+Many of the websites in the pyviz ecosystem are built using nbsite.
+These include:
 
-  * `<https://bokeh.github.io/colorcet/>`_ (colorcet)
-    
-  * `<https://ceball.github.io/xarray_filters/>`_ (`xarray_filters
-    <https://github.com/ContinuumIO/xarray_filters>`_)
+  .. raw:: html
 
-  * `<https://pyviz.github.io/holoplot/>`_ (holoplot)
-
-
-.. raw:: html
-  
-   </div>
+    <div id="iframe-container" style="height: 1200px; width: 2000px;">
+      <iframe src="http://holoviews.org" height="500px" width="900px"></iframe>
+      <iframe src="http://geoviews.org" height="500px" width="900px"></iframe>
+      <iframe src="http://datashader.org" height="500px" width="900px"></iframe>
+      <iframe src="http://pyviz.org" height="500px" width="900px"></iframe>
+      <iframe src="http://hvplot.pyviz.org" height="500px" width="900px"></iframe>
+      <iframe src="http://panel.pyviz.org" height="500px" width="900px"></iframe>
+      <iframe src="http://colorcet.pyviz.org" height="500px" width="900px"></iframe>
+    </div>
 
 .. toctree::
     :hidden:

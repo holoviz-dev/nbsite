@@ -2,42 +2,41 @@
 
 from nbsite.shared_conf import *
 
-project = 'nbsite'
+NAME = 'nbsite'
+DESCRIPTION = 'Build a tested, sphinx-based website from notebooks.'
 
-####
-# could put in nbsite.util and all projects could use...and...surely there's a simpler way?
-from pkg_resources import get_distribution
-from email import message_from_string
-_pkg = get_distribution(project)
-_m = {m[0]:m[1] for m in message_from_string(_pkg.get_metadata(_pkg.PKG_INFO)).items()}
-####
-
-authors = _m["Author"]
-copyright = authors
-description = _m['Summary']
+project = NAME
+authors = u'PyViz Developers'
+copyright = u'2018-2019 ' + authors
+description = DESCRIPTION
 
 import nbsite
 version = release = nbsite.__version__
 
 html_static_path += ['_static']
-html_theme = 'sphinx_ioam_theme'
+html_theme = 'sphinx_pyviz_theme'
 html_theme_options = {
     'custom_css': 'nbsitesite.css',
     'logo': 'nbsite-logo.png',
     'favicon': 'favicon.ico'
 }
 
-_NAV = ()
+_NAV = (
+    ('Usage', 'usage'),
+    ('Gallery', 'gallery'),
+    ('About', 'about')
+)
 
 html_context.update({
     'PROJECT': project,
     'DESCRIPTION': description,
     'AUTHOR': authors,
-    'WEBSITE_SERVER': _m['Home-page'],
+    'WEBSITE_SERVER': 'http://{}.pyviz.org'.format(NAME),
     'VERSION': version,
     'NAV': _NAV,
     'LINKS': _NAV,
     'SOCIAL': (
-        ('Github', '//github.com/pyviz/nbsite'),
+        ('Github', 'https://github.com/pyviz/{}'.format(NAME)),
+        ('Gitter', 'https://gitter.im/pyviz/pyviz'),
     )
 })
