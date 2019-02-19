@@ -109,7 +109,7 @@ jobs:
         - conda install -c pyviz/label/dev pyctdev && doit ecosystem=conda ecosystem_setup
       install:
         - doit ecosystem=conda package_build --package-name=nbsite $CHANS $PKG_TEST_PYTHON --test-group=unit
-        - doit ecosystem=conda package_test  --package-name=nbsite $CHANS $PKG_TEST_PYTHON --test-group=examples --test-requires=examples
+        - doit ecosystem=conda package_test $CHANS $PKG_TEST_PYTHON --test-group=examples --test-requires=examples
       script: doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN $LABELS
 
     ## release packages
