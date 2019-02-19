@@ -74,6 +74,7 @@ setup_args = dict(
         'tests':[
             'flake8',
             'pytest >=3.9.1',
+            'pyct[cmd]',
         ],
         'examples':[
             'pyct[cmd] >=0.4.5',
