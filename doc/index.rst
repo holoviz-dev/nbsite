@@ -78,5 +78,6 @@ keep track; will eventually remove):
 
     Introduction <self>
     Usage
+    Gallery <gallery>
     Development
     FAQ
