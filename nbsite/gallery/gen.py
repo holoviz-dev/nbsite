@@ -259,8 +259,8 @@ def generate_gallery(app, page):
             section_backends = section.get('backends', backends)
             skip = section.get('skip', content.get('skip', False))
             heading = section.get('title', section['path'])
-            section = section['path']
             subsection_order = section.get('within_subsection_order', sort_fn)
+            section = section['path']
         else:
             heading = section.title()
             skip = content.get('skip', False)
