@@ -14,6 +14,10 @@ def thumbnail(obj, basename):
     import os
     if isinstance(obj, Dimensioned) and not os.path.isfile(basename+'.png'):
         Store.renderers[Store.current_backend].save(obj, basename, fmt='png')
+    elif 'panel' in sys.modules:
+        from panel.viewable import Viewable
+        if isinstance(obj, Viewable) and not os.path.isfile(basename+'.png'):
+            obj.save(basename+'.png')
     return obj
 
 
