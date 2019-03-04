@@ -62,6 +62,7 @@ setup_args = dict(
         'notebook',
         'sphinx',
         'beautifulsoup4',
+        'tornado <6'
     ],
     extras_require= {
         'refman':[
