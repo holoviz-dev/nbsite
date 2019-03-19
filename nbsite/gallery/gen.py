@@ -60,7 +60,7 @@ CLEAR_DIV = """
 
 """
 
-THUMBNAIL_URL = 'http://assets.holoviews.org/thumbnails'
+THUMBNAIL_URL = 'https://assets.holoviews.org/thumbnails'
 
 PREFIX = """
 # -*- coding: utf-8 -*-
@@ -110,11 +110,11 @@ guide and for more detailed documentation our `User Guide
 THUMBNAIL_TEMPLATE = """
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer {backend}_example" tooltip="{label}">
+    <div class="sphx-glr-thumbcontainer {backend}example" tooltip="{label}">
 
 .. figure:: /{thumbnail}
 
-    :ref:`{ref_name} <{backend}_gallery_{ref_name}>`
+    :ref:`{ref_name} <{backend}gallery_{ref_name}>`
 
 .. raw:: html
 
@@ -175,8 +175,11 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend, img_extens
             continue
 
         with open(rst_path, 'w') as rst_file:
-            rst_file.write('.. _%s_%s:\n\n' % ('_'.join([backend, 'gallery']),
-                                               basename[:-(len(extension)+1)]))
+            if backend:
+                prefix = '_'.join([backend, 'gallery'])
+            else:
+                prefix = 'gallery'
+            rst_file.write('.. _%s_%s:\n\n' % (prefix, basename[:-(len(extension)+1)].lower()))
             rst_file.write(title+'\n')
             rst_file.write('_'*len(title)+'\n\n')
             if extension == 'ipynb':
@@ -204,9 +207,10 @@ def _thumbnail_div(path_components, backend, fname, extension):
 
     # Inside rst files forward slash defines paths
     thumb = thumb.replace(os.sep, "/")
+    backend = backend+'_' if backend else ''
 
     return THUMBNAIL_TEMPLATE.format(
-        backend=backend, thumbnail=thumb, ref_name=fname, label=label)
+        backend=backend, thumbnail=thumb, ref_name=fname.lower(), label=label)
 
 
 def generate_gallery(app, page):
@@ -272,13 +276,14 @@ def generate_gallery(app, page):
         else:
             gallery_rst += '\n\n.. raw:: html\n\n    <div class="section"></div><br>\n\n'
 
+        thumb_extension = 'png'
         for backend in (section_backends or ('',)):
             path_components = [page]
             if section:
                 path_components.append(section)
             if backend:
                 path_components.append(backend)
-                
+
             path = os.path.join(examples_dir, *path_components)
             dest_dir = os.path.join(doc_dir, *path_components)
             try:
@@ -320,8 +325,8 @@ def generate_gallery(app, page):
 
                 # Try existing file
                 retcode = 1
+                thumb_extension = 'png'
                 if os.path.isfile(thumb_path):
-                    thumb_extension = 'png'
                     verb = 'Used existing'
                     retcode = 0
 
@@ -330,7 +335,6 @@ def generate_gallery(app, page):
                     thumb_req = requests.get(thumb_url)
                     verb = 'Successfully downloaded'
                     if thumb_req.status_code == 200:
-                        thumb_extension = 'png'
                         verb = 'Successfully downloaded'
                         retcode = 0
                     else:
@@ -347,7 +351,6 @@ def generate_gallery(app, page):
                 if not retcode:
                     pass
                 elif extension == 'ipynb':
-                    thumb_extension = 'png'
                     verb = 'Successfully generated'
                     code = notebook_thumbnail(f, os.path.join(*(['doc']+path_components)))
                     code = script_prefix + code
