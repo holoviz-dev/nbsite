@@ -179,7 +179,7 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend, img_extens
                 prefix = '_'.join([backend, 'gallery'])
             else:
                 prefix = 'gallery'
-            rst_file.write('.. _%s_%s:\n\n' % (prefix, basename[:-(len(extension)+1)].lower()))
+            rst_file.write('.. _%s_%s:\n\n' % (prefix, basename[:-(len(extension)+1)]))
             rst_file.write(title+'\n')
             rst_file.write('_'*len(title)+'\n\n')
             if extension == 'ipynb':
@@ -210,7 +210,7 @@ def _thumbnail_div(path_components, backend, fname, extension):
     backend = backend+'_' if backend else ''
 
     return THUMBNAIL_TEMPLATE.format(
-        backend=backend, thumbnail=thumb, ref_name=fname.lower(), label=label)
+        backend=backend, thumbnail=thumb, ref_name=fname, label=label)
 
 
 def generate_gallery(app, page):
