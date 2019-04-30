@@ -95,7 +95,7 @@ EXAMPLE_2_CONTENT = u"""{
    "metadata": {},
    "outputs": [],
    "source": [
-    "import numpy as np"
+    "import foo"
    ]
   },
   {
