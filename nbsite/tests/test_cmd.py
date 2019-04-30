@@ -1,4 +1,5 @@
 import os
+import json
 import pytest
 import pyct.cmd
 from nbsite.cmd import generate_rst, build
@@ -55,6 +56,56 @@ EXAMPLE_1_CONTENT = u"""{
    "source": [
     "**NOTE:** This is another temporary notebook that gets created for tests."
    ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print('foo')"
+   ]
+  }
+ ],
+ "metadata": {
+  "language_info": {
+   "name": "python",
+   "pygments_lexer": "ipython3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
+"""
+
+EXAMPLE_2_CONTENT = u"""{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print('first cell')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import foo"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print('last cell')"
+   ]
   }
  ],
  "metadata": {
@@ -84,6 +135,7 @@ Project
 
    Example_0 <Example_Notebook_0>
    Example_1 <Example_Notebook_1>
+   Example_2 <Example_Notebook_2>
 """
 
 EXAMPLE_0_RST = u"""
@@ -104,6 +156,15 @@ Example Notebook 1
     :offset: 0
 """
 
+EXAMPLE_2_RST = u"""
+******************
+Example Notebook 2
+******************
+
+.. notebook:: test_project ../examples/Example_Notebook_2.ipynb
+    :offset: 0
+"""
+
 @pytest.fixture(autouse=True)
 def tmp_module(tmp_path):
     """This sets up a temporary directory structure meant to mimic a module
@@ -113,6 +174,7 @@ def tmp_module(tmp_path):
     (project / "examples").mkdir()
     (project / "examples" / "Example_Notebook_0.ipynb").write_text(EXAMPLE_0_CONTENT)
     (project / "examples" / "Example_Notebook_1.ipynb").write_text(EXAMPLE_1_CONTENT)
+    (project / "examples" / "Example_Notebook_2.ipynb").write_text(EXAMPLE_2_CONTENT)
     (project / "examples" / "data").mkdir()
     (project / "examples" / "data" / "data_0.csv").write_text(DATA_FILE_0_CONTENT)
     (project / "examples" / "data" / "data_1.csv").write_text(DATA_FILE_1_CONTENT)
@@ -342,3 +404,17 @@ def test_build_copies_json(tmp_project_with_docs_skeleton):
     assert (project / "builtdocs" / "example_json_blob.json").is_file()
     assert (project / "builtdocs" / "topics").is_dir()
     assert (project / "builtdocs" / "topics" / "nested_example_json_blob.json").is_file()
+
+@pytest.mark.slow
+def test_build_with_error_output(tmp_project_with_docs_skeleton):
+    project = tmp_project_with_docs_skeleton
+    (project / "doc" / "Example_Notebook_0.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "Example_Notebook_1.rst").write_text(EXAMPLE_1_RST)
+    (project / "doc" / "Example_Notebook_2.rst").write_text(EXAMPLE_2_RST)
+    assert not (project / "doc" / "Example_Notebook_2.ipynb").is_file()
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    assert (project / "doc" / "Example_Notebook_1.ipynb").is_file()
+    assert (project / "doc" / "Example_Notebook_2.ipynb").is_file()
+    nb = json.loads((project / "doc" / "Example_Notebook_2.ipynb").read_text())
+    assert nb['cells'][1]['outputs'][0]['ename'] == 'ModuleNotFoundError'
+    assert len(nb['cells'][2]['outputs']) == 0
