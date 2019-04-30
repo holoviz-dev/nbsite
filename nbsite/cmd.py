@@ -1,5 +1,6 @@
 import os
 import glob
+import re
 import sys
 import subprocess
 from os.path import dirname

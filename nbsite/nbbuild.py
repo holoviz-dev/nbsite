@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os, string, glob, re, copy, sys, shutil
+import os, string, glob, copy, sys, shutil
 
 from docutils import nodes
 from docutils.parsers.rst import directives, Directive
