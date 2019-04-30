@@ -277,10 +277,6 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
         except CellExecutionError as e:
             print('')
             print(e)
-            # Return the traceback, filtering out ANSI color codes.
-            # http://stackoverflow.com/questions/13506033/filtering-out-ansi-escape-sequences
-            return 'Notebook conversion failed with the following traceback: \n%s' % \
-                re.sub(r'\\033[\[\]]([0-9]{1,2}([;@][0-9]{0,2})*)*[mKP]?', '', str(e))
         os.chdir(cwd)
 
         if skip_execute:

@@ -1,4 +1,5 @@
 import os
+import json
 import pytest
 import pyct.cmd
 from nbsite.cmd import generate_rst, build
@@ -55,6 +56,15 @@ EXAMPLE_1_CONTENT = u"""{
    "source": [
     "**NOTE:** This is another temporary notebook that gets created for tests."
    ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print('foo')"
+   ]
   }
  ],
  "metadata": {
@@ -76,8 +86,25 @@ EXAMPLE_2_CONTENT = u"""{
    "metadata": {},
    "outputs": [],
    "source": [
-    "import numpy as np\n",
-    "np.arange(-10, 10.5, 0.5)"
+    "print('first cell')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print('last cell')"
    ]
   }
  ],
@@ -381,11 +408,12 @@ def test_build_copies_json(tmp_project_with_docs_skeleton):
 @pytest.mark.slow
 def test_build_with_error_output(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton
+    (project / "doc" / "Example_Notebook_1.rst").write_text(EXAMPLE_1_RST)
     (project / "doc" / "Example_Notebook_2.rst").write_text(EXAMPLE_2_RST)
     assert not (project / "doc" / "Example_Notebook_2.ipynb").is_file()
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    assert (project / "doc" / "Example_Notebook_1.ipynb").is_file()
     assert (project / "doc" / "Example_Notebook_2.ipynb").is_file()
-    nb = (project / "doc" / "Example_Notebook_2.ipynb").read_text()
-    html = (project / "builtdocs" / "Example_Notebook_2.html").read_text()
-    assert 'import xarray' in nb
-    assert 'import xarray' in html
+    nb = json.loads((project / "doc" / "Example_Notebook_2.ipynb").read_text())
+    assert nb['cells'][1]['outputs'][0]['ename'] == 'ModuleNotFoundError'
+    assert len(nb['cells'][2]['outputs']) == 0
