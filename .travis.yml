@@ -50,7 +50,7 @@ jobs:
       env: DESC="Release website"
       script:
         - pip install sphinx_ioam_theme
-        - nbsite generate-rst --org pyviz --project-name nbsite --examples doc
+        - nbsite generate-rst --org pyviz --project-name nbsite --skip '.*sites.*'
         - nbsite build --what=html --output=builtdocs
       deploy:
         - provider: pages
