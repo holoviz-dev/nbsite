@@ -408,6 +408,7 @@ def test_build_copies_json(tmp_project_with_docs_skeleton):
 @pytest.mark.slow
 def test_build_with_error_output(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton
+    (project / "doc" / "Example_Notebook_0.rst").write_text(EXAMPLE_0_RST)
     (project / "doc" / "Example_Notebook_1.rst").write_text(EXAMPLE_1_RST)
     (project / "doc" / "Example_Notebook_2.rst").write_text(EXAMPLE_2_RST)
     assert not (project / "doc" / "Example_Notebook_2.ipynb").is_file()
