@@ -65,13 +65,13 @@ These include:
   .. raw:: html
 
     <div id="iframe-container" style="height: 1200px; width: 2000px;">
-      <iframe src="http://holoviews.org" height="500px" width="900px"></iframe>
+      <iframe src="https://holoviews.org" height="500px" width="900px"></iframe>
       <iframe src="http://geoviews.org" height="500px" width="900px"></iframe>
       <iframe src="http://datashader.org" height="500px" width="900px"></iframe>
-      <iframe src="http://pyviz.org" height="500px" width="900px"></iframe>
-      <iframe src="http://hvplot.pyviz.org" height="500px" width="900px"></iframe>
-      <iframe src="http://panel.pyviz.org" height="500px" width="900px"></iframe>
-      <iframe src="http://colorcet.pyviz.org" height="500px" width="900px"></iframe>
+      <iframe src="https://pyviz.org" height="500px" width="900px"></iframe>
+      <iframe src="https://hvplot.pyviz.org" height="500px" width="900px"></iframe>
+      <iframe src="https://panel.pyviz.org" height="500px" width="900px"></iframe>
+      <iframe src="https://colorcet.pyviz.org" height="500px" width="900px"></iframe>
     </div>
 
 .. toctree::
