@@ -14,7 +14,7 @@ import nbsite
 version = release = nbsite.__version__
 
 html_static_path += ['_static']
-html_theme = 'sphinx_pyviz_theme'
+html_theme = 'sphinx_ioam_theme'
 html_theme_options = {
     'custom_css': 'nbsitesite.css',
     'logo': 'nbsite-logo.png',
@@ -31,7 +31,7 @@ html_context.update({
     'PROJECT': project,
     'DESCRIPTION': description,
     'AUTHOR': authors,
-    'WEBSITE_SERVER': 'http://{}.pyviz.org'.format(NAME),
+    'WEBSITE_SERVER': 'https://{}.pyviz.org'.format(NAME),
     'VERSION': version,
     'NAV': _NAV,
     'LINKS': _NAV,
