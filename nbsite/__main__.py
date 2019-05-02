@@ -31,7 +31,7 @@ def main(args=None):
     generaterst_parser.add_argument('--repo',type=str,help='name of repo',default='')
     generaterst_parser.add_argument('--branch',type=str,help='branch to point to in notebook links',default='master')
     generaterst_parser.add_argument('--offset',type=int,help='number of cells to delete from top of notebooks',default=0)
-    generaterst_parser.add_argument('--overwrite',type=int,help='whether to overwrite any pre-existing rst [DANGEROUS]',default=False)
+    generaterst_parser.add_argument('--overwrite',action='store_true', help='whether to overwrite any pre-existing rst [DANGEROUS]')
     generaterst_parser.add_argument('--nblink',type=str,help='where to place notebook links',choices=['bottom', 'top', 'both', 'none'], default='bottom')
     generaterst_parser.add_argument('--skip',type=str,help='notebooks to skip running; comma separated case insensitive re to match',default='')
     _set_defaults(generaterst_parser,generate_rst)
@@ -44,6 +44,7 @@ def main(args=None):
                               help='dir in which assets for examples are located - if relative, should be releative to project-root')
     build_parser.add_argument('--clean-dry-run',action='store_true',help='whether to not actually delete files from output (useful for uploading)')
     build_parser.add_argument('--inspect-links',action='store_true',help='whether to not to print all links')
+    build_parser.add_argument('--overwrite',action='store_true', help='whether to overwrite any pre-existing evaluated notebooks [DANGEROUS]')
     _set_defaults(build_parser,build)
 
     # add commands from pyct, for examples

@@ -13,6 +13,9 @@
 pip-wheel-metadata
 .tox
 
+# ipython
+*/.ipynb_checkpoints
+
 # autover
 */.version
 

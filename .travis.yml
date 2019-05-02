@@ -47,22 +47,15 @@ jobs:
     - &website
       <<: *default
       stage: website_release
-      env: DESC=""
+      env: DESC="Release website"
       script:
-        # TODO: this script should be updated to use new interface
-        - pip install sphinx_ioam_theme
-        - cd doc
-        - nbsite_nbpagebuild.py pyviz nbsite . .
-        - sphinx-build -b html . ./_build/html
-        - nbsite_fix_links.py _build/html
-        - touch ./_build/html/.nojekyll
-        - nbsite_cleandisthtml.py ./_build/html take_a_chance
-        - cd ..
+        - nbsite generate-rst --org pyviz --project-name nbsite --skip '.*sites.*'
+        - nbsite build --what=html --output=builtdocs
       deploy:
         - provider: pages
           skip_cleanup: true
           github_token: $GITHUB_TOKEN
-          local_dir: ./doc/_build/html
+          local_dir: ./builtdocs
           fqdn: nbsite.pyviz.org
           on:
             tags: true
@@ -70,13 +63,13 @@ jobs:
 
     - <<: *website
       stage: website_dev
-      env: DESC=""
+      env: DESC="Dev version of the website"
       deploy:
         - provider: pages
           skip_cleanup: true
           github_token: $GITHUB_TOKEN
-          local_dir: ./doc/_build/html
-          repo: ioam-docs/nbsite-dev
+          local_dir: ./builtdocs
+          repo: pyviz-dev/nbsite
           on:
             tags: true
             all_branches: true

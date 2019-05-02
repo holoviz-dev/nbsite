@@ -39,14 +39,18 @@ def build(what='html',
           examples='examples',
           examples_assets='assets',
           clean_dry_run=False,
-          inspect_links=False):
+          inspect_links=False,
+          overwrite=False):
     """
     Build the site from the rst files and the notebooks
 
     Usually this is run after `nbsite scaffold`
     """
-    # TODO: also have an overwrite flag
     paths = _prepare_paths(project_root, examples=examples, doc=doc, examples_assets=examples_assets)
+    if overwrite:
+        for path in glob.glob(os.path.join(paths['doc'], '**', '*.ipynb'), recursive=True):
+            print('Removing evaluated notebook from {}'.format(path))
+            os.remove(path)
     subprocess.check_call(["sphinx-build","-b",what,paths['doc'],output])
     print('Copying json blobs (used for holomaps) from {} to {}'.format(paths['doc'], output))
     copy_files(paths['doc'], output, '**/*.json')
