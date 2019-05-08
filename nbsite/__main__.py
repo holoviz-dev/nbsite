@@ -7,8 +7,8 @@ def _add_common_args(parser,*names):
     common = {
         '--project-root': dict(type=str,help='defaults to current working directory',default=''),
         '--examples': dict(type=str,help='if relative, should be relative to project-root',default='examples'),
-        '--doc': dict(type=str,help='if relative, should be releative to project-root',default='doc')
-        '--overwrite' dict(action='store_true', help='whether to overwrite any files [DANGEROUS]')
+        '--doc': dict(type=str,help='if relative, should be releative to project-root',default='doc'),
+        '--overwrite': dict(action='store_true', help='whether to overwrite any files [DANGEROUS]')
         }
     for name in names:
         parser.add_argument(name,**common[name])
@@ -34,6 +34,7 @@ def main(args=None):
     generaterst_parser.add_argument('--offset',type=int,help='number of cells to delete from top of notebooks',default=0)
     generaterst_parser.add_argument('--nblink',type=str,help='where to place notebook links',choices=['bottom', 'top', 'both', 'none'], default='bottom')
     generaterst_parser.add_argument('--skip',type=str,help='notebooks to skip running; comma separated case insensitive re to match',default='')
+    generaterst_parser.add_argument('--strip-numbers',action='store_true',help='whether to strip the leading numbers off of notebook URLs and titles')
     _set_defaults(generaterst_parser,generate_rst)
 
     build_parser = subparsers.add_parser("build", help=inspect.getdoc(build))
