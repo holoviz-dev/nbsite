@@ -6,6 +6,7 @@ extension.
 import os
 import re
 from bs4 import BeautifulSoup
+import warnings
 
 
 # TODO: holoviews specific links e.g. to reference manual...doc & generalize
@@ -117,9 +118,9 @@ def cleanup_links(path, inspect_links=False):
                     if os.path.exists(new_path):
                         a['href'] = os.path.relpath(new_path, os.path.dirname(path))
                     else:
-                        raise ValueError('Cannot find html to link to. Original href: {}, '
-                                         'first tried: {}, then tried: {}'.format(
-                                         a['href'], try_path, new_path))
+                        warnings.warn('Cannot find html to link to. Original href: {}, '
+                                      'first tried: {}, then tried: {}'.format(
+                                       a['href'], try_path, new_path), )
 
         if inspect_links and 'http' in a['href']:
             print(a['href'])
