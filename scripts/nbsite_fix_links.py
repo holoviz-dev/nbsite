@@ -112,7 +112,7 @@ def cleanup_links(path, inspect_links=False):
                 try_path = os.path.join(os.path.dirname(path), a['href'])
                 if not os.path.exists(try_path):
                     num_name = os.path.basename(try_path)
-                    name = re.split(r"\d( |-|_)", num_name)[-1]
+                    name = re.split(r"^\d+( |-|_)", num_name)[-1]
                     new_path = try_path.replace(num_name, name)
                     if os.path.exists(new_path):
                         a['href'] = os.path.relpath(new_path, os.path.dirname(path))

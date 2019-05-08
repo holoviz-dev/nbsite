@@ -261,9 +261,9 @@ def _title_key(title_tup):
 
 def _path_and_order(filepath, strip_numbers):
     num_name = os.path.basename(filepath)
-    leading_num = re.match(r"\d+", num_name)
+    leading_num = re.match(r"^\d+", num_name)
     if strip_numbers:
-        name = re.split(r"\d( |-|_)", num_name)[-1]
+        name = re.split(r"^\d+( |-|_)", num_name)[-1]
         filepath = filepath.replace(num_name, name)
     return filepath, int(leading_num.group(0)) if leading_num else None
 
