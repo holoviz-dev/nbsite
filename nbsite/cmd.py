@@ -101,7 +101,8 @@ def generate_rst(
         offset=0,
         overwrite=False,
         nblink='bottom',
-        skip=''):
+        skip='',
+        strip_numbers=False):
     """Auto-generates notebook-including rsts from notebooks in examples.
 
     titles
@@ -164,14 +165,14 @@ def generate_rst(
 
     print("Project='%s': Converting notebooks at '%s' to rst at '%s'..."%(project_name,paths['examples'],paths['doc']))
     for filename in glob.iglob(os.path.join(paths['examples'],"**","*.ipynb"), recursive=True):
-        fromhere = filename.split(paths['examples'])[1].lstrip('/') # TODO: not win
+        relpath = os.path.relpath(filename, paths['examples'])
         # TODO: decide what to do about gallery later
-        if fromhere.startswith('gallery'):
+        if relpath.startswith('gallery'):
             continue
-        if _should_skip(skip, fromhere):
-            print('...deliberately skipping', fromhere)
+        if _should_skip(skip, relpath):
+            print('...deliberately skipping', relpath)
             continue
-        rst = os.path.splitext(os.path.join(paths['doc'],fromhere))[0] + ".rst"
+        rst = os.path.splitext(os.path.join(paths['doc'], relpath))[0] + ".rst"
         pretitle = _file2pretitle(rst)
         os.makedirs(dirname(rst), exist_ok=True)
 
@@ -198,22 +199,22 @@ def generate_rst(
             rst_file.write('*'*len(title)+'\n\n')
 
             if nblink in ['top', 'both']:
-                add_nblink(rst_file, host,org,repo, branch, examples, fromhere)
+                add_nblink(rst_file, host, org, repo, branch, examples, relpath)
                 rst_file.write('\n\n-------\n\n')
 
-            rst_file.write(".. notebook:: %s %s" % (project_name,os.path.relpath(paths['examples'],start=dirname(rst))+'/'+fromhere+"\n"))
+            rst_file.write(".. notebook:: %s %s" % (project_name,os.path.relpath(paths['examples'],start=dirname(rst))+'/'+relpath+"\n"))
             rst_file.write("    :offset: %s\n" % offset)
 
             if pretitle=='index':
-                rst_file.write("%s\n"%_toctree(dirname(filename),paths['examples']))
+                rst_file.write("%s\n"%_toctree(dirname(filename), paths['examples']))
             if nblink in ['bottom', 'both']:
                 rst_file.write('\n\n-------\n\n')
-                add_nblink(rst_file, host,org,repo, branch, examples, fromhere)
+                add_nblink(rst_file, host, org, repo, branch, examples, relpath)
 
 
-def add_nblink(rst_file, host,org,repo,branch,examples, fromhere):
-    if all([host,org,repo,branch]):
-        info = (hosts[host],org,repo,branch,examples,fromhere)
+def add_nblink(rst_file, host, org, repo, branch, examples, relpath):
+    if all([host, org, repo, branch]):
+        info = (hosts[host], org, repo, branch, examples,relpath)
         rst_file.write('`Right click to download this notebook from ' + host + '.'
                        ' <%s/%s/%s/%s/%s/%s>`_\n' % info)
 
