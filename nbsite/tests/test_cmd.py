@@ -58,6 +58,13 @@ EXAMPLE_1_CONTENT = u"""{
    ]
   },
   {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Here is a ref to the [other notebook](0_Zeroth_Notebook.ipynb)."
+   ]
+  },
+  {
    "cell_type": "code",
    "execution_count": null,
    "metadata": {},
@@ -247,6 +254,7 @@ def test_generate_rst_with_skip_glob_matching_both_notebooks_undercase(tmp_proje
 def test_generate_rst_with_numbers_stripped(tmp_project):
 
     expected_index_toc = (
+        '    Introduction <self>\n'
         '    Zeroth Notebook <Zeroth_Notebook>\n'
         '    First Notebook <First_Notebook>\n'
         '    Second Notebook <Second_Notebook>')
@@ -435,3 +443,16 @@ def test_build_with_error_output(tmp_project_with_docs_skeleton):
     nb = json.loads((project / "doc" / "2_Second_Notebook.ipynb").read_text())
     assert nb['cells'][1]['outputs'][0]['ename'] == 'ModuleNotFoundError'
     assert len(nb['cells'][2]['outputs']) == 0
+
+@pytest.mark.slow
+def test_build_with_numbers_stripped(tmp_project):
+    project = tmp_project
+    (project / "doc").mkdir()
+    (project / "doc" / "conf.py").write_text(CONF_CONTENT)
+    (project / "examples" / "index.ipynb").write_text(EXAMPLE_0_CONTENT)
+    generate_rst("test_project", project_root=str(project), strip_numbers=True)
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    assert (project / "doc" / "1_First_Notebook.ipynb").is_file()
+    assert (project / "builtdocs" / "First_Notebook.html").is_file()
+    html = (project / "builtdocs" / "First_Notebook.html").read_text()
+    assert '<a href="Zeroth_Notebook.html">other notebook</a>' in html
