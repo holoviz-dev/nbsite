@@ -17,7 +17,7 @@ html_static_path += ['_static']
 html_theme = 'sphinx_pyviz_theme'
 html_theme_options = {
     'custom_css': 'site.css',
-    'logo': 'nsite-logo.png',
+    'logo': 'nbsite-logo.png',
     'favicon': 'favicon.ico',
     'primary_color': 'coral',
     'primary_color_dark': 'sienna',
