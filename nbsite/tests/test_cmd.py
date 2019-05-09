@@ -61,16 +61,21 @@ EXAMPLE_1_CONTENT = u"""{
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "Here is a ref to the [other notebook](0_Zeroth_Notebook.ipynb)."
+    "Here is a ref to another notebook with the [right number](0_Zeroth_Notebook.ipynb)."
    ]
   },
   {
-   "cell_type": "code",
-   "execution_count": null,
+   "cell_type": "markdown",
    "metadata": {},
-   "outputs": [],
    "source": [
-    "print('foo')"
+    "Here is a ref to it with the [wrong number](1_Zeroth_Notebook.ipynb)."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Here is a ref to it with [no number](Zeroth_Notebook.ipynb)."
    ]
   }
  ],
@@ -85,7 +90,7 @@ EXAMPLE_1_CONTENT = u"""{
 }
 """
 
-EXAMPLE_2_CONTENT = u"""{
+APPENDIX_0_CONTENT = u"""{
  "cells": [
   {
    "cell_type": "code",
@@ -140,35 +145,35 @@ Project
    :hidden:
    :maxdepth: 2
 
-   0 <0_Zeroth_Notebook>
-   1 <1_First_Notebook>
-   2 <2_Second_Notebook>
+   Zeroth Notebook <Zeroth_Notebook>
+   First Notebook <First_Notebook>
+   Appendix 0 <Appendix_0>
 """
 
 EXAMPLE_0_RST = u"""
-******************
-0 Zeroth Notebook
-******************
+***************
+Zeroth Notebook
+***************
 
 .. notebook:: test_project ../examples/0_Zeroth_Notebook.ipynb
     :offset: 0
 """
 
 EXAMPLE_1_RST = u"""
-******************
-1 First Notebook
-******************
+**************
+First Notebook
+**************
 
 .. notebook:: test_project ../examples/1_First_Notebook.ipynb
     :offset: 0
 """
 
-EXAMPLE_2_RST = u"""
-******************
-2 Second Notebook
-******************
+APPENDIX_0_RST = u"""
+**********
+Appendix 0
+**********
 
-.. notebook:: test_project ../examples/2_Second_Notebook.ipynb
+.. notebook:: test_project ../examples/Appendix_0.ipynb
     :offset: 0
 """
 
@@ -181,7 +186,7 @@ def tmp_module(tmp_path):
     (project / "examples").mkdir()
     (project / "examples" / "0_Zeroth_Notebook.ipynb").write_text(EXAMPLE_0_CONTENT)
     (project / "examples" / "1_First_Notebook.ipynb").write_text(EXAMPLE_1_CONTENT)
-    (project / "examples" / "2_Second_Notebook.ipynb").write_text(EXAMPLE_2_CONTENT)
+    (project / "examples" / "Appendix_0.ipynb").write_text(APPENDIX_0_CONTENT)
     (project / "examples" / "data").mkdir()
     (project / "examples" / "data" / "data_0.csv").write_text(DATA_FILE_0_CONTENT)
     (project / "examples" / "data" / "data_1.csv").write_text(DATA_FILE_1_CONTENT)
@@ -223,61 +228,79 @@ def test_generate_rst(tmp_project):
     project = tmp_project
 
     generate_rst("test_project", project_root=str(project))
-    assert (project / "doc" / "0_Zeroth_Notebook.rst").is_file()
-    assert (project / "doc" / "1_First_Notebook.rst").is_file()
+    assert (project / "doc" / "Zeroth_Notebook.rst").is_file()
+    assert (project / "doc" / "First_Notebook.rst").is_file()
+    assert (project / "doc" / "Appendix_0.rst").is_file()
 
 def test_generate_rst_with_skip_one_notebook(tmp_project):
     project = tmp_project
     generate_rst("test_project", project_root=str(project), skip='.*0_.*')
-    assert not (project / "doc" / "0_Zeroth_Notebook.rst").is_file()
-    assert (project / "doc" / "1_First_Notebook.rst").is_file()
+    assert not (project / "doc" / "Zeroth_Notebook.rst").is_file()
+    assert (project / "doc" / "First_Notebook.rst").is_file()
 
 def test_generate_rst_with_skip_list_of_notebooks(tmp_project):
     project = tmp_project
     generate_rst("test_project", project_root=str(project), skip='.*0_.*, .*1_.*')
-    assert not (project / "doc" / "0_Zeroth_Notebook.rst").is_file()
-    assert not (project / "doc" / "1_First_Notebook.rst").is_file()
+    assert not (project / "doc" / "Zeroth_Notebook.rst").is_file()
+    assert not (project / "doc" / "First_Notebook.rst").is_file()
 
 def test_generate_rst_with_skip_glob_matching_both_notebooks(tmp_project):
     project = tmp_project
     generate_rst("test_project", project_root=str(project), skip='.*Notebook.*')
-    assert not (project / "doc" / "0_Zeroth_Notebook.rst").is_file()
-    assert not (project / "doc" / "1_First_Notebook.rst").is_file()
+    assert not (project / "doc" / "Zeroth_Notebook.rst").is_file()
+    assert not (project / "doc" / "First_Notebook.rst").is_file()
 
 def test_generate_rst_with_skip_glob_matching_both_notebooks_undercase(tmp_project):
     project = tmp_project
     generate_rst("test_project", project_root=str(project), skip='.*notebook.*')
-    assert not (project / "doc" / "0_Zeroth_Notebook.rst").is_file()
-    assert not (project / "doc" / "1_First_Notebook.rst").is_file()
+    assert not (project / "doc" / "Zeroth_Notebook.rst").is_file()
+    assert not (project / "doc" / "First_Notebook.rst").is_file()
 
 
-def test_generate_rst_with_numbers_stripped(tmp_project):
+def test_generate_rst_with_keep_numbers(tmp_project):
+
+    expected_index_toc = (
+        '    Introduction <self>\n'
+        '    0 Zeroth Notebook <0_Zeroth_Notebook>\n'
+        '    1 First Notebook <1_First_Notebook>\n'
+        '    Appendix 0 <Appendix_0>')
+
+    project = tmp_project
+    (project / "examples" / "index.ipynb").write_text(EXAMPLE_0_CONTENT)
+    generate_rst("test_project", project_root=str(project), keep_numbers=True)
+    assert (project / "doc" / "index.rst").is_file()
+    assert expected_index_toc in (project / "doc" / "index.rst").read_text()
+    assert (project / "doc" / "0_Zeroth_Notebook.rst").is_file()
+    assert (project / "doc" / "1_First_Notebook.rst").is_file()
+
+def test_generate_rst_with_strip_numbers_is_default(tmp_project):
 
     expected_index_toc = (
         '    Introduction <self>\n'
         '    Zeroth Notebook <Zeroth_Notebook>\n'
         '    First Notebook <First_Notebook>\n'
-        '    Second Notebook <Second_Notebook>')
+        '    Appendix 0 <Appendix_0>')
 
     project = tmp_project
     (project / "examples" / "index.ipynb").write_text(EXAMPLE_0_CONTENT)
-    generate_rst("test_project", project_root=str(project), strip_numbers=True)
+    generate_rst("test_project", project_root=str(project))
     assert (project / "doc" / "index.rst").is_file()
-    assert expected_index_toc in (project / "doc" / "index.rst").read_text()
+    actual_index = (project / "doc" / "index.rst").read_text()
+    assert expected_index_toc in actual_index
     assert (project / "doc" / "Zeroth_Notebook.rst").is_file()
     assert (project / "doc" / "First_Notebook.rst").is_file()
 
 def test_generate_rst_with_nblink_as_none(tmp_project):
 
-    expected = ['****************',
-                '1 First Notebook',
-                '****************',
+    expected = ['**************',
+                'First Notebook',
+                '**************',
                 '', '.. notebook:: test_project ../examples/1_First_Notebook.ipynb',
                 '    :offset: 0']
     project = tmp_project
     generate_rst("test_project", project_root=str(project), nblink='none',
                  host='GitHub', org='pyviz', repo='nbsite', branch='master')
-    rstpath = (project / "doc" / "1_First_Notebook.rst")
+    rstpath = (project / "doc" / "First_Notebook.rst")
     assert rstpath.is_file()
     with open(rstpath, 'r') as f:
         contents = f.read().splitlines()
@@ -285,9 +308,9 @@ def test_generate_rst_with_nblink_as_none(tmp_project):
 
 def test_generate_rst_with_nblink_top(tmp_project):
 
-    expected = ['****************',
-                '1 First Notebook',
-                '****************',
+    expected = ['**************',
+                'First Notebook',
+                '**************',
                 '',
                 '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/1_First_Notebook.ipynb>`_',
                 '', '', '-------', '',
@@ -297,7 +320,7 @@ def test_generate_rst_with_nblink_top(tmp_project):
     project = tmp_project
     generate_rst("test_project", project_root=str(project), nblink='top',
                  host='GitHub', org='pyviz', repo='nbsite', branch='master')
-    rstpath = (project / "doc" / "1_First_Notebook.rst")
+    rstpath = (project / "doc" / "First_Notebook.rst")
     assert rstpath.is_file()
     with open(rstpath, 'r') as f:
         contents = f.read().splitlines()
@@ -305,9 +328,9 @@ def test_generate_rst_with_nblink_top(tmp_project):
 
 def test_generate_rst_with_nblink_both(tmp_project):
 
-    expected = ['****************',
-                '1 First Notebook',
-                '****************',
+    expected = ['**************',
+                'First Notebook',
+                '**************',
                 '',
                 '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/1_First_Notebook.ipynb>`_',
                 '', '', '-------', '',
@@ -319,7 +342,7 @@ def test_generate_rst_with_nblink_both(tmp_project):
     project = tmp_project
     generate_rst("test_project", project_root=str(project), nblink='both',
                  host='GitHub', org='pyviz', repo='nbsite', branch='master')
-    rstpath = (project / "doc" / "1_First_Notebook.rst")
+    rstpath = (project / "doc" / "First_Notebook.rst")
     assert rstpath.is_file()
     with open(rstpath, 'r') as f:
         contents = f.read().splitlines()
@@ -327,9 +350,9 @@ def test_generate_rst_with_nblink_both(tmp_project):
 
 def test_generate_rst_with_nblink_bottom(tmp_project):
 
-    expected = ['****************',
-                '1 First Notebook',
-                '****************',
+    expected = ['**************',
+                'First Notebook',
+                '**************',
                 '',
                 '.. notebook:: test_project ../examples/1_First_Notebook.ipynb',
                 '    :offset: 0',
@@ -339,16 +362,16 @@ def test_generate_rst_with_nblink_bottom(tmp_project):
     project = tmp_project
     generate_rst("test_project", project_root=str(project), nblink='bottom',
                  host='GitHub', org='pyviz', repo='nbsite', branch='master')
-    rstpath = (project / "doc" / "1_First_Notebook.rst")
+    rstpath = (project / "doc" / "First_Notebook.rst")
     assert rstpath.is_file()
     with open(rstpath, 'r') as f:
         contents = f.read().splitlines()
         assert  contents[5:] == expected
 
 def test_generate_rst_with_no_nblink_set_defaults_to_bottom(tmp_project):
-    expected = ['****************',
-                '1 First Notebook',
-                '****************',
+    expected = ['**************',
+                'First Notebook',
+                '**************',
                 '',
                 '.. notebook:: test_project ../examples/1_First_Notebook.ipynb',
                 '    :offset: 0',
@@ -358,7 +381,7 @@ def test_generate_rst_with_no_nblink_set_defaults_to_bottom(tmp_project):
     project = tmp_project
     generate_rst("test_project", project_root=str(project),
                  host='GitHub', org='pyviz', repo='nbsite', branch='master')
-    rstpath = (project / "doc" / "1_First_Notebook.rst")
+    rstpath = (project / "doc" / "First_Notebook.rst")
     assert rstpath.is_file()
     with open(rstpath, 'r') as f:
         contents = f.read().splitlines()
@@ -368,60 +391,60 @@ def test_generate_rst_with_no_nblink_set_defaults_to_bottom(tmp_project):
 @pytest.mark.slow
 def test_build(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton
-    (project / "doc" / "0_Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
-    (project / "doc" / "1_First_Notebook.rst").write_text(EXAMPLE_1_RST)
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "First_Notebook.rst").write_text(EXAMPLE_1_RST)
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
     assert (project / "doc" / "0_Zeroth_Notebook.ipynb").is_file()
     assert (project / "doc" / "1_First_Notebook.ipynb").is_file()
-    assert (project / "builtdocs" / "0_Zeroth_Notebook.html").is_file()
-    assert (project / "builtdocs" / "1_First_Notebook.html").is_file()
+    assert (project / "builtdocs" / "Zeroth_Notebook.html").is_file()
+    assert (project / "builtdocs" / "First_Notebook.html").is_file()
 
 @pytest.mark.slow
 def test_build_with_nblink_at_top_succeeds(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton
     generate_rst("test_project", project_root=str(project), nblink='top',
                  host='GitHub', org='pyviz', repo='nbsite', branch='master')
-    rstpath = (project / "doc" / "1_First_Notebook.rst")
+    rstpath = (project / "doc" / "First_Notebook.rst")
     assert rstpath.is_file()
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
-    assert (project / "builtdocs" / "1_First_Notebook.html").is_file()
-    html = (project / "builtdocs" / "1_First_Notebook.html").read_text()
+    assert (project / "builtdocs" / "First_Notebook.html").is_file()
+    html = (project / "builtdocs" / "First_Notebook.html").read_text()
     assert 'This is another temporary notebook that gets created for tests' in html, \
            "The notebook did not get build to html properly - look for sphinx warnings and errors"
 
 @pytest.mark.slow
 def test_build_with_just_one_rst(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton
-    (project / "doc" / "0_Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
-    assert (project / "builtdocs" / "0_Zeroth_Notebook.html").is_file()
-    assert not (project / "builtdocs" / "1_First_Notebook.html").is_file()
+    assert (project / "builtdocs" / "Zeroth_Notebook.html").is_file()
+    assert not (project / "builtdocs" / "First_Notebook.html").is_file()
     assert (project / "builtdocs" / ".nojekyll").is_file()
 
 @pytest.mark.slow
 def test_build_deletes_by_default(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton
-    (project / "doc" / "0_Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
-    (project / "doc" / "1_First_Notebook.rst").write_text(EXAMPLE_1_RST)
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "First_Notebook.rst").write_text(EXAMPLE_1_RST)
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
     assert not (project / "builtdocs" / ".doctrees").is_dir()
-    assert (project / "builtdocs" / "1_First_Notebook.html").is_file()
+    assert (project / "builtdocs" / "First_Notebook.html").is_file()
     assert len(list((project / "builtdocs").iterdir())) == 9
 
 @pytest.mark.slow
 def test_build_with_clean_dry_run_does_not_delete(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton
-    (project / "doc" / "0_Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
-    (project / "doc" / "1_First_Notebook.rst").write_text(EXAMPLE_1_RST)
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "First_Notebook.rst").write_text(EXAMPLE_1_RST)
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='', clean_dry_run=True)
     assert (project / "builtdocs" / ".doctrees").is_dir()
-    assert (project / "builtdocs" / "1_First_Notebook.html").is_file()
+    assert (project / "builtdocs" / "First_Notebook.html").is_file()
     assert len(list((project / "builtdocs").iterdir())) == 12
 
 @pytest.mark.slow
 def test_build_copies_json(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton
-    (project / "doc" / "0_Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
     (project / "doc" / "example_json_blob.json").write_text("some json")
     (project / "doc" / "topics").mkdir()
     (project / "doc" / "topics" / "nested_example_json_blob.json").write_text("some json")
@@ -433,26 +456,43 @@ def test_build_copies_json(tmp_project_with_docs_skeleton):
 @pytest.mark.slow
 def test_build_with_error_output(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton
-    (project / "doc" / "0_Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
-    (project / "doc" / "1_First_Notebook.rst").write_text(EXAMPLE_1_RST)
-    (project / "doc" / "2_Second_Notebook.rst").write_text(EXAMPLE_2_RST)
-    assert not (project / "doc" / "2_Second_Notebook.ipynb").is_file()
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "First_Notebook.rst").write_text(EXAMPLE_1_RST)
+    (project / "doc" / "Appendix_0.rst").write_text(APPENDIX_0_RST)
+    assert not (project / "doc" / "Appendix_0.ipynb").is_file()
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
     assert (project / "doc" / "1_First_Notebook.ipynb").is_file()
-    assert (project / "doc" / "2_Second_Notebook.ipynb").is_file()
-    nb = json.loads((project / "doc" / "2_Second_Notebook.ipynb").read_text())
+    assert (project / "doc" / "Appendix_0.ipynb").is_file()
+    nb = json.loads((project / "doc" / "Appendix_0.ipynb").read_text())
     assert nb['cells'][1]['outputs'][0]['ename'] == 'ModuleNotFoundError'
     assert len(nb['cells'][2]['outputs']) == 0
 
 @pytest.mark.slow
-def test_build_with_numbers_stripped(tmp_project):
+def test_build_with_fixes_links(tmp_project):
     project = tmp_project
     (project / "doc").mkdir()
     (project / "doc" / "conf.py").write_text(CONF_CONTENT)
     (project / "examples" / "index.ipynb").write_text(EXAMPLE_0_CONTENT)
-    generate_rst("test_project", project_root=str(project), strip_numbers=True)
+    generate_rst("test_project", project_root=str(project))
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
     assert (project / "doc" / "1_First_Notebook.ipynb").is_file()
     assert (project / "builtdocs" / "First_Notebook.html").is_file()
     html = (project / "builtdocs" / "First_Notebook.html").read_text()
-    assert '<a href="Zeroth_Notebook.html">other notebook</a>' in html
+    assert '<a href="Zeroth_Notebook.html">right number</a>' in html
+    assert '<a href="Zeroth_Notebook.html">wrong number</a>' in html
+    assert '<a href="Zeroth_Notebook.html">no number</a>' in html
+
+@pytest.mark.slow
+def test_build_with_keep_numbers_passes_even_when_link_target_does_not_exist(tmp_project):
+    project = tmp_project
+    (project / "doc").mkdir()
+    (project / "doc" / "conf.py").write_text(CONF_CONTENT)
+    (project / "examples" / "index.ipynb").write_text(EXAMPLE_0_CONTENT)
+    generate_rst("test_project", project_root=str(project), keep_numbers=True)
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    assert (project / "doc" / "1_First_Notebook.ipynb").is_file()
+    assert (project / "builtdocs" / "1_First_Notebook.html").is_file()
+    html = (project / "builtdocs" / "1_First_Notebook.html").read_text()
+    assert '<a href="0_Zeroth_Notebook.html">right number</a>' in html
+    assert '<a href="1_Zeroth_Notebook.html">wrong number</a>' in html
+    assert '<a href="Zeroth_Notebook.html">no number</a>' in html

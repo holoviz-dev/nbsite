@@ -8,7 +8,7 @@ from collections import ChainMap
 
 from .util import copy_files
 
-DEFAULT_PYVIZ_ORDERING = [
+DEFAULT_SITE_ORDERING = [
     "Introduction",
     "Getting Started",
     "User Guide",
@@ -111,7 +111,7 @@ def generate_rst(
         overwrite=False,
         nblink='bottom',
         skip='',
-        strip_numbers=False):
+        keep_numbers=False):
     """Auto-generates notebook-including rsts from notebooks in examples.
 
     titles
@@ -121,10 +121,10 @@ def generate_rst(
     underscores with spaces and converting to title case. E.g.
 
       * The_Title.ipynb -> The Title
-      * 01_The_Title.ipynb -> 01 The Title
-      * 01_Hyphen-Conscious_Title.ipynb -> 01 Hyphen-Conscious Title
-      * 1_some_title.ipynb -> 1 Some Title
-      * 1_stripped_title.ipynb -> Stripped Title  # with ``strip_numbers`` flag
+      * 01_The_Title.ipynb -> The Title
+      * 01_Hyphen-Conscious_Title.ipynb -> Hyphen-Conscious Title
+      * 1_some_title.ipynb -> Some Title
+      * 1_stripped_title.ipynb -> 1 Stripped Title  # with ``keep_numbers`` flag
 
     But: index.ipynb gets title from its containing directory in
     general, except at the root, where index.ipynb gets the
@@ -141,7 +141,7 @@ def generate_rst(
         number
 
       * after dealing with numeric prefixes, items in
-        DEFAULT_PYVIZ_ORDERING ("Introduction","Getting Started","User
+        DEFAULT_SITE_ORDERING ("Introduction","Getting Started","User
         Guide","Topics","FAQ","API") grouped next, sorted in that
         order
 
@@ -160,8 +160,8 @@ def generate_rst(
 
       * offset: allows to skip leading n cells
       * overwrite: will overwrite existing rst files [DANGEROUS]
-      * strip_numbers: strips off leading numbers from title and path, but
-        maintains ordering in toc
+      * keep_numbers: keeps leading numbers in title and path, rather than
+        stripping them off.
       * ...
 
     """
@@ -185,7 +185,7 @@ def generate_rst(
             print('...deliberately skipping', relpath)
             continue
         rst = os.path.splitext(os.path.join(paths['doc'], relpath))[0] + ".rst"
-        rst = _path_and_order(rst, strip_numbers)[0]
+        rst = _path_and_order(rst, keep_numbers)[0]
         pretitle = _file2pretitle(rst)
         os.makedirs(dirname(rst), exist_ok=True)
 
@@ -219,7 +219,7 @@ def generate_rst(
             rst_file.write("    :offset: %s\n" % offset)
 
             if pretitle=='index':
-                rst_file.write("%s\n"%_toctree(dirname(filename), paths['examples'], strip_numbers))
+                rst_file.write("%s\n"%_toctree(dirname(filename), paths['examples'], keep_numbers))
             if nblink in ['bottom', 'both']:
                 rst_file.write('\n\n-------\n\n')
                 add_nblink(rst_file, host, org, repo, branch, examples, relpath)
@@ -254,24 +254,24 @@ def _title_key(title_tup):
     title, order = title_tup[0], title_tup[1]['order']
     if order is not None:
         return (0, order, title)
-    elif title in DEFAULT_PYVIZ_ORDERING:
-        return (1, DEFAULT_PYVIZ_ORDERING.index(title), title)
+    elif title in DEFAULT_SITE_ORDERING:
+        return (1, DEFAULT_SITE_ORDERING.index(title), title)
     else:
         return (1, float("inf"), title)
 
-def _path_and_order(filepath, strip_numbers):
+def _path_and_order(filepath, keep_numbers):
     num_name = os.path.basename(filepath)
     leading_num = re.match(r"^\d+", num_name)
-    if strip_numbers:
+    if not keep_numbers:
         name = re.split(r"^\d+( |-|_)", num_name)[-1]
         filepath = filepath.replace(num_name, name)
     return filepath, int(leading_num.group(0)) if leading_num else None
 
-def _toctree(nbpath, examples_path, strip_numbers):
+def _toctree(nbpath, examples_path, keep_numbers):
     tocmap = {'ipynb': {},'rst': {}}
     for ftype in ('ipynb','rst'):
         for f in glob.iglob(os.path.join(nbpath,'*.'+ftype), recursive=False):
-            f, order = _path_and_order(f, strip_numbers)
+            f, order = _path_and_order(f, keep_numbers)
             k = _file2pretitle(f)
             tocmap[ftype][_to_title(k)] = {'path': "<%s>"%k, 'order': order}
 
