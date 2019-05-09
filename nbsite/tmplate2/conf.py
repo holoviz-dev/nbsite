@@ -8,19 +8,21 @@ from nbsite.shared_conf import *
 
 project = u'Project'
 authors = u'Authors for html meta author'
-copyright = u'2017 ' + authors
+copyright = u'2019 ' + authors
 description = 'Short description for html meta description.'
-
-version = '0.0.1'
-release = '0.0.1'
+version = release = '0.0.1'
 
 html_static_path += ['_static']
-html_theme = 'sphinx_ioam_theme'
+html_theme = 'sphinx_pyviz_theme'
 # logo file etc should be in html_static_path, e.g. _static
+# only change colors in primary, primary_dark, and secondary
 html_theme_options = {
-#    'custom_css':'bettercolors.css',
-#    'logo':'amazinglogo.png',
-#    'favicon':'amazingfavicon.ico'
+#    'custom_css': 'site.css',
+#    'logo': 'logo.png',
+#    'favicon': 'favicon.ico',
+#    'primary_color': 'coral',
+#    'primary_color_dark': 'sienna',
+#    'secondary_color': 'gold',
 }
 
 _NAV =  (
@@ -36,15 +38,15 @@ html_context.update({
     'PROJECT': project,
     'DESCRIPTION': description,
     'AUTHOR': authors,
-    # will work without this - for canonical (so can ignore when building locally or test deploying)    
-    'WEBSITE_SERVER': 'https://ceball.github.io',
+    # will work without this - for canonical (so can ignore when building locally or test deploying)
+    'WEBSITE_SERVER': '//{}.pyviz.org'.format(project),
     'VERSION': version,
     'NAV': _NAV,
     # by default, footer links are same as those in header
     'LINKS': _NAV,
     'SOCIAL': (
-        ('Gitter', '//gitter.im/ioam/holoviews'),
-        ('Twitter', '//twitter.com/holoviews'),
-        ('Github', '//github.com/ioam/holoviews'),
+        ('Gitter', '//gitter.im/pyviz/pyviz'),
+        ('Twitter', '//twitter.com/pyviz_org'),
+        ('Github', '//github.com/pyviz/{}'.format(project)),
     )
 })
