@@ -8,6 +8,15 @@ from collections import ChainMap
 
 from .util import copy_files
 
+DEFAULT_SITE_ORDERING = [
+    "Introduction",
+    "Getting Started",
+    "User Guide",
+    "Topics",
+    "FAQ",
+    "API"
+]
+
 def init(project_root='',doc='doc'):
     """Start an nbsite project: create a doc folder containing nbsite
 template files
@@ -101,7 +110,8 @@ def generate_rst(
         offset=0,
         overwrite=False,
         nblink='bottom',
-        skip=''):
+        skip='',
+        keep_numbers=False):
     """Auto-generates notebook-including rsts from notebooks in examples.
 
     titles
@@ -111,9 +121,10 @@ def generate_rst(
     underscores with spaces and converting to title case. E.g.
 
       * The_Title.ipynb -> The Title
-      * 01_The_Title.ipynb -> 01 The Title
-      * 01_Hyphen-Conscious_Title.ipynb -> 01 Hyphen-Conscious Title
-      * 1_some_title.ipynb -> 1 Some Title
+      * 01_The_Title.ipynb -> The Title
+      * 01_Hyphen-Conscious_Title.ipynb -> Hyphen-Conscious Title
+      * 1_some_title.ipynb -> Some Title
+      * 1_stripped_title.ipynb -> 1 Stripped Title  # with ``keep_numbers`` flag
 
     But: index.ipynb gets title from its containing directory in
     general, except at the root, where index.ipynb gets the
@@ -130,7 +141,7 @@ def generate_rst(
         number
 
       * after dealing with numeric prefixes, items in
-        default_pyviz_ordering ("Introduction","Getting Started","User
+        DEFAULT_SITE_ORDERING ("Introduction","Getting Started","User
         Guide","Topics","FAQ","API") grouped next, sorted in that
         order
 
@@ -149,6 +160,8 @@ def generate_rst(
 
       * offset: allows to skip leading n cells
       * overwrite: will overwrite existing rst files [DANGEROUS]
+      * keep_numbers: keeps leading numbers in title and path, rather than
+        stripping them off.
       * ...
 
     """
@@ -164,14 +177,15 @@ def generate_rst(
 
     print("Project='%s': Converting notebooks at '%s' to rst at '%s'..."%(project_name,paths['examples'],paths['doc']))
     for filename in glob.iglob(os.path.join(paths['examples'],"**","*.ipynb"), recursive=True):
-        fromhere = filename.split(paths['examples'])[1].lstrip('/') # TODO: not win
+        relpath = os.path.relpath(filename, paths['examples'])
         # TODO: decide what to do about gallery later
-        if fromhere.startswith('gallery'):
+        if relpath.startswith('gallery'):
             continue
-        if _should_skip(skip, fromhere):
-            print('...deliberately skipping', fromhere)
+        if _should_skip(skip, relpath):
+            print('...deliberately skipping', relpath)
             continue
-        rst = os.path.splitext(os.path.join(paths['doc'],fromhere))[0] + ".rst"
+        rst = os.path.splitext(os.path.join(paths['doc'], relpath))[0] + ".rst"
+        rst = _path_and_order(rst, keep_numbers)[0]
         pretitle = _file2pretitle(rst)
         os.makedirs(dirname(rst), exist_ok=True)
 
@@ -182,7 +196,7 @@ def generate_rst(
                 title = project_name
             else:
                 title = _filepath2pretitle(rst,paths['doc'])
-            title = _to_title(title,apply_title_case=True)
+            title = _to_title(title, apply_title_case=True)
 
         if os.path.exists(rst):
             if not overwrite:
@@ -198,22 +212,22 @@ def generate_rst(
             rst_file.write('*'*len(title)+'\n\n')
 
             if nblink in ['top', 'both']:
-                add_nblink(rst_file, host,org,repo, branch, examples, fromhere)
+                add_nblink(rst_file, host, org, repo, branch, examples, relpath)
                 rst_file.write('\n\n-------\n\n')
 
-            rst_file.write(".. notebook:: %s %s" % (project_name,os.path.relpath(paths['examples'],start=dirname(rst))+'/'+fromhere+"\n"))
+            rst_file.write(".. notebook:: %s %s" % (project_name,os.path.relpath(paths['examples'],start=dirname(rst))+'/'+relpath+"\n"))
             rst_file.write("    :offset: %s\n" % offset)
 
             if pretitle=='index':
-                rst_file.write("%s\n"%_toctree(dirname(filename),paths['examples']))
+                rst_file.write("%s\n"%_toctree(dirname(filename), paths['examples'], keep_numbers))
             if nblink in ['bottom', 'both']:
                 rst_file.write('\n\n-------\n\n')
-                add_nblink(rst_file, host,org,repo, branch, examples, fromhere)
+                add_nblink(rst_file, host, org, repo, branch, examples, relpath)
 
 
-def add_nblink(rst_file, host,org,repo,branch,examples, fromhere):
-    if all([host,org,repo,branch]):
-        info = (hosts[host],org,repo,branch,examples,fromhere)
+def add_nblink(rst_file, host, org, repo, branch, examples, relpath):
+    if all([host, org, repo, branch]):
+        info = (hosts[host], org, repo, branch, examples,relpath)
         rst_file.write('`Right click to download this notebook from ' + host + '.'
                        ' <%s/%s/%s/%s/%s/%s>`_\n' % info)
 
@@ -236,31 +250,46 @@ def _filepath2pretitle(filepath,root):
 def _file2pretitle(file_):
     return os.path.splitext(os.path.basename(file_))[0]
 
-default_pyviz_ordering = ["Introduction","Getting Started","User Guide","Topics","FAQ","API"]
-def _title_key(title):
-    leading_digits = re.match(r"\d+",title)
-    return (0,int(leading_digits.group(0)),title) if leading_digits else (1,default_pyviz_ordering.index(title) if title in default_pyviz_ordering else float("inf"),title)
+def _title_key(title_tup):
+    title, order = title_tup[0], title_tup[1]['order']
+    if order is not None:
+        return (0, order, title)
+    elif title in DEFAULT_SITE_ORDERING:
+        return (1, DEFAULT_SITE_ORDERING.index(title), title)
+    else:
+        return (1, float("inf"), title)
 
-def _toctree(nbpath,examples_path):
-    #
-    # rst:
-    # ipynb:
-    # dir: dir containing index.ipynb
+def _path_and_order(filepath, keep_numbers):
+    num_name = os.path.basename(filepath)
+    leading_num = re.match(r"^\d+", num_name)
+    if not keep_numbers:
+        name = re.split(r"^\d+( |-|_)", num_name)[-1]
+        filepath = filepath.replace(num_name, name)
+    return filepath, int(leading_num.group(0)) if leading_num else None
 
-    tocmap = {}
+def _toctree(nbpath, examples_path, keep_numbers):
+    tocmap = {'ipynb': {},'rst': {}}
     for ftype in ('ipynb','rst'):
-        tocmap[ftype] = {_to_title(k):"<%s>"%k for k in [_file2pretitle(f) for f in glob.iglob(os.path.join(nbpath,'*.'+ftype), recursive=False)]}
+        for f in glob.iglob(os.path.join(nbpath,'*.'+ftype), recursive=False):
+            f, order = _path_and_order(f, keep_numbers)
+            k = _file2pretitle(f)
+            tocmap[ftype][_to_title(k)] = {'path': "<%s>"%k, 'order': order}
 
-    tocmap['dir'] = {_to_title(k,apply_title_case=True):"<%s/index>"%k for k in [_filepath2pretitle(x,examples_path) for x in glob.glob(os.path.join(nbpath,"**","index.ipynb"))]}
+    tocmap['dir'] = {
+        _to_title(k, apply_title_case=True): {'path': "<%s/index>"%k, 'order': None} for k in [
+            _filepath2pretitle(x, examples_path) for x in glob.glob(os.path.join(nbpath, "**", "index.ipynb"))]}
 
     # index shouldn't explicitly appear in toctree...
     if 'index' in tocmap['rst'] or 'index' in tocmap['ipynb']:
-        tocmap['rst'].pop('index',None)
-        tocmap['ipynb'].pop('index',None)
+        tocmap['rst'].pop('index', None)
+        tocmap['ipynb'].pop('index', None)
     # ...except at root (where it gets called Introduction)
     if _is_root(nbpath,examples_path):
-        assert not any(['Introduction' in tocmap[x] for x in tocmap]), "index will be shown as Introduction, but Introduction already exists in %s"%examples_path
-        tocmap['rst']['Introduction'] ='<self>'
+        if any(['Introduction' in tocmap[x] for x in tocmap]):
+            raise ValueError("index will be shown as Introduction, but Introduction "
+                             "already exists in %s" % examples_path)
+
+        tocmap['rst']['Introduction'] = {'path': '<self>', 'order': -1}
 
     titles = ChainMap(*[tocmap[x] for x in tocmap])
 
@@ -269,8 +298,8 @@ def _toctree(nbpath,examples_path):
     :titlesonly:
     :maxdepth: 2
 """
-    for title in sorted(titles,key=_title_key):
+    for title, title_dict in sorted(titles.items(), key=_title_key):
         toctree += """
-    %s %s"""%(title,titles[title])
+    %s %s"""%(title, title_dict['path'])
 
     return toctree
