@@ -17,14 +17,20 @@ DEFAULT_SITE_ORDERING = [
     "API"
 ]
 
-def init(project_root='',doc='doc'):
-    """Start an nbsite project: create a doc folder containing nbsite
-template files
-
+def init(project_root='', doc='doc', theme=''):
     """
-    paths = _prepare_paths(project_root,doc=doc)
-    copy_files(os.path.join(dirname(__file__),'tmplate2'),
-               paths['doc'])
+    Start an nbsite project: create a doc folder containing nbsite
+    template files
+
+    Use the theme argument to specify a particular theme to use as template
+    """
+    paths = _prepare_paths(project_root, doc=doc)
+    if theme:
+        copy_files(os.path.join(dirname(__file__), 'templates', theme),
+                   paths['doc'])
+    else:
+        copy_files(os.path.join(dirname(__file__), 'templates', 'basic'),
+                   paths['doc'])
 
 hosts = {
     # no trailing slash
