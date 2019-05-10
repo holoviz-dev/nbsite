@@ -19,9 +19,10 @@ html_theme_options = {
     'custom_css': 'site.css',
     'logo': 'nbsite-logo.png',
     'favicon': 'favicon.ico',
-    'primary_color': 'coral',
-    'primary_color_dark': 'sienna',
-    'secondary_color': 'gold',
+    'primary_color': '#F16A25',
+    'primary_color_dark': '#B5501C',
+    'secondary_color': '#F5C33C',
+    'second_nav': True,
 }
 
 _NAV = (
