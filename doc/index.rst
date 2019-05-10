@@ -21,6 +21,24 @@ likely encounter limitations and
 problems. However, please file issues or ask questions on `GitHub
 <https://github.com/pyviz/nbsite/issues>`_.
 
+Examples
+========
+
+Many of the websites in the pyviz ecosystem are built using nbsite.
+These include:
+
+  .. raw:: html
+
+    <div id="iframe-container" style="height: 1200px; width: 2000px;">
+      <iframe src="https://holoviews.org" height="500px" width="900px"></iframe>
+      <iframe src="http://geoviews.org" height="500px" width="900px"></iframe>
+      <iframe src="http://datashader.org" height="500px" width="900px"></iframe>
+      <iframe src="https://pyviz.org" height="500px" width="900px"></iframe>
+      <iframe src="https://hvplot.pyviz.org" height="500px" width="900px"></iframe>
+      <iframe src="https://panel.pyviz.org" height="500px" width="900px"></iframe>
+      <iframe src="https://colorcet.pyviz.org" height="500px" width="900px"></iframe>
+    </div>
+
 .. _when_to_use:
 
 When to use nbsite
@@ -55,24 +73,6 @@ to consider instead if that is your case:
     ...?
 
 .. _examples:
-
-Examples
-========
-
-Many of the websites in the pyviz ecosystem are built using nbsite.
-These include:
-
-  .. raw:: html
-
-    <div id="iframe-container" style="height: 1200px; width: 2000px;">
-      <iframe src="https://holoviews.org" height="500px" width="900px"></iframe>
-      <iframe src="http://geoviews.org" height="500px" width="900px"></iframe>
-      <iframe src="http://datashader.org" height="500px" width="900px"></iframe>
-      <iframe src="https://pyviz.org" height="500px" width="900px"></iframe>
-      <iframe src="https://hvplot.pyviz.org" height="500px" width="900px"></iframe>
-      <iframe src="https://panel.pyviz.org" height="500px" width="900px"></iframe>
-      <iframe src="https://colorcet.pyviz.org" height="500px" width="900px"></iframe>
-    </div>
 
 .. toctree::
     :hidden:

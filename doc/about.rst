@@ -1,8 +1,8 @@
-About PROJECT
-=============
+About NBSite
+============
 
-PROJECT is supported and maintained by `Anaconda
-<https://www.anaconda.com>`_.  PROJECT is part of the `PyViz
+NBSite is supported and maintained by `Anaconda
+<https://www.anaconda.com>`_. NBSite is part of the `PyViz
 <https://pyviz.org>`_ project to make Python data visualization tools
 simpler and more powerful.
 

@@ -22,12 +22,13 @@ html_theme_options = {
     'primary_color': '#F16A25',
     'primary_color_dark': '#B5501C',
     'secondary_color': '#F5C33C',
-    'second_nav': True,
+    'second_nav': False,
 }
 
 _NAV = (
-    ('User Guide', 'user_guide'),
+    ('Usage', 'Usage'),
     ('Gallery', 'gallery'),
+    ('Development', 'Development'),
     ('About', 'about')
 )
 
