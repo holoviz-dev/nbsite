@@ -79,7 +79,7 @@ setup_args = dict(
         ],
         'examples':[
             'pyct[cmd] >=0.4.5',
-            'sphinx_ioam_theme',
+            'sphinx_pyviz_theme',
             'holoviews',
             'bokeh',
             'pillow',
