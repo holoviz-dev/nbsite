@@ -14,16 +14,21 @@ import nbsite
 version = release = nbsite.__version__
 
 html_static_path += ['_static']
-html_theme = 'sphinx_ioam_theme'
+html_theme = 'sphinx_pyviz_theme'
 html_theme_options = {
-    'custom_css': 'nbsitesite.css',
+    'custom_css': 'site.css',
     'logo': 'nbsite-logo.png',
-    'favicon': 'favicon.ico'
+    'favicon': 'favicon.ico',
+    'primary_color': '#F16A25',
+    'primary_color_dark': '#B5501C',
+    'secondary_color': '#F5C33C',
+    'second_nav': False,
 }
 
 _NAV = (
-    ('Usage', 'usage'),
+    ('Usage', 'Usage'),
     ('Gallery', 'gallery'),
+    ('Development', 'Development'),
     ('About', 'about')
 )
 
