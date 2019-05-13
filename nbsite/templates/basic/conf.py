@@ -14,7 +14,7 @@ site = u'website where this will be served'
 version = release = '0.0.1'
 
 html_static_path += ['_static']
-html_theme = ''  # choose a theme
+# html_theme =   # choose a theme
 html_theme_options = {}  # fill out theme options as desired
 
 _NAV =  (

@@ -118,9 +118,8 @@ def cleanup_links(path, inspect_links=False):
                     if os.path.exists(new_path):
                         a['href'] = os.path.relpath(new_path, os.path.dirname(path))
                     else:
-                        warnings.warn('Cannot find html to link to. Original href: {}, '
-                                      'first tried: {}, then tried: {}'.format(
-                                       a['href'], try_path, new_path), )
+                        also_tried = 'Also tried: {}'.format(name) if name != num_name else ''
+                        warnings.warn('Found missing link {} in: {}. {}'.format(a['href'], path, also_tried))
 
         if inspect_links and 'http' in a['href']:
             print(a['href'])
