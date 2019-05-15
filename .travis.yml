@@ -43,19 +43,14 @@ jobs:
         - doit develop_install -o examples -o tests
         - doit env_capture
       script:
-        - which python
-        - which nbsite
-        - echo $PATH
-        - nbsite generate-rst --org pyviz --project-name nbsite --skip '.*sites.*'
+        - doit build_docs
         - doit test_all
 
     - &website
       <<: *default
       stage: website_release
       env: DESC="Release website"
-      script:
-        - nbsite generate-rst --org pyviz --project-name nbsite --skip '.*sites.*'
-        - nbsite build --what=html --output=builtdocs
+      script: doit build_docs
       deploy:
         - provider: pages
           skip_cleanup: true
