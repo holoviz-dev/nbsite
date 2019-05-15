@@ -45,6 +45,7 @@ jobs:
       script:
         - which python
         - which nbsite
+        - echo $PATH
         - nbsite generate-rst --org pyviz --project-name nbsite --skip '.*sites.*'
         - doit test_all
 
