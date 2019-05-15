@@ -6,8 +6,8 @@ nbsite
 
 Nbsite lets you build a website from a set of notebooks plus a minimal
 amount of config. Sites built with nbsite include
-`pyviz.org <http://pyviz.org/>`_,
-`datashader.org <http://datashader.org/>`_, and `hvplot.pyviz.org <http:/hvplot.pyviz.org/>`_.
+`pyviz.org <https://pyviz.org/>`_,
+`datashader.org <http://datashader.org/>`_, and `hvplot.pyviz.org <https://hvplot.pyviz.org/>`_.
 
 The idea behind nbsite is that notebooks can simultaneously be
 documentation (things you want to tell people about), examples (a
@@ -29,10 +29,8 @@ These include:
 
   .. raw:: html
 
-    <div id="iframe-container" style="height: 1200px; width: 2000px;">
+    <div id="iframe-container" style="height: 800px; width: 2000px;">
       <iframe src="https://holoviews.org" height="500px" width="900px"></iframe>
-      <iframe src="http://geoviews.org" height="500px" width="900px"></iframe>
-      <iframe src="http://datashader.org" height="500px" width="900px"></iframe>
       <iframe src="https://pyviz.org" height="500px" width="900px"></iframe>
       <iframe src="https://hvplot.pyviz.org" height="500px" width="900px"></iframe>
       <iframe src="https://panel.pyviz.org" height="500px" width="900px"></iframe>
@@ -63,7 +61,7 @@ to consider instead if that is your case:
     (whatever scikit-learn uses), (wahtever scikit-image uses), ...
 
   * notebook hosting plus viewing: github+nbviewer
-    (e.g. `<http://nbviewer.jupyter.org/github/pyviz/pyviz/blob/master/notebooks/00-welcome.ipynb>`_),
+    (e.g. `<https://nbviewer.jupyter.org/github/pyviz/pyviz/blob/master/notebooks/00-welcome.ipynb>`_),
     anaconda.org
     (e.g. `<https://anaconda.org/cball/ioam-paramnb-index/notebook>`_);
     ...
