@@ -43,7 +43,6 @@ jobs:
         - doit develop_install -o examples -o tests
         - doit env_capture
       script:
-        - doit build_docs
         - doit test_all
 
     - &website
