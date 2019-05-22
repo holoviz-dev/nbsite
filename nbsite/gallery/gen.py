@@ -149,7 +149,7 @@ IFRAME_TEMPLATE = """
     </style>
 
     <div class="iframe-container">
-      <iframe src="{url}" width="100%" frameborder="0"></iframe>
+      <iframe src="{url}" width="100%" frameborder="0" onload="this.parentNode.style.background = 'none'"></iframe>
     </div>
 """
 
