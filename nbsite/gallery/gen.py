@@ -130,7 +130,27 @@ IFRAME_TEMPLATE = """
 
 .. raw:: html
 
-    <iframe src="{url}" width="100%" height=1000 frameborder="0" scrolling="no" ></iframe>
+    <style>
+      .iframe-container {{
+        overflow: hidden;
+        padding-top: 56.25%;
+        position: relative;
+        background: url({background}) center center no-repeat;
+      }}
+
+      .iframe-container iframe {{
+        border: 0;
+        height: 100%;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 100%;
+      }}
+    </style>
+
+    <div class="iframe-container">
+      <iframe src="{url}" width="100%" frameborder="0"></iframe>
+    </div>
 """
 
 
@@ -151,6 +171,7 @@ DEFAULT_GALLERY_CONF = {
     'github_org': None,
     'github_project': None,
     'deployment_url': None,
+    'iframe_spinner': "https://assets.holoviews.org/static/spinner.gif",
     'script_prefix': PREFIX,
     'skip_execute': [],
     'thumbnail_url': THUMBNAIL_URL,
@@ -167,6 +188,7 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend, img_extens
     examples_dir = gallery_conf['examples_dir']
     skip_execute = gallery_conf['skip_execute']
     endpoint = gallery_conf['deployment_url']
+    iframe_spinner = gallery_conf['iframe_spinner']
     extensions = content.get('extensions', gallery_conf['default_extensions'])
 
     components = [examples_dir.split(os.path.sep)[-1], page]
@@ -214,7 +236,8 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend, img_extens
                 if deployed or skip or any(basename.strip().endswith(skipped) for skipped in skip_execute):
                     rst_file.write('\n    :skip_execute: True\n')
                 if deployed:
-                    rst_file.write(IFRAME_TEMPLATE.format(url=endpoint+'/'+basename[1:-6]))
+                    rst_file.write(IFRAME_TEMPLATE.format(
+                        background=iframe_spinner, url=endpoint+basename[:-6]))
             else:
                 ftype = 'script'
                 rst_file.write('.. literalinclude:: %s\n\n' % rel_path)
