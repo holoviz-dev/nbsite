@@ -314,6 +314,7 @@ def generate_gallery(app, page):
             section_backends = section.get('backends', backends)
             skip = section.get('skip', content.get('skip', False))
             heading = section.get('title', section['path'])
+            description = section.get('description', None)
             subsection_order = section.get('within_subsection_order', sort_fn)
             section = section['path']
         else:
@@ -321,11 +322,15 @@ def generate_gallery(app, page):
             skip = content.get('skip', False)
             section_backends = backends
             subsection_order = sort_fn
+            description = None
 
         if heading:
             gallery_rst += heading + '\n' + '='*len(heading) + '\n\n'
         else:
             gallery_rst += '\n\n.. raw:: html\n\n    <div class="section"></div><br>\n\n'
+
+        if description:
+            gallery_rst += description + '\n\n'
 
         thumb_extension = 'png'
         for backend in (section_backends or ('',)):
