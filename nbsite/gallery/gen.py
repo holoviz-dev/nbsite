@@ -408,7 +408,7 @@ def generate_gallery(app, page):
                     pass
                 elif extension == 'ipynb':
                     verb = 'Successfully generated'
-                    code = notebook_thumbnail(f, os.path.join(*(['doc']+path_components)))
+                    code = notebook_thumbnail(f, dest_dir)
                     code = script_prefix + code
                     my_env = os.environ.copy()
                     retcode = execute(code.encode('utf8'), env=my_env, cwd=os.path.split(f)[0])

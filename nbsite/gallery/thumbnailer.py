@@ -10,6 +10,36 @@ from holoviews.util.command import export_to_python
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 
+
+def strip_specific_magics(source, magic):
+    """
+    Given the source of a cell, filter out specific cell and line magics.
+    """
+    filtered=[]
+    for line in source.splitlines():
+        if line.startswith(f'%{magic}'):
+            filtered.append(line.lstrip(f'%{magic}').strip(' '))
+        if line.startswith(f'%%{magic}'):
+            filtered.append(line.lstrip(f'%%{magic}').strip(' '))
+        else:
+            filtered.append(line)
+    return '\n'.join(filtered)
+
+
+class StripTimeMagicsProcessor(Preprocessor):
+    """
+    Preprocessor to convert notebooks to Python source strips out just time
+    magics while keeping the rest of the cell.
+    """
+
+    def preprocess_cell(self, cell, resources, index):
+        if cell['cell_type'] == 'code':
+            cell['source'] = strip_specific_magics(cell['source'], 'time')
+        return cell, resources
+
+    def __call__(self, nb, resources): return self.preprocess(nb,resources)
+
+
 def thumbnail(obj, basename):
     import os
     if isinstance(obj, Dimensioned) and not os.path.isfile(basename+'.png'):
@@ -53,6 +83,7 @@ def notebook_thumbnail(filename, subpath):
 
     preprocessors = [OptsMagicProcessor(),
                      OutputMagicProcessor(),
+                     StripTimeMagicsProcessor(),
                      StripMagicsProcessor(),
                      ThumbnailProcessor(os.path.abspath(os.path.join(dir_path, basename)))]
     return export_to_python(filename, preprocessors)
