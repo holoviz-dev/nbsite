@@ -427,7 +427,7 @@ def generate_gallery(app, page):
                     retcode = 0
 
                 # Try download
-                if download and retcode and not only_use_existing:
+                if download and retcode:
                     thumb_req = requests.get(thumb_url)
                     verb = 'Successfully downloaded'
                     if thumb_req.status_code == 200:
