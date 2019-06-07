@@ -359,9 +359,9 @@ def generate_gallery(app, page):
             deployment_url = None
 
         if heading:
-            gallery_rst += '\n' + heading + '\n' + '='*len(heading) + '\n\n'
+            gallery_rst += f'\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="{section}-section"><h2>{heading}</h2>\n\n'
         else:
-            gallery_rst += '\n\n.. raw:: html\n\n    <div class="section"></div><br>\n\n'
+            gallery_rst += f'\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="{section}-section"></div><br>\n\n'
 
         if description:
             gallery_rst += description + '\n\n'
@@ -387,6 +387,7 @@ def generate_gallery(app, page):
                 files += glob.glob(os.path.join(path, extension))
 
             if files:
+                gallery_rst = gallery_rst.replace(f'id="{section}-section"', f'id="{section}-section" style="width: {160 * len(files)+ 20}px"')
                 if backend:
                     backend_str = ' for %s backend' % backend
                 else:
@@ -468,6 +469,7 @@ def generate_gallery(app, page):
                               backend, thumb_extension, skip, deployment_url)
         # clear at the end of the section
         gallery_rst += CLEAR_DIV
+        gallery_rst += '\n\n.. raw:: html\n\n    </div>\n\n'
 
     if backends or section_backends:
         gallery_rst += HIDE_JS.format(backends=repr(backends[1:]))
