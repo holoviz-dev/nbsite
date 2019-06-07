@@ -406,7 +406,9 @@ def generate_gallery(app, page):
                 if backend:
                     url_components.append(backend)
                 url_components.append('%s.png' % basename)
-                thumb_url = '/'.join(url_components)
+
+                # if there is a . in the path, just get rid of it
+                thumb_url = '/'.join(url_components).replace('/./', '/')
 
                 thumb_dir = os.path.join(dest_dir, 'thumbnails')
                 if not os.path.isdir(thumb_dir):
