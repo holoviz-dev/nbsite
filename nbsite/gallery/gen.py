@@ -158,6 +158,7 @@ DEFAULT_GALLERY_CONF = {
     'backends': None,
     'default_extensions': ['*.ipynb', '*.py'],
     'enable_download': True,
+    'only_use_existing': False,
     'examples_dir': os.path.join('..', 'examples'),
     'galleries': {
         'gallery': {
@@ -327,6 +328,7 @@ def generate_gallery(app, page):
     thumbnail_url = gallery_conf['thumbnail_url']
     download = gallery_conf['enable_download']
     script_prefix = gallery_conf['script_prefix']
+    only_use_existing = gallery_conf['only_use_existing']
 
     # Write gallery index
     title = content['title']
@@ -419,12 +421,13 @@ def generate_gallery(app, page):
                 # Try existing file
                 retcode = 1
                 thumb_extension = 'png'
+
                 if os.path.isfile(thumb_path):
                     verb = 'Used existing'
                     retcode = 0
 
                 # Try download
-                if download and retcode:
+                if download and retcode and not only_use_existing:
                     thumb_req = requests.get(thumb_url)
                     verb = 'Successfully downloaded'
                     if thumb_req.status_code == 200:
@@ -441,7 +444,7 @@ def generate_gallery(app, page):
                             thumb_f.write(thumb_req.content)
 
                 # Generate thumbnail
-                if not retcode:
+                if not retcode or only_use_existing:
                     pass
                 elif extension == 'ipynb':
                     verb = 'Successfully generated'
