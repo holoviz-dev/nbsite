@@ -40,6 +40,34 @@ class StripTimeMagicsProcessor(Preprocessor):
     def __call__(self, nb, resources): return self.preprocess(nb,resources)
 
 
+def strip_trailing_semicolons(source, function):
+    """
+    Give the source of a cell, filter out lines that contain a specified
+    function call and end in a semicolon.
+    """
+    filtered=[]
+    for line in source.splitlines():
+        if line.endswith(f'{function}();'):
+            filtered.append(line[:-1])
+        else:
+            filtered.append(line)
+    return '\n'.join(filtered)
+
+
+class StripServableSemicolonsProcessor(Preprocessor):
+    """
+    Preprocessor to convert notebooks to Python source strips out just semicolons
+    that come after the servable function call.
+    """
+
+    def preprocess_cell(self, cell, resources, index):
+        if cell['cell_type'] == 'code':
+            cell['source'] = strip_trailing_semicolons(cell['source'], 'servable')
+        return cell, resources
+
+    def __call__(self, nb, resources): return self.preprocess(nb,resources)
+
+
 def thumbnail(obj, basename):
     import os
     if isinstance(obj, Dimensioned) and not os.path.isfile(basename+'.png'):
@@ -84,6 +112,7 @@ def notebook_thumbnail(filename, subpath):
     preprocessors = [OptsMagicProcessor(),
                      OutputMagicProcessor(),
                      StripTimeMagicsProcessor(),
+                     StripServableSemicolonsProcessor(),
                      StripMagicsProcessor(),
                      ThumbnailProcessor(os.path.abspath(os.path.join(dir_path, basename)))]
     return export_to_python(filename, preprocessors)
