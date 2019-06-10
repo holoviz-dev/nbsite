@@ -1,28 +1,40 @@
 import inspect
 
-#sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "param")))
-
 import param
 
 param.parameterized.docstring_signature = False
 param.parameterized.docstring_describe_params = False
+
+# Parameter attributes which are never shown
+IGNORED_ATTRS = [
+    'precedence', 'check_on_set', 'instantiate', 'pickle_default_value',
+    'watchers', 'compute_default_fn']
+
+# Default parameter attribute values (value not shown if it matches defaults)
+DEFAULT_VALUES = {'allow_None': False, 'readonly': False}
 
 
 def param_formatter(app, what, name, obj, options, lines):
     if what == 'module':
         lines = ["start"]
 
-    if what == 'class':
-        if isinstance(obj, param.parameterized.ParameterizedMetaclass):
-            params = obj.params()
-            for child in params:
-                if child not in ["print_level", "name"]:
-                    doc = ""
-                    if params[child].doc: doc = params[child].doc
-                    members = inspect.getmembers(params[child])
-                    params_str = ""
-                    for m in members:
-                        if m[0][0] != "_" and m[0] != "doc" and m[0] != "class_" and not inspect.ismethod(m[1]) and not inspect.isfunction(m[1]):
-                            params_str += "%s=%s, " % (m[0], m[1])
-                    params_str = params_str[:-2]
-                    lines.extend(["", "*param %s* ``%s`` (*%s*)" % (params[child].__class__.__name__, child, params_str), "    %s" % doc])
+    if what == 'class' and isinstance(obj, param.parameterized.ParameterizedMetaclass):
+        params = obj.params()
+        for child in params:
+            if child in ["print_level", "name"]:
+                continue
+            pobj = params[child]
+            doc = pobj.doc or ""
+            members = inspect.getmembers(pobj)
+            params_str = ""
+            for m in members:
+                if (m[0][0] != "_" and m[0] not in IGNORED_ATTRS and
+                    not inspect.ismethod(m[1]) and not inspect.isfunction(m[1]) and
+                    m[1] is not None and DEFAULT_VALUES.get(m[0]) != m[1]):
+                    params_str += "%s=%s, " % (m[0], repr(m[1]))
+            params_str = params_str[:-2]
+            ptype = params[child].__class__.__name__
+            if params_str.lstrip():
+                lines.extend(["", "``%s`` = param.%s(%s)" % (child, ptype, params_str), "    %s" % doc])
+            else:
+                lines.extend(["", "``%s`` = param.%s()" % (child, ptype), "    %s" % doc])
