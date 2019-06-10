@@ -153,11 +153,25 @@ IFRAME_TEMPLATE = """
     </div>
 """
 
+INLINE_GALLERY_STYLE = """
+
+.. raw:: html
+
+   <style>
+     .sphx-glr-section {
+       display: inline-block;
+       vertical-align: top;
+       padding-right: 20px;
+     }
+   </style>
+
+"""
 
 DEFAULT_GALLERY_CONF = {
     'backends': None,
     'default_extensions': ['*.ipynb', '*.py'],
     'enable_download': True,
+    'only_use_existing': False,
     'examples_dir': os.path.join('..', 'examples'),
     'galleries': {
         'gallery': {
@@ -174,6 +188,7 @@ DEFAULT_GALLERY_CONF = {
     'github_project': None,
     'deployment_url': None,
     'iframe_spinner': "https://assets.holoviews.org/static/spinner.gif",
+    'inline': False,
     'script_prefix': PREFIX,
     'skip_execute': [],
     'thumbnail_url': THUMBNAIL_URL,
@@ -327,6 +342,8 @@ def generate_gallery(app, page):
     thumbnail_url = gallery_conf['thumbnail_url']
     download = gallery_conf['enable_download']
     script_prefix = gallery_conf['script_prefix']
+    only_use_existing = gallery_conf['only_use_existing']
+    inline = gallery_conf['inline']
 
     # Write gallery index
     title = content['title']
@@ -340,6 +357,9 @@ def generate_gallery(app, page):
             buttons.append(BUTTON_TEMPLATE.format(N=n+1, checked='' if n else 'checked="checked"',
                                                   label=backend.capitalize()))
         gallery_rst += BUTTON_GROUP_TEMPLATE.format(buttons=''.join(buttons), backends=backends)
+
+    if inline:
+        gallery_rst += INLINE_GALLERY_STYLE
 
     for section in sections:
         if isinstance(section, dict):
@@ -359,9 +379,9 @@ def generate_gallery(app, page):
             deployment_url = None
 
         if heading:
-            gallery_rst += '\n' + heading + '\n' + '='*len(heading) + '\n\n'
+            gallery_rst += f'\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="{section}-section"><h2>{heading}</h2>\n\n'
         else:
-            gallery_rst += '\n\n.. raw:: html\n\n    <div class="section"></div><br>\n\n'
+            gallery_rst += f'\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="{section}-section"></div><br>\n\n'
 
         if description:
             gallery_rst += description + '\n\n'
@@ -387,6 +407,9 @@ def generate_gallery(app, page):
                 files += glob.glob(os.path.join(path, extension))
 
             if files:
+                if inline:
+                    gallery_rst = gallery_rst.replace(f'id="{section}-section"',
+                        f'id="{section}-section" style="width: {180 * len(files)}px"')
                 if backend:
                     backend_str = ' for %s backend' % backend
                 else:
@@ -418,6 +441,7 @@ def generate_gallery(app, page):
                 # Try existing file
                 retcode = 1
                 thumb_extension = 'png'
+
                 if os.path.isfile(thumb_path):
                     verb = 'Used existing'
                     retcode = 0
@@ -440,7 +464,7 @@ def generate_gallery(app, page):
                             thumb_f.write(thumb_req.content)
 
                 # Generate thumbnail
-                if not retcode:
+                if not retcode or only_use_existing:
                     pass
                 elif extension == 'ipynb':
                     verb = 'Successfully generated'
@@ -468,6 +492,7 @@ def generate_gallery(app, page):
                               backend, thumb_extension, skip, deployment_url)
         # clear at the end of the section
         gallery_rst += CLEAR_DIV
+        gallery_rst += '\n\n.. raw:: html\n\n    </div>\n\n'
 
     if backends or section_backends:
         gallery_rst += HIDE_JS.format(backends=repr(backends[1:]))
