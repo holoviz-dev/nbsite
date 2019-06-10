@@ -153,6 +153,19 @@ IFRAME_TEMPLATE = """
     </div>
 """
 
+INLINE_GALLERY_STYLE = """
+
+.. raw:: html
+
+   <style>
+     .sphx-glr-section {
+       display: inline-block;
+       vertical-align: top;
+       padding-right: 20px;
+     }
+   </style>
+
+"""
 
 DEFAULT_GALLERY_CONF = {
     'backends': None,
@@ -175,6 +188,7 @@ DEFAULT_GALLERY_CONF = {
     'github_project': None,
     'deployment_url': None,
     'iframe_spinner': "https://assets.holoviews.org/static/spinner.gif",
+    'inline': False,
     'script_prefix': PREFIX,
     'skip_execute': [],
     'thumbnail_url': THUMBNAIL_URL,
@@ -329,6 +343,7 @@ def generate_gallery(app, page):
     download = gallery_conf['enable_download']
     script_prefix = gallery_conf['script_prefix']
     only_use_existing = gallery_conf['only_use_existing']
+    inline = gallery_conf['inline']
 
     # Write gallery index
     title = content['title']
@@ -342,6 +357,9 @@ def generate_gallery(app, page):
             buttons.append(BUTTON_TEMPLATE.format(N=n+1, checked='' if n else 'checked="checked"',
                                                   label=backend.capitalize()))
         gallery_rst += BUTTON_GROUP_TEMPLATE.format(buttons=''.join(buttons), backends=backends)
+
+    if inline:
+        gallery_rst += INLINE_GALLERY_STYLE
 
     for section in sections:
         if isinstance(section, dict):
@@ -389,7 +407,9 @@ def generate_gallery(app, page):
                 files += glob.glob(os.path.join(path, extension))
 
             if files:
-                gallery_rst = gallery_rst.replace(f'id="{section}-section"', f'id="{section}-section" style="width: {160 * len(files)+ 20}px"')
+                if inline:
+                    gallery_rst = gallery_rst.replace(f'id="{section}-section"',
+                        f'id="{section}-section" style="width: {180 * len(files)}px"')
                 if backend:
                     backend_str = ' for %s backend' % backend
                 else:
