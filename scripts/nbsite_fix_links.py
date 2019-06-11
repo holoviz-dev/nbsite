@@ -11,10 +11,6 @@ import warnings
 
 # TODO: holoviews specific links e.g. to reference manual...doc & generalize
 
-# TODO: such a regex appears in at least one other place in ioam-builder...
-rx = re.compile('(.*)\d\d-(.+).ipynb')
-rx2 = re.compile('(.*)\d-(.+).ipynb')
-
 #BOKEH_REPLACEMENTS = {'cell.output_area.append_execute_result': '//cell.output_area.append_execute_result',
 #                      '}(window));\n</div>': '}(window));\n</script></div>',
 #                      '\n(function(root) {': '<script>\n(function(root) {'}
@@ -100,26 +96,19 @@ def cleanup_links(path, inspect_links=False):
         if '.ipynb' in href and 'http' not in href:
  #           for k, v in LINK_REPLACEMENTS.items():
  #               href = href.replace(k, v)
-            if rx.match(href):
-                parts = href.split('/')
-                a['href'] = '/'.join(parts[:-1]+[parts[-1][3:-5]+'html'])
-            elif rx2.match(href):
-                parts = href.split('/')
-                a['href'] = '/'.join(parts[:-1]+[parts[-1][2:-5]+'html'])
-            else:
-                a['href'] = href.replace('.ipynb', '.html')
+            a['href'] = href.replace('.ipynb', '.html')
 
-                # check to make sure that path exists, if not, try un-numbered version
-                try_path = os.path.join(os.path.dirname(path), a['href'])
-                if not os.path.exists(try_path):
-                    num_name = os.path.basename(try_path)
-                    name = re.split(r"^\d+( |-|_)", num_name)[-1]
-                    new_path = try_path.replace(num_name, name)
-                    if os.path.exists(new_path):
-                        a['href'] = os.path.relpath(new_path, os.path.dirname(path))
-                    else:
-                        also_tried = 'Also tried: {}'.format(name) if name != num_name else ''
-                        warnings.warn('Found missing link {} in: {}. {}'.format(a['href'], path, also_tried))
+            # check to make sure that path exists, if not, try un-numbered version
+            try_path = os.path.join(os.path.dirname(path), a['href'])
+            if not os.path.exists(try_path):
+                num_name = os.path.basename(try_path)
+                name = re.split(r"^\d+( |-|_)", num_name)[-1]
+                new_path = try_path.replace(num_name, name)
+                if os.path.exists(new_path):
+                    a['href'] = os.path.relpath(new_path, os.path.dirname(path))
+                else:
+                    also_tried = 'Also tried: {}'.format(name) if name != num_name else ''
+                    warnings.warn('Found missing link {} in: {}. {}'.format(a['href'], path, also_tried))
 
         if inspect_links and 'http' in a['href']:
             print(a['href'])
