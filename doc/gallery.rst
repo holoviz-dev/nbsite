@@ -157,12 +157,12 @@ the different backends.
 .. _gallery_page:
 
 Gallery page
-############
+************
 
 To control the look and feel of your gallery landing page, you can
 use set the ``inline`` option to True. This will make the sections render
 inline on the landing page increasing the density of content for projects
-that have few notebooks per section (for instance: https://examples.pyviz.org).
+that have few notebooks per section (for instance: `examples.pyviz.org <https://examples.pyviz.org>`_).
 
 .. _thumbnail_download:
 

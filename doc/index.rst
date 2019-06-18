@@ -68,7 +68,7 @@ to consider instead if that is your case:
     ...
 
   * live notebook hosting: mybinder
-    (e.g. `<https://mybinder.org/v2/gh/pyviz/pyviz/master?filepath=notebooks%2F12-parameters-and-widgets.ipynb>`_);
+    (`example <https://mybinder.org/v2/gh/pyviz/pyviz/master?filepath=notebooks%2F12-parameters-and-widgets.ipynb>`_);
     ...?
 
 .. _examples:
