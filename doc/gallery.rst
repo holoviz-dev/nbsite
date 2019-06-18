@@ -29,11 +29,16 @@ following options:
 
 - ``backends`` (:ref:`gallery_backends`)
 - ``default_extensions`` (:ref:`default_extensions`)
+- ``download_as`` (:ref:`asset_download`)
 - ``enable_download`` (:ref:`thumbnail_download`)
 - ``examples_dir`` (:ref:`directory_structure`)
 - ``galleries`` (:ref:`directory_structure`)
-- ``github_org`` (:ref:`github_config`)
-- ``github_project`` (:ref:`github_config`)
+- ``github_org`` (:ref:`asset_download`)
+- ``github_project`` (:ref:`asset_download`)
+- ``host`` (:ref:`asset_download`)
+- ``inline`` (:ref:`gallery_page`)
+- ``nblink`` (:ref:`asset_download`)
+- ``only_use_existing`` (:ref:`thumbnail_download`)
 - ``skip_execute`` (:ref:`section_structure`)
 - ``thumbnail_url`` (:ref:`thumbnail_download`)
 - ``within_subsection_order`` (:ref:`section_structure`)
@@ -149,6 +154,16 @@ backends. A gallery which declares multiple backends will have a set
 of toggle buttons added at the top which will allow choosing between
 the different backends.
 
+.. _gallery_page:
+
+Gallery page
+############
+
+To control the look and feel of your gallery landing page, you can
+use set the ``inline`` option to True. This will make the sections render
+inline on the landing page increasing the density of content for projects
+that have few notebooks per section (for instance: https://examples.pyviz.org).
+
 .. _thumbnail_download:
 
 Thumbnail downloads
@@ -164,12 +179,23 @@ are stored under ``https://assets.holoviews.org/thumbnails``. To
 toggle this behavior on and off you can set the ``enable_downloads``
 config variable.
 
-.. _github_config:
+If you want to be sure never to genereate thumbnails, for instance if
+the environment won't have the right dependencies, then use the ``only_use_existing``
+to ensure that the script can only use thumbnails found in the directory
+or at ``thumbnail_url``.
 
-Github Configuration
-********************
+.. _asset_download:
+
+Asset Download
+**************
 
 Each example links back to the location of the script or notebook it
-was built from, in order to correctly determine these links the
+was built from. These download links can be placed at the ``top``, ``bottom`` or
+``both`` of the notebook using the ``nblink`` option. By default the download
+usses ``GitHub`` as the ``host``, in order to correctly determine these links the
 ``github_org`` and ``github_project`` must be defined, declaring the
 GitHub organization and repository respectively.
+
+To enable direct downloads from the assets directory of the website set ``host``
+to ``assets``. By default the links will point to a particular file. To instead point
+the download link to a project archive, set ``download_as`` to ``project``.

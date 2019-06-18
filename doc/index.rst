@@ -35,6 +35,7 @@ These include:
       <iframe src="https://hvplot.pyviz.org" height="500px" width="900px"></iframe>
       <iframe src="https://panel.pyviz.org" height="500px" width="900px"></iframe>
       <iframe src="https://colorcet.pyviz.org" height="500px" width="900px"></iframe>
+      <iframe src="https://examples.pyviz.org" height="500px" width="900px"></iframe>
     </div>
 
 .. _when_to_use:
@@ -57,13 +58,13 @@ to consider instead if that is your case:
 
   * static site generators with support for notebooks: nikola,
     pelican, jupytersite, hugo, (whatever
-    https://seaborn.pydata.org/tutorial/color_palettes.html uses),
+    `seaborn <https://seaborn.pydata.org/tutorial/color_palettes.html>`_ uses),
     (whatever scikit-learn uses), (wahtever scikit-image uses), ...
 
   * notebook hosting plus viewing: github+nbviewer
-    (e.g. `<https://nbviewer.jupyter.org/github/pyviz/pyviz/blob/master/notebooks/00-welcome.ipynb>`_),
+    (`example <https://nbviewer.jupyter.org/github/pyviz/pyviz/blob/master/notebooks/00-welcome.ipynb>`_),
     anaconda.org
-    (e.g. `<https://anaconda.org/cball/ioam-paramnb-index/notebook>`_);
+    (`example <https://anaconda.org/cball/ioam-paramnb-index/notebook>`_);
     ...
 
   * live notebook hosting: mybinder
