@@ -5,13 +5,13 @@ os:
 
 env:
   global:
-    - PYENV_VERSION=3.6
+    - PYENV_VERSION=3.7
     # conda-forge for phantomjs on linux (https://github.com/AnacondaRecipes/aggregate/issues/38)
     - CHANS_DEV="-c pyviz/label/dev -c defaults -c conda-forge"
     - CHANS_REL="-c pyviz -c conda-forge"
     - LABELS_DEV="--label=dev"
     - LABELS_REL="--label=dev --label=main"
-    - PKG_TEST_PYTHON="--test-python=py36"
+    - PKG_TEST_PYTHON="--test-python=py37"
 
 stages:
   - test
@@ -37,7 +37,7 @@ jobs:
       before_install: pip install pyctdev && doit ecosystem_setup
       install:
         # TODO: pyctdev does not yet have env_create support for pip ecosystem
-        #- doit env_create --python=$PYENV_VERSION
+        #- doit env_create --python=$PYTHON_VERSION
         - doit develop_install -o examples -o tests
         - doit env_capture
       script:
@@ -67,7 +67,7 @@ jobs:
       stage: pip_dev_package
       env: DESC="" PYPI=testpypi PYPIUSER=$TPPU PYPIPASS=$TPPP
       install:
-        - unset PYENV_VERSION && pyenv global 3.6 2.7
+        - unset PYENV_VERSION && pyenv global 3.7 2.7
         - doit package_build $PKG_TEST_PYTHON --test-group=unit --sdist-install-build-deps
         # TODO: pyctdev doesn't yet support pypi channels during packaging
         #- doit ... --test-group=examples --test-requires=examples
