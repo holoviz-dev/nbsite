@@ -11,8 +11,7 @@ env:
     - CHANS_REL="-c pyviz -c conda-forge"
     - LABELS_DEV="--label=dev"
     - LABELS_REL="--label=dev --label=main"
-    - PKG_TEST_PYTHON="--test-python=py36"
-    - PYTHON_VERSION=3.6
+    - PKG_TEST_PYTHON="--test-python=py37"
 
 stages:
   - test
@@ -68,7 +67,7 @@ jobs:
       stage: pip_dev_package
       env: DESC="" PYPI=testpypi PYPIUSER=$TPPU PYPIPASS=$TPPP
       install:
-        - unset PYENV_VERSION && pyenv global 3.6 2.7
+        - unset PYENV_VERSION && pyenv global 3.7 2.7
         - doit package_build $PKG_TEST_PYTHON --test-group=unit --sdist-install-build-deps
         # TODO: pyctdev doesn't yet support pypi channels during packaging
         #- doit ... --test-group=examples --test-requires=examples
