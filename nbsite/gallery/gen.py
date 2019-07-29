@@ -2,6 +2,7 @@ import os
 import glob
 import logging
 
+from pathlib import Path
 import requests
 import sphinx.util
 
@@ -173,6 +174,7 @@ DEFAULT_GALLERY_CONF = {
     'enable_download': True,
     'only_use_existing': False,
     'examples_dir': os.path.join('..', 'examples'),
+    'labels_dir': 'labels',
     'galleries': {
         'gallery': {
             'backends': [],
@@ -327,6 +329,13 @@ def generate_gallery(app, page):
     doc_dir = app.builder.srcdir
     examples_dir = os.path.join(doc_dir, gallery_conf['examples_dir'])
     gallery_dir = os.path.join(examples_dir, page)
+    static_dir = app.config.html_static_path[-1]
+    static_path = os.path.join(
+        os.path.split(gallery_conf['examples_dir'])[-2], static_dir)
+    labels_dir = gallery_conf['labels_dir']
+    labels_path = os.path.join(static_path, labels_dir)
+    logo = app.config.html_theme_options.get('logo', 'images/logo.png')
+    logo_path = os.path.join(static_path, logo)
 
     if 'sections' in content:
         sections = content['sections']
@@ -367,6 +376,7 @@ def generate_gallery(app, page):
             skip = section.get('skip', content.get('skip', False))
             heading = section.get('title', section['path'])
             description = section.get('description', None)
+            labels = section.get('labels', [])
             subsection_order = section.get('within_subsection_order', sort_fn)
             deployment_url = section.get('deployment_url')
             section = section['path']
@@ -376,12 +386,29 @@ def generate_gallery(app, page):
             section_backends = backends
             subsection_order = sort_fn
             description = None
+            labels = []
             deployment_url = None
 
         if heading:
             gallery_rst += f'\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="{section}-section"><h2>{heading}</h2>\n\n'
         else:
             gallery_rst += f'\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="{section}-section"></div><br>\n\n'
+
+        if labels:
+            gallery_rst += '\n\n.. raw:: html\n\n'
+            for label in labels:
+                label_svg = os.path.join(doc_dir, labels_path, f'{label}.svg')
+                if os.path.exists(label_svg):
+                    gallery_rst += f'    {Path(label_svg).read_text()}'
+                else:
+                    logger.info(
+                        f'Control the look of the {label} label by adding '
+                        f'under _static/labels/{label}.svg (created using '
+                        f'https://img.shields.io/badge/-{label}-<color>)')
+                    default_label = requests.get(f'https://img.shields.io/badge/-{label}-aaaaaa')
+                    gallery_rst += f'    {default_label.content.decode()}'
+
+            gallery_rst += '\n\n'
 
         if description:
             gallery_rst += description + '\n\n'
@@ -480,7 +507,7 @@ def generate_gallery(app, page):
                     if extension == 'py':
                         continue
                     this_entry = THUMBNAIL_TEMPLATE.format(
-                        backend=backend, thumbnail='../_static/images/logo.png',
+                        backend=backend, thumbnail=logo_path,
                         ref_name=basename, label=basename.replace('_', ' ').title())
                 else:
                     logger.info('%s %s thumbnail' % (verb, basename))
