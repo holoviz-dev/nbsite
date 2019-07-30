@@ -2,7 +2,6 @@ import os
 import glob
 import logging
 
-from pathlib import Path
 import requests
 import sphinx.util
 
@@ -396,17 +395,15 @@ def generate_gallery(app, page):
 
         if labels:
             gallery_rst += '\n\n.. raw:: html\n\n'
-            for label in labels:
-                label_svg = os.path.join(doc_dir, labels_path, f'{label}.svg')
-                if os.path.exists(label_svg):
-                    gallery_rst += f'    {Path(label_svg).read_text()}'
-                else:
+            for label in sorted(labels):
+                label_svg = os.path.join(labels_path, f'{label}.svg')
+                if not os.path.exists(os.path.join(doc_dir, label_svg)):
                     logger.info(
                         f'Control the look of the {label} label by adding '
                         f'under _static/labels/{label}.svg (created using '
                         f'https://img.shields.io/badge/-{label}-<color>)')
-                    default_label = requests.get(f'https://img.shields.io/badge/-{label}-aaaaaa')
-                    gallery_rst += f'    {default_label.content.decode()}'
+                    label_svg = f'https://img.shields.io/badge/-{label}-aaaaaa'
+                gallery_rst += f'    <img src="{label_svg}" title={label}>'
 
             gallery_rst += '\n\n'
 
