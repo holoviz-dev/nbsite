@@ -41,7 +41,7 @@ html_context.update({
     'NAV': _NAV,
     'LINKS': _NAV,
     'SOCIAL': (
-        ('Github', 'https://github.com/pyviz/{}'.format(NAME)),
+        ('Github', 'https://github.com/pyviz-dev/{}'.format(NAME)),
         ('Gitter', 'https://gitter.im/pyviz/pyviz'),
     )
 })
