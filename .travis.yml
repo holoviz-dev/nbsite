@@ -75,7 +75,7 @@ jobs:
 
     - &conda_default
       stage: conda_dev_package
-      env: CHANS=$CHANS_DEV LABELS=$LABELS_DEV
+      env: CHANS=$CHANS_DEV LABELS=$LABELS_DEV PKG_TEST_PYTHON="--test-python=py36"
       before_install:
         # install doit/pyctdev and use to install miniconda...
         - pip install pyctdev && doit ecosystem=conda miniconda_install && pip uninstall -y doit pyctdev
@@ -96,4 +96,4 @@ jobs:
 
     - <<: *conda_default
       stage: conda_package
-      env: CHANS=$CHANS_REL LABELS=$LABELS_REL
+      env: CHANS=$CHANS_REL LABELS=$LABELS_REL PKG_TEST_PYTHON="--test-python=py36"
