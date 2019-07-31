@@ -54,6 +54,7 @@ setup_args = dict(
     python_requires='>=3',
     install_requires=[
         'param >=1.7.0',
+        'pyct >=0.4.4',
         'pyviz_comms',
         'jupyter_client',
         'ipykernel',
@@ -92,7 +93,7 @@ setup_args = dict(
         'build': [
             "setuptools",
             "param >=1.6.1",
-            "pyct[build]",
+            "pyct >=0.4.4",
         ]
     },
     include_package_data=True,

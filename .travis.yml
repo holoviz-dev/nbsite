@@ -67,25 +67,23 @@ jobs:
       stage: pip_dev_package
       env: DESC="" PYPI=testpypi PYPIUSER=$TPPU PYPIPASS=$TPPP
       install:
-        - unset PYENV_VERSION && pyenv global 3.7 2.7
-        - doit package_build $PKG_TEST_PYTHON --test-group=unit --sdist-install-build-deps
+        - doit package_build $PKG_TEST_PYTHON --test-group=installed --sdist-install-build-deps
         # TODO: pyctdev doesn't yet support pypi channels during packaging
         #- doit ... --test-group=examples --test-requires=examples
       script: doit package_upload -u $PYPIUSER -p $PYPIPASS --pypi ${PYPI}
 
     - &conda_default
       stage: conda_dev_package
-      env: CHANS=$CHANS_DEV LABELS=$LABELS_DEV PKG_TEST_PYTHON="--test-python=py36"
+      env: CHANS=$CHANS_DEV LABELS=$LABELS_DEV
       before_install:
         # install doit/pyctdev and use to install miniconda...
         - pip install pyctdev && doit ecosystem=conda miniconda_install && pip uninstall -y doit pyctdev
         - export PATH="$HOME/miniconda/bin:$PATH" && hash -r
         - conda config --set always_yes True
         # ...and now install doit/pyctdev into miniconda
-        - conda install -c pyviz/label/dev "pyctdev=0.6.0a7" && doit ecosystem=conda ecosystem_setup
+        - conda install -c pyviz "pyctdev>=0.5.5" && doit ecosystem=conda ecosystem_setup
       install:
-        - doit ecosystem=conda package_build --package-name=nbsite $CHANS $PKG_TEST_PYTHON --test-group=unit
-        - doit ecosystem=conda package_test $CHANS $PKG_TEST_PYTHON --test-group=examples --test-requires=examples
+        - doit ecosystem=conda package_build $CHANS $PKG_TEST_PYTHON --test-group=unit
       script: doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN $LABELS
 
     ## release packages
@@ -96,4 +94,4 @@ jobs:
 
     - <<: *conda_default
       stage: conda_package
-      env: CHANS=$CHANS_REL LABELS=$LABELS_REL PKG_TEST_PYTHON="--test-python=py36"
+      env: CHANS=$CHANS_REL LABELS=$LABELS_REL
