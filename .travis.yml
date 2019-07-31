@@ -67,7 +67,7 @@ jobs:
       stage: pip_dev_package
       env: DESC="" PYPI=testpypi PYPIUSER=$TPPU PYPIPASS=$TPPP
       install:
-        - doit package_build $PKG_TEST_PYTHON --test-group=unit --sdist-install-build-deps
+        - doit package_build $PKG_TEST_PYTHON --test-group=installed --sdist-install-build-deps
         # TODO: pyctdev doesn't yet support pypi channels during packaging
         #- doit ... --test-group=examples --test-requires=examples
       script: doit package_upload -u $PYPIUSER -p $PYPIPASS --pypi ${PYPI}
