@@ -112,6 +112,16 @@ def cleanup_links(path, inspect_links=False):
 
         if inspect_links and 'http' in a['href']:
             print(a['href'])
+    for img in soup.findAll('img'):
+        src = img.get('src', '')
+        if 'http' not in src and 'assets' in src:
+            try_path = os.path.join(os.path.dirname(path), src)
+            if not os.path.exists(try_path):
+                also_tried = os.path.join('..', src)
+                if os.path.exists(os.path.join(os.path.dirname(path), also_tried)):
+                    img['src'] = also_tried
+                else:
+                    warnings.warn('Found reference to missing image {} in: {}. Also tried: {}'.format(src, path, also_tried))
     with open(path, 'w') as f:
         f.write(str(soup))
 
