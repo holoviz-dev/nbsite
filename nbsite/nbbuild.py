@@ -57,6 +57,7 @@ class ExecutePreprocessor1000(ExecutePreprocessor):
                 self._ipython_startup,silent=False,store_history=False,allow_stdin=False,stop_on_error=True)
 
 
+
 class SkipOutput(Preprocessor):
     """A transformer to skip the output for cells containing a certain string"""
 
@@ -121,6 +122,30 @@ class NotebookSlice(Preprocessor):
         start,end = self._find_slice(nbc, self.substring, self.end)
         nbc.cells = nbc.cells[start:end]
         return nbc, resources
+
+    def __call__(self, nb, resources): return self.preprocess(nb,resources)
+
+
+def comment_out_details(source):
+    """
+    Given the source of a cell, comment out  any lines that contain <details>
+    """
+    filtered=[]
+    for line in source.splitlines():
+        if "details>" in line:
+            filtered.append('<!-- UNCOMMENT DETAILS AFTER RENDERING ' + line + ' END OF LINE TO UNCOMMENT -->')
+        else:
+            filtered.append(line)
+    return '\n'.join(filtered)
+
+class FixBackticksInDetails(Preprocessor):
+    """A preprocessor to make backticks in details cells work."""
+
+    def preprocess_cell(self, cell, resources, index):
+        if cell['cell_type'] == 'markdown':
+            if '<details>' in cell['source'] and "```" in cell['source']:
+                cell['source'] = comment_out_details(cell['source'])
+        return cell, resources
 
     def __call__(self, nb, resources): return self.preprocess(nb,resources)
 
@@ -233,6 +258,9 @@ def nb_to_html(nb_path, preprocessors=[]):
     exporter = HTMLExporter(template_file='basic',
                             preprocessors=preprocessors)
     output, resources = exporter.from_filename(nb_path)
+    # get rid of comments to allow rendering.
+    output = output.replace('<!-- UNCOMMENT DETAILS AFTER RENDERING ', '')
+    output = output.replace(' END OF LINE TO UNCOMMENT -->', '')
     return output
 
 
@@ -284,8 +312,11 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
         print('INFO: Skipping existing evaluated notebook {dest_path!s}'.format(
             dest_path=os.path.abspath(dest_path)))
 
-    preprocessors = [] if substring is None and not offset else [NotebookSlice(substring, end, offset)]
-    preprocessors = (preprocessors + [SkipOutput(skip_output)]) if skip_output else preprocessors
+    preprocessors = [FixBackticksInDetails()]
+    if substring or offset:
+        preprocessors.append(NotebookSlice(substring, end, offset))
+    if skip_output:
+        preprocessors.append(SkipOutput(skip_output))
     ret = nb_to_html(dest_path, preprocessors=preprocessors)
     return ret
 
