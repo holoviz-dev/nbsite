@@ -340,7 +340,7 @@ def setup(app):
 
     app.add_config_value('nbbuild_cell_timeout',300,'html')
     app.add_config_value('nbbuild_ipython_startup',"from nbsite.ipystartup import *",'html')
-    app.add_config_value('nbbuild_patterns_to_take_along',["*.json"],'html')
+    app.add_config_value('nbbuild_patterns_to_take_along',["*.json", "json_*"],'html')
 
     app.add_node(notebook_node,
                  html=(visit_notebook_node, depart_notebook_node))

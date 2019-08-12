@@ -69,6 +69,7 @@ def build(what='html',
     subprocess.check_call(["sphinx-build","-b",what,paths['doc'],output])
     print('Copying json blobs (used for holomaps) from {} to {}'.format(paths['doc'], output))
     copy_files(paths['doc'], output, '**/*.json')
+    copy_files(paths['doc'], output, 'json_*')
     if 'examples_assets' in paths:
         build_assets = os.path.join(output, examples_assets)
         print("Copying examples assets from %s to %s"%(paths['examples_assets'],build_assets))
