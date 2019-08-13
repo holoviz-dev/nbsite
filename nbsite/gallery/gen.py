@@ -70,7 +70,6 @@ THUMBNAIL_URL = 'https://assets.holoviews.org/thumbnails'
 PREFIX = """
 # -*- coding: utf-8 -*-
 import holoviews as hv
-from holoviews.plotting.widgets import NdWidget
 from pyviz_comms import Comm
 
 try:
@@ -85,9 +84,14 @@ try:
 except:
     pass
 
-NdWidget.export_json=True
-NdWidget.json_load_path = '/json'
-NdWidget.json_save_path = './'
+try:
+    import holoviews.plotting.widgets as hw
+    hw.NdWidget.export_json=True
+    hw.NdWidget.json_load_path = './'
+    hw.NdWidget.json_save_path = './'
+    del hw
+except:
+    pass
 
 hv.plotting.mpl.MPLPlot.fig_alpha = 0
 hv.plotting.bokeh.callbacks.Callback._comm_type = Comm

@@ -11,13 +11,7 @@ try:
     hw.NdWidget.json_save_path = './'
     del hw
 except:
-    from panel import config
-    config.embed = True
-    config.embed_json = True
-    config.embed_json_prefix = 'json'
-    config.embed_load_path = './'
-    config.embed_save_path = './'
-    del config
+    pass
 
 import holoviews.plotting.mpl as hmpl
 hmpl.MPLPlot.fig_alpha = 0
