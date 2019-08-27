@@ -264,6 +264,8 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
                 r = requests.get(deployed_file)
                 if r.status_code != 200:
                     deployed_file = False
+            else:
+                deployed_file = False
 
             if nblink in ['top', 'both']:
                 add_nblink(rst_file, host, deployed_file, download_as,
