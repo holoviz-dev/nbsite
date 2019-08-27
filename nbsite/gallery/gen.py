@@ -199,7 +199,7 @@ DEFAULT_GALLERY_CONF = {
 }
 
 def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
-                      img_extension, skip, deployment_url):
+                      img_extension, skip, deployment_urls):
     gallery_conf = app.config.nbsite_gallery_conf
     content = gallery_conf['galleries'][page]
     host = gallery_conf['host']
@@ -231,10 +231,6 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
         if r.status_code == 200:
             soup = bs4.BeautifulSoup(r.content, features='lxml')
             deployed_examples = [l.text for l in soup.find('ul').find_all('a')]
-    if deployment_url is not None:
-        r = requests.get(deployment_url)
-        if r.status_code == 200:
-            deployed_project = True
 
     for f in files:
         extension = f.split('.')[-1]
@@ -259,7 +255,7 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
             rst_file.write('.. _%s_%s:\n\n' % (prefix, name))
             rst_file.write(title+'\n')
             rst_file.write('_'*len(title)+'\n\n')
-            if deployed_project:
+            for deployment_url in deployment_urls:
                 if deployment_url.endswith('/notebooks/'):
                     deployed_file = os.path.join(deployment_url, basename)
                 else:
@@ -387,7 +383,7 @@ def generate_gallery(app, page):
             description = section.get('description', None)
             labels = section.get('labels', [])
             subsection_order = section.get('within_subsection_order', sort_fn)
-            deployment_url = section.get('deployment_url')
+            deployment_urls = section.get('deployment_urls')
             section = section['path']
         else:
             heading = section.title()
@@ -396,7 +392,7 @@ def generate_gallery(app, page):
             subsection_order = sort_fn
             description = None
             labels = []
-            deployment_url = None
+            deployment_urls = []
 
         if heading:
             gallery_rst += f'\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="{section}-section"><h2>{heading}</h2>\n\n'
@@ -523,7 +519,7 @@ def generate_gallery(app, page):
 
                 gallery_rst += this_entry
             generate_file_rst(app, path, dest_dir, page, section,
-                              backend, thumb_extension, skip, deployment_url)
+                              backend, thumb_extension, skip, deployment_urls)
         # clear at the end of the section
         gallery_rst += CLEAR_DIV
         gallery_rst += '\n\n.. raw:: html\n\n    </div>\n\n'
