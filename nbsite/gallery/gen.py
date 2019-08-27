@@ -70,6 +70,7 @@ THUMBNAIL_URL = 'https://assets.holoviews.org/thumbnails'
 PREFIX = """
 # -*- coding: utf-8 -*-
 import holoviews as hv
+from holoviews.plotting.widgets import NdWidget
 from pyviz_comms import Comm
 
 try:
@@ -84,14 +85,9 @@ try:
 except:
     pass
 
-try:
-    import holoviews.plotting.widgets as hw
-    hw.NdWidget.export_json=True
-    hw.NdWidget.json_load_path = './'
-    hw.NdWidget.json_save_path = './'
-    del hw
-except:
-    pass
+NdWidget.export_json=True
+NdWidget.json_load_path = '/json'
+NdWidget.json_save_path = './'
 
 hv.plotting.mpl.MPLPlot.fig_alpha = 0
 hv.plotting.bokeh.callbacks.Callback._comm_type = Comm
@@ -263,9 +259,14 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
             rst_file.write('.. _%s_%s:\n\n' % (prefix, basename[:-(len(extension)+1)]))
             rst_file.write(title+'\n')
             rst_file.write('_'*len(title)+'\n\n')
+            if deployed_project:
+                deployed_file = os.path.join(deployment_url, name)
+                r = requests.get(deployed_file)
+                if r.status_code != 200:
+                    deployed_file = False
 
             if nblink in ['top', 'both']:
-                add_nblink(rst_file, host, deployed_project, deployment_url, download_as,
+                add_nblink(rst_file, host, deployed_file, download_as,
                            org, proj, components, basename, ftype, section)
                 rst_file.write('\n\n-------\n\n')
 
@@ -283,13 +284,13 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
 
             if nblink in ['bottom', 'both']:
                 rst_file.write('\n\n-------\n\n')
-                add_nblink(rst_file, host, deployed_project, deployment_url, download_as,
+                add_nblink(rst_file, host, deployed_file, download_as,
                            org, proj, components, basename, ftype, section)
 
-def add_nblink(rst_file, host, deployed_project, deployment_url, download_as,
+def add_nblink(rst_file, host, deployed_file, download_as,
                org, proj, components, basename, ftype, section):
-    if deployed_project:
-        rst_file.write(f'`View a running version of this project. <{deployment_url}>`_ | ')
+    if deployed_file:
+        rst_file.write(f'`View a running version of this notebook. <{deployed_file}>`_ | ')
     if host == 'GitHub' and org and proj:
         rst_file.write('`Download this {ftype} from GitHub (right-click to download).'
                         ' <https://raw.githubusercontent.com/{org}/{proj}/master/{path}/{basename}>`_'.format(
