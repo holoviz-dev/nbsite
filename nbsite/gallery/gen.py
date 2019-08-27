@@ -167,18 +167,16 @@ INLINE_GALLERY_STYLE = """
        border: unset;
      }
      .sphx-glr-thumbcontainer[tooltip]:hover:after {
-       background: rgba(0, 0, 0, 0.6);
-       padding: 50% 15px;
+       background: rgba(0, 0, 0, 0.4);
+       padding-top: 180px;
        top: 0%;
        left: 0%;
        bottom: unset;
        text-align: center;
-       vertical-align: middle;
        width: 160px;
-       height: 220px;
      }
      .sphx-glr-thumbcontainer:hover {
-       border: unset;
+       border: solid #fff 1px;
        box-shadow: unset;
      }
      .sphx-glr-thumbcontainer a.internal {
