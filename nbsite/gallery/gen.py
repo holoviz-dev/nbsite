@@ -256,11 +256,14 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
                 prefix = '_'.join([backend, 'gallery'])
             else:
                 prefix = 'gallery'
-            rst_file.write('.. _%s_%s:\n\n' % (prefix, basename[:-(len(extension)+1)]))
+            rst_file.write('.. _%s_%s:\n\n' % (prefix, name))
             rst_file.write(title+'\n')
             rst_file.write('_'*len(title)+'\n\n')
             if deployed_project:
-                deployed_file = os.path.join(deployment_url, name)
+                if deployment_url.endswith('/notebooks/'):
+                    deployed_file = os.path.join(deployment_url, basename)
+                else:
+                    deployed_file = os.path.join(deployment_url, name)
                 r = requests.get(deployed_file)
                 if r.status_code != 200:
                     deployed_file = False
@@ -278,10 +281,10 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
                     rst_file.write('\n    :skip_execute: True\n')
                 if deployed:
                     rst_file.write(IFRAME_TEMPLATE.format(
-                        background=iframe_spinner, url=endpoint+basename[:-6]))
+                        background=iframe_spinner, url=endpoint+name))
             else:
                 rst_file.write('.. literalinclude:: %s\n\n' % rel_path)
-                url = os.path.join('thumbnails', '%s.%s' % (basename[:-(len(extension)+1)], img_extension))
+                url = os.path.join('thumbnails', '%s.%s' % (name, img_extension))
                 rst_file.write('.. figure:: %s\n\n' % url)
 
             if nblink in ['bottom', 'both']:
