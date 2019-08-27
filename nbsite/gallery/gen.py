@@ -119,7 +119,7 @@ THUMBNAIL_TEMPLATE = """
 
 .. figure:: /{thumbnail}
 
-    :ref:`{ref_name} <{backend}gallery_{ref_name}>`
+    :ref:`{label} <{backend}gallery_{ref_name}>`
 
 .. raw:: html
 
@@ -162,25 +162,6 @@ INLINE_GALLERY_STYLE = """
        display: inline-block;
        vertical-align: top;
        padding-right: 20px;
-     }
-     .sphx-glr-thumbcontainer[tooltip]:hover:before {
-       border: unset;
-     }
-     .sphx-glr-thumbcontainer[tooltip]:hover:after {
-       background: rgba(0, 0, 0, 0.4);
-       padding-top: 180px;
-       top: 0%;
-       left: 0%;
-       bottom: unset;
-       text-align: center;
-       width: 160px;
-     }
-     .sphx-glr-thumbcontainer:hover {
-       border: solid #fff 1px;
-       box-shadow: unset;
-     }
-     .sphx-glr-thumbcontainer a.internal {
-       visibility: hidden;
      }
    </style>
 

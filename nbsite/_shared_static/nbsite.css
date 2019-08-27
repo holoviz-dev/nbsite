@@ -222,7 +222,7 @@ thumbnail with its default link Background color */
   z-index: 99;
 }
 .sphx-glr-thumbcontainer a.headerlink {
-  visibility: hidden;
+  color: transparent;
 }
 
 .highlight-pytb pre {
