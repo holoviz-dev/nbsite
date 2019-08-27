@@ -163,6 +163,27 @@ INLINE_GALLERY_STYLE = """
        vertical-align: top;
        padding-right: 20px;
      }
+     .sphx-glr-thumbcontainer[tooltip]:hover:before {
+       border: unset;
+     }
+     .sphx-glr-thumbcontainer[tooltip]:hover:after {
+       background: rgba(0, 0, 0, 0.6);
+       padding: 50% 15px;
+       top: 0%;
+       left: 0%;
+       bottom: unset;
+       text-align: center;
+       vertical-align: middle;
+       width: 160px;
+       height: 220px;
+     }
+     .sphx-glr-thumbcontainer:hover {
+       border: unset;
+       box-shadow: unset;
+     }
+     .sphx-glr-thumbcontainer a.internal {
+       visibility: hidden;
+     }
    </style>
 
 """
