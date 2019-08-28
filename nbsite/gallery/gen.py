@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import glob
 import logging
 
@@ -225,7 +226,6 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
 
     # Try to fetch all deployed examples
     deployed_examples = []
-    deployed_project = False
     if bs4 and endpoint is not None:
         r = requests.get(endpoint)
         if r.status_code == 200:
@@ -255,16 +255,19 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
             rst_file.write('.. _%s_%s:\n\n' % (prefix, name))
             rst_file.write(title+'\n')
             rst_file.write('_'*len(title)+'\n\n')
+
+            deployed_file = False
             for deployment_url in deployment_urls:
-                if deployment_url.endswith('/notebooks/'):
+                if deployed_file:
+                    continue
+                p = Path(deployment_url)
+                if p.parts[-1] == 'notebooks':
                     deployed_file = os.path.join(deployment_url, basename)
                 else:
                     deployed_file = os.path.join(deployment_url, name)
                 r = requests.get(deployed_file)
                 if r.status_code != 200:
                     deployed_file = False
-            else:
-                deployed_file = False
 
             if nblink in ['top', 'both']:
                 add_nblink(rst_file, host, deployed_file, download_as,
