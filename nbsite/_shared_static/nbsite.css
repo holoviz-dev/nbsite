@@ -221,6 +221,9 @@ thumbnail with its default link Background color */
   position: absolute;
   z-index: 99;
 }
+.sphx-glr-thumbcontainer a.headerlink {
+  color: transparent;
+}
 
 .highlight-pytb pre {
   background-color: #ffe4e4;

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import glob
 import logging
 
@@ -123,7 +124,7 @@ THUMBNAIL_TEMPLATE = """
 
 .. figure:: /{thumbnail}
 
-    :ref:`{ref_name} <{backend}gallery_{ref_name}>`
+    :ref:`{label} <{backend}gallery_{ref_name}>`
 
 .. raw:: html
 
@@ -203,7 +204,7 @@ DEFAULT_GALLERY_CONF = {
 }
 
 def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
-                      img_extension, skip, deployment_url):
+                      img_extension, skip, deployment_urls):
     gallery_conf = app.config.nbsite_gallery_conf
     content = gallery_conf['galleries'][page]
     host = gallery_conf['host']
@@ -229,16 +230,11 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
 
     # Try to fetch all deployed examples
     deployed_examples = []
-    deployed_project = False
     if bs4 and endpoint is not None:
         r = requests.get(endpoint)
         if r.status_code == 200:
             soup = bs4.BeautifulSoup(r.content, features='lxml')
             deployed_examples = [l.text for l in soup.find('ul').find_all('a')]
-    if deployment_url is not None:
-        r = requests.get(deployment_url)
-        if r.status_code == 200:
-            deployed_project = True
 
     for f in files:
         extension = f.split('.')[-1]
@@ -260,12 +256,25 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
                 prefix = '_'.join([backend, 'gallery'])
             else:
                 prefix = 'gallery'
-            rst_file.write('.. _%s_%s:\n\n' % (prefix, basename[:-(len(extension)+1)]))
+            rst_file.write('.. _%s_%s:\n\n' % (prefix, name))
             rst_file.write(title+'\n')
             rst_file.write('_'*len(title)+'\n\n')
 
+            deployed_file = False
+            for deployment_url in deployment_urls:
+                if deployed_file:
+                    continue
+                p = Path(deployment_url)
+                if p.parts[-1] == 'notebooks':
+                    deployed_file = os.path.join(deployment_url, basename)
+                else:
+                    deployed_file = os.path.join(deployment_url, name)
+                r = requests.get(deployed_file)
+                if r.status_code != 200:
+                    deployed_file = False
+
             if nblink in ['top', 'both']:
-                add_nblink(rst_file, host, deployed_project, deployment_url, download_as,
+                add_nblink(rst_file, host, deployed_file, download_as,
                            org, proj, components, basename, ftype, section)
                 rst_file.write('\n\n-------\n\n')
 
@@ -275,21 +284,21 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
                     rst_file.write('\n    :skip_execute: True\n')
                 if deployed:
                     rst_file.write(IFRAME_TEMPLATE.format(
-                        background=iframe_spinner, url=endpoint+basename[:-6]))
+                        background=iframe_spinner, url=endpoint+name))
             else:
                 rst_file.write('.. literalinclude:: %s\n\n' % rel_path)
-                url = os.path.join('thumbnails', '%s.%s' % (basename[:-(len(extension)+1)], img_extension))
+                url = os.path.join('thumbnails', '%s.%s' % (name, img_extension))
                 rst_file.write('.. figure:: %s\n\n' % url)
 
             if nblink in ['bottom', 'both']:
                 rst_file.write('\n\n-------\n\n')
-                add_nblink(rst_file, host, deployed_project, deployment_url, download_as,
+                add_nblink(rst_file, host, deployed_file, download_as,
                            org, proj, components, basename, ftype, section)
 
-def add_nblink(rst_file, host, deployed_project, deployment_url, download_as,
+def add_nblink(rst_file, host, deployed_file, download_as,
                org, proj, components, basename, ftype, section):
-    if deployed_project:
-        rst_file.write(f'`View a running version of this project. <{deployment_url}>`_ | ')
+    if deployed_file:
+        rst_file.write(f'`View a running version of this notebook. <{deployed_file}>`_ | ')
     if host == 'GitHub' and org and proj:
         rst_file.write('`Download this {ftype} from GitHub (right-click to download).'
                         ' <https://raw.githubusercontent.com/{org}/{proj}/master/{path}/{basename}>`_'.format(
@@ -381,7 +390,7 @@ def generate_gallery(app, page):
             description = section.get('description', None)
             labels = section.get('labels', [])
             subsection_order = section.get('within_subsection_order', sort_fn)
-            deployment_url = section.get('deployment_url')
+            deployment_urls = section.get('deployment_urls')
             section = section['path']
         else:
             heading = section.title()
@@ -390,7 +399,7 @@ def generate_gallery(app, page):
             subsection_order = sort_fn
             description = None
             labels = []
-            deployment_url = None
+            deployment_urls = []
 
         if heading:
             gallery_rst += f'\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="{section}-section"><h2>{heading}</h2>\n\n'
@@ -517,7 +526,7 @@ def generate_gallery(app, page):
 
                 gallery_rst += this_entry
             generate_file_rst(app, path, dest_dir, page, section,
-                              backend, thumb_extension, skip, deployment_url)
+                              backend, thumb_extension, skip, deployment_urls)
         # clear at the end of the section
         gallery_rst += CLEAR_DIV
         gallery_rst += '\n\n.. raw:: html\n\n    </div>\n\n'
