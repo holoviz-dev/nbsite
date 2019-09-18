@@ -390,7 +390,7 @@ def generate_gallery(app, page):
             description = section.get('description', None)
             labels = section.get('labels', [])
             subsection_order = section.get('within_subsection_order', sort_fn)
-            deployment_urls = section.get('deployment_urls')
+            deployment_urls = section.get('deployment_urls', [])
             section = section['path']
         else:
             heading = section.title()
