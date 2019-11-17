@@ -234,7 +234,9 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
         r = requests.get(endpoint)
         if r.status_code == 200:
             soup = bs4.BeautifulSoup(r.content, features='lxml')
-            deployed_examples = [l.text for l in soup.find('ul').find_all('a')]
+            deployed_examples = [l.text for l in soup.find('div', {"class": "list-group"}).find_all('h4')]
+            if not deployed_examples:
+                deployed_examples = [l.text for l in soup.find('ul').find_all('a')]
 
     for f in files:
         extension = f.split('.')[-1]
