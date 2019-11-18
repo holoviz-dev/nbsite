@@ -237,6 +237,8 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
             deployed_examples = [l.text for l in soup.find('ul').find_all('a')]
 
     for f in files:
+        if os.path.basename(f) in skip:
+            continue
         extension = f.split('.')[-1]
         basename = os.path.basename(f)
         rel_path = os.path.relpath(os.path.join(src_dir, basename), dest_dir)
@@ -280,7 +282,7 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
 
             if ftype == 'notebook':
                 rst_file.write(".. notebook:: %s %s" % (proj, rel_path))
-                if deployed or skip or any(basename.strip().endswith(skipped) for skipped in skip_execute):
+                if deployed or (isinstance(skip, bool) and skip) or any(basename.strip().endswith(skipped) for skipped in skip_execute):
                     rst_file.write('\n    :skip_execute: True\n')
                 if deployed:
                     rst_file.write(IFRAME_TEMPLATE.format(
@@ -456,6 +458,8 @@ def generate_gallery(app, page):
                             % (len(files), heading, title, backend_str))
 
             for f in sorted(files, key=subsection_order):
+                if os.path.basename(f) in skip:
+                    continue
                 extension = f.split('.')[-1]
                 basename = os.path.basename(f)[:-(len(extension)+1)]
 
