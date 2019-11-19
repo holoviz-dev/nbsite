@@ -237,7 +237,7 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
             deployed_examples = [l.text for l in soup.find('ul').find_all('a')]
 
     for f in files:
-        if os.path.basename(f) in skip:
+        if isinstance(skip, list) and os.path.basename(f) in skip:
             continue
         extension = f.split('.')[-1]
         basename = os.path.basename(f)
@@ -388,6 +388,7 @@ def generate_gallery(app, page):
         if isinstance(section, dict):
             section_backends = section.get('backends', backends)
             skip = section.get('skip', content.get('skip', False))
+            orphans = section.get('orphans', content.get('orphans', []))
             heading = section.get('title', section['path'])
             description = section.get('description', None)
             labels = section.get('labels', [])
@@ -397,6 +398,7 @@ def generate_gallery(app, page):
         else:
             heading = section.title()
             skip = content.get('skip', False)
+            orphans = content.get('orphans', [])
             section_backends = backends
             subsection_order = sort_fn
             description = None
@@ -445,6 +447,10 @@ def generate_gallery(app, page):
             for extension in extensions:
                 files += glob.glob(os.path.join(path, extension))
 
+            if isinstance(skip, list):
+                files = [f for f in files if os.path.basename(f) not in skip]
+            if orphans:
+                files = [f for f in files if os.path.basename(f) not in orphans]
             if files:
                 if inline:
                     gallery_rst = gallery_rst.replace(f'id="{section}-section"',
@@ -458,8 +464,6 @@ def generate_gallery(app, page):
                             % (len(files), heading, title, backend_str))
 
             for f in sorted(files, key=subsection_order):
-                if os.path.basename(f) in skip:
-                    continue
                 extension = f.split('.')[-1]
                 basename = os.path.basename(f)[:-(len(extension)+1)]
 
