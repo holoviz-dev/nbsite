@@ -40,6 +40,7 @@ following options:
 - ``nblink`` (:ref:`asset_download`)
 - ``only_use_existing`` (:ref:`thumbnail_download`)
 - ``skip_execute`` (:ref:`section_structure`)
+- ``orphans`` (:ref:`section_structure`)
 - ``thumbnail_url`` (:ref:`thumbnail_download`)
 - ``within_subsection_order`` (:ref:`section_structure`)
 
@@ -137,6 +138,16 @@ examples in the subsection should actually be executed, which is
 sometimes not practical, e.g. for bokeh apps. Alternatively the
 examples which should not be executed can also be explicitly declared
 using the global ``skip_execute`` config variable.
+
+The ``skip`` key can also be used to pass a list of files that should
+**not** show up at all on the gallery page. These examples will
+not be thumbnailed or executed.
+
+A slight variation on ``skip``, the ``orphans`` key allows the user to
+pass a list of files that will be rendered to html without being thumbnailed
+and linked from the gallery page. The main usecase for this is when a section
+has an index which provides an overview of the section and directs users through
+the notebooks in a particular order.
 
 The actual ordering of the examples in each subsection is defined by
 the global or section specific ``within_subsection_order`` config
