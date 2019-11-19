@@ -7,14 +7,14 @@ from nbsite.shared_conf import *
 # edit things below as appropriate for your project
 
 project = u'Project'
-authors = u'PyViz Developers'
+authors = u'HoloViz Developers'
 copyright = u'2019 ' + authors
 description = 'Short description for html meta description.'
 site = 'https://{}.pyviz.org'.format(project)
 version = release = '0.0.1'
 
 html_static_path += ['_static']
-html_theme = 'sphinx_pyviz_theme'
+html_theme = 'sphinx_holoviz_theme'
 # logo file etc should be in html_static_path, e.g. _static
 # only change colors in primary, primary_dark, and secondary
 html_theme_options = {
@@ -47,7 +47,7 @@ html_context.update({
     'LINKS': _NAV,
     'SOCIAL': (
         ('Gitter', 'https://gitter.im/pyviz/pyviz'),
-        ('Twitter', 'https://twitter.com/pyviz_org'),
-        ('Github', 'https://github.com/pyviz/{}'.format(project)),
+        ('Twitter', 'https://twitter.com/holoviz_org'),
+        ('Github', 'https://github.com/holoviz/{}'.format(project)),
     )
 })
