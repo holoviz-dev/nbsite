@@ -22,7 +22,7 @@ def main(args=None):
 
     init_parser = subparsers.add_parser("init", help=inspect.getdoc(init))
     _add_common_args(init_parser,'--project-root','--doc')
-    init_parser.add_argument('--theme', type=str, help='sphinx theme to use in template', choices=['pyviz', ''], default='')
+    init_parser.add_argument('--theme', type=str, help='sphinx theme to use in template', choices=['holoviz', ''], default='')
     _set_defaults(init_parser,init)
 
     generaterst_parser = subparsers.add_parser("generate-rst", help=inspect.getdoc(generate_rst))

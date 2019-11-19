@@ -14,7 +14,7 @@ import nbsite
 version = release = nbsite.__version__
 
 html_static_path += ['_static']
-html_theme = 'sphinx_pyviz_theme'
+html_theme = 'sphinx_holoviz_theme'
 html_theme_options = {
     'custom_css': 'site.css',
     'logo': 'nbsite-logo.png',
