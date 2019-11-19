@@ -32,6 +32,8 @@ These include:
     <div id="iframe-container" style="height: 800px; width: 2000px;">
       <iframe src="https://holoviews.org" height="500px" width="900px"></iframe>
       <iframe src="https://pyviz.org" height="500px" width="900px"></iframe>
+      <iframe src="https://holoviz.org" height="500px" width="900px"></iframe>
+      <iframe src="https://datashader.org" height="500px" width="900px"></iframe>
       <iframe src="https://hvplot.pyviz.org" height="500px" width="900px"></iframe>
       <iframe src="https://panel.pyviz.org" height="500px" width="900px"></iframe>
       <iframe src="https://colorcet.pyviz.org" height="500px" width="900px"></iframe>
