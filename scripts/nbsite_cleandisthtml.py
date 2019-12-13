@@ -40,7 +40,7 @@ for folder in (".doctrees", "_sources"):
     except:
         pass
 
-for file_ in ("objects.inv",):
+for file_ in ():
     f = os.path.join(htmldir,file_)
     try:
         if dry_run:
