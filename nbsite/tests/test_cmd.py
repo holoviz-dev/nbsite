@@ -429,7 +429,7 @@ def test_build_deletes_by_default(tmp_project_with_docs_skeleton):
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
     assert not (project / "builtdocs" / ".doctrees").is_dir()
     assert (project / "builtdocs" / "First_Notebook.html").is_file()
-    assert len(list((project / "builtdocs").iterdir())) == 9
+    assert len(list((project / "builtdocs").iterdir())) == 10
 
 @pytest.mark.slow
 def test_build_with_clean_dry_run_does_not_delete(tmp_project_with_docs_skeleton):
