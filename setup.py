@@ -59,10 +59,22 @@ setup_args = dict(
         'jupyter_client',
         'ipykernel',
         'nbformat',
-        'nbconvert <5.4', # see https://github.com/pyviz/nbsite/issues/84
+        'nbconvert',
         'notebook',
         'sphinx',
         'beautifulsoup4',
+        # Without the tornado pin below, I get:
+        #  File "[...]/code/[...]/nbsite/nbsite/nbbuild.py", line 35, in <module>
+        #    from nbconvert import NotebookExporter, PythonExporter, HTMLExporter
+        #  File "[...]/[...]/lib/python3.7/site-packages/nbconvert/__init__.py", line 7, in <module>
+        #    from . import postprocessors
+        #  File "[...]/[...]/lib/python3.7/site-packages/nbconvert/postprocessors/__init__.py", line 5, in <module>
+        #    from .serve import ServePostProcessor
+        #  File "[...]/[...]/lib/python3.7/site-packages/nbconvert/postprocessors/serve.py", line 19, in <module>
+        #    class ProxyHandler(web.RequestHandler):
+        #  File "[...]/[...]/lib/python3.7/site-packages/nbconvert/postprocessors/serve.py", line 21, in ProxyHandler
+        #    @web.asynchronous
+        #AttributeError: module 'tornado.web' has no attribute 'asynchronous'
         'tornado <6'
     ],
     extras_require= {
