@@ -273,9 +273,13 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
                     deployed_file = os.path.join(deployment_url, basename)
                 else:
                     deployed_file = os.path.join(deployment_url, name)
+                # First try name at deployment_url, then try deployment_url itself
                 r = requests.get(deployed_file)
                 if r.status_code != 200:
-                    deployed_file = False
+                    deployed_file = deployment_url
+                    r = requests.get(deployed_file)
+                    if r.status_code != 200:
+                        deployed_file = False
 
             if nblink in ['top', 'both']:
                 add_nblink(rst_file, host, deployed_file, download_as,
