@@ -530,8 +530,9 @@ def generate_gallery(app, page):
                     logger.info('%s thumbnail export failed' % basename)
                     if extension == 'py':
                         continue
+                    backend_str = backend+'_' if backend else ''
                     this_entry = THUMBNAIL_TEMPLATE.format(
-                        backend=backend, thumbnail=logo_path,
+                        backend=backend_str, thumbnail=logo_path,
                         ref_name=basename, label=basename.replace('_', ' ').title())
                 else:
                     logger.info('%s %s thumbnail' % (verb, basename))
