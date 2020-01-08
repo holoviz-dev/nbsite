@@ -57,7 +57,15 @@ class ExecutePreprocessor1000(ExecutePreprocessor):
                 self._ipython_startup,silent=False,store_history=False,allow_stdin=False,stop_on_error=True)
 
 
+    def handle_comm_msg(self, outs, msg, cell_index):
+        """
+        Comm messages are not handled correctly in some cases so we
+        just ignore them during export.
+        """
+        pass
 
+
+            
 class SkipOutput(Preprocessor):
     """A transformer to skip the output for cells containing a certain string"""
 
