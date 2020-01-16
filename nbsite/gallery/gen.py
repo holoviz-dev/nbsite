@@ -124,7 +124,7 @@ THUMBNAIL_TEMPLATE = """
 
 .. figure:: /{thumbnail}
 
-    :ref:`{label} <{backend}gallery_{ref_name}>`
+    :ref:`{label} <{prefix}gallery_{ref_name}>`
 
 .. raw:: html
 
@@ -320,17 +320,19 @@ def add_nblink(rst_file, host, deployed_file, download_as,
                                 path='/'.join(components), basename=basename, ftype=ftype))
 
 
-def _thumbnail_div(path_components, backend, fname, extension):
+def _thumbnail_div(path_components, section, backend, fname, extension):
     """Generates RST to place a thumbnail in a gallery"""
     label = fname.replace('_', ' ').title()
     thumb = os.path.join(*path_components+['thumbnails', '%s.%s' % (fname, extension)])
 
     # Inside rst files forward slash defines paths
     thumb = thumb.replace(os.sep, "/")
-    backend = backend+'_' if backend else ''
+    prefix = '_'.join([pre for pre in (section, backend) if pre])
+    if prefix:
+        prefix += '_'
 
     return THUMBNAIL_TEMPLATE.format(
-        backend=backend, thumbnail=thumb, ref_name=fname, label=label)
+        prefix=prefix, thumbnail=thumb, ref_name=fname, label=label)
 
 
 def generate_gallery(app, page):
@@ -530,14 +532,17 @@ def generate_gallery(app, page):
                     logger.info('%s thumbnail export failed' % basename)
                     if extension == 'py':
                         continue
-                    backend_str = backend+'_' if backend else ''
+                    thumb_prefix = '_'.join([pre for pre in (section, backend) if pre])
+                    if thumb_prefix:
+                        thumb_prefix += '_'
                     this_entry = THUMBNAIL_TEMPLATE.format(
-                        backend=backend_str, thumbnail=logo_path,
+                        prefix=thumb_prefix, thumbnail=logo_path,
                         ref_name=basename, label=basename.replace('_', ' ').title())
                 else:
                     logger.info('%s %s thumbnail' % (verb, basename))
-                    this_entry = _thumbnail_div(path_components, backend,
-                                                basename, thumb_extension)
+                    this_entry = _thumbnail_div(
+                        path_components, section, backend, basename, thumb_extension
+                    )
 
                 gallery_rst += this_entry
             generate_file_rst(app, path, dest_dir, page, section,
