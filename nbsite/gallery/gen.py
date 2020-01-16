@@ -330,9 +330,11 @@ def _thumbnail_div(path_components, section, backend, fname, extension):
     prefix = '_'.join([pre for pre in (section, backend) if pre])
     if prefix:
         prefix += '_'
+        backend += '_'
 
     return THUMBNAIL_TEMPLATE.format(
-        prefix=prefix, thumbnail=thumb, ref_name=fname, label=label)
+        backend=backend, prefix=prefix, thumbnail=thumb, ref_name=fname,
+        label=label)
 
 
 def generate_gallery(app, page):
@@ -533,10 +535,12 @@ def generate_gallery(app, page):
                     if extension == 'py':
                         continue
                     thumb_prefix = '_'.join([pre for pre in (section, backend) if pre])
+                    backend_str = backend
                     if thumb_prefix:
+                        backend_str += '_'
                         thumb_prefix += '_'
                     this_entry = THUMBNAIL_TEMPLATE.format(
-                        prefix=thumb_prefix, thumbnail=logo_path,
+                        backend=backend_str, prefix=thumb_prefix, thumbnail=logo_path,
                         ref_name=basename, label=basename.replace('_', ' ').title())
                 else:
                     logger.info('%s %s thumbnail' % (verb, basename))
