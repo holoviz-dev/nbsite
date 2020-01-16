@@ -256,10 +256,7 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
                     continue
 
         with open(rst_path, 'w') as rst_file:
-            if backend:
-                prefix = '_'.join([backend, 'gallery'])
-            else:
-                prefix = 'gallery'
+            prefix = '_'.join([p for p in (section, backend, 'gallery') if p])
             rst_file.write('.. _%s_%s:\n\n' % (prefix, name))
             rst_file.write(title+'\n')
             rst_file.write('_'*len(title)+'\n\n')
@@ -328,9 +325,9 @@ def _thumbnail_div(path_components, section, backend, fname, extension):
     # Inside rst files forward slash defines paths
     thumb = thumb.replace(os.sep, "/")
     prefix = '_'.join([pre for pre in (section, backend) if pre])
+    backend = backend+'_' if backend else ''
     if prefix:
         prefix += '_'
-        backend += '_'
 
     return THUMBNAIL_TEMPLATE.format(
         backend=backend, prefix=prefix, thumbnail=thumb, ref_name=fname,
@@ -535,9 +532,8 @@ def generate_gallery(app, page):
                     if extension == 'py':
                         continue
                     thumb_prefix = '_'.join([pre for pre in (section, backend) if pre])
-                    backend_str = backend
+                    backend_str = backend+'_' if backend else '' 
                     if thumb_prefix:
-                        backend_str += '_'
                         thumb_prefix += '_'
                     this_entry = THUMBNAIL_TEMPLATE.format(
                         backend=backend_str, prefix=thumb_prefix, thumbnail=logo_path,
