@@ -87,9 +87,7 @@ class ThumbnailProcessor(Preprocessor):
 
     def preprocess_cell(self, cell, resources, index):
         if cell['cell_type'] == 'code':
-            template = """from nbsite.gallery.thumbnailer import thumbnail
-try: eval('thumbnail({{expr}}, {basename!r})')
-except SyntaxError: pass"""
+            template = 'from nbsite.gallery.thumbnailer import thumbnail;thumbnail({{expr}}, {basename!r})'
             cell['source'] = wrap_cell_expression(cell['source'],
                                                   template.format(
                                                       basename=self.basename))
@@ -140,7 +138,7 @@ if __name__ == '__main__':
         print('Generating thumbnail for file {filename}'.format(filename=f))
         code = notebook_thumbnail(f, subpath)
         try:
-            retcode = execute(code.encode('utf8'), cwd=os.path.split(f)[0])
+            retcode = execute(code.encode('utf8'), cwd=os.path.split(f)[0], env={})
         except Exception as e:
             print('Failed to generate thumbnail for {filename}'.format(filename=f))
             print(str(e))
