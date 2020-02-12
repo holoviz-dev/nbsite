@@ -87,9 +87,7 @@ class ThumbnailProcessor(Preprocessor):
 
     def preprocess_cell(self, cell, resources, index):
         if cell['cell_type'] == 'code':
-            template = """from nbsite.gallery.thumbnailer import thumbnail
-try: eval('thumbnail({{expr}}, {basename!r})')
-except SyntaxError: pass"""
+            template = 'from nbsite.gallery.thumbnailer import thumbnail;thumbnail({{expr}}, {basename!r})'
             cell['source'] = wrap_cell_expression(cell['source'],
                                                   template.format(
                                                       basename=self.basename))
