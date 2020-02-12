@@ -49,7 +49,7 @@ def wrap_cell_expression(source, template='{expr}'):
             ending = '\n'.join(([expr_start_slice] if expr_start_slice else [])
                             + filtered[last_expr.lineno:])
             if ending.strip().endswith(';'): # IPython semicolon display semantics
-                pass
+                return source
             # BUG!! Adds newline for 'foo'; <expr>
             return start + '\n' + template.format(expr=ending)
     return source
