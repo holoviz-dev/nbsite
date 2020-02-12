@@ -140,7 +140,7 @@ if __name__ == '__main__':
         print('Generating thumbnail for file {filename}'.format(filename=f))
         code = notebook_thumbnail(f, subpath)
         try:
-            retcode = execute(code.encode('utf8'), cwd=os.path.split(f)[0])
+            retcode = execute(code.encode('utf8'), cwd=os.path.split(f)[0], env={})
         except Exception as e:
             print('Failed to generate thumbnail for {filename}'.format(filename=f))
             print(str(e))
