@@ -1,14 +1,50 @@
 from __future__ import unicode_literals
-import os, sys, subprocess
+import os, sys, subprocess, ast
 from nbconvert.preprocessors import Preprocessor
 
 from holoviews.core import Dimensioned, Store
 from holoviews.ipython.preprocessors import OptsMagicProcessor, OutputMagicProcessor
-from holoviews.ipython.preprocessors import StripMagicsProcessor, wrap_cell_expression
+from holoviews.ipython.preprocessors import StripMagicsProcessor
 from holoviews.util.command import export_to_python
 
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
+
+
+def wrap_cell_expression(source, template='{expr}'):
+    """
+    If a cell ends in an expression that could be displaying a HoloViews
+    object (as determined using the AST), wrap it with a given prefix
+    and suffix string.
+
+    If the cell doesn't end in an expression, return the source unchanged.
+    """
+    cell_output_types = (ast.IfExp, ast.BoolOp, ast.BinOp, ast.Call,
+                         ast.Name, ast.Attribute)
+    try:
+        node = ast.parse(comment_out_magics(source))
+    except SyntaxError:
+        return source
+    filtered = source.splitlines()
+    if node.body != []:
+        last_expr = node.body[-1]
+        if not isinstance(last_expr, ast.Expr):
+            pass # Not an expression
+        elif isinstance(last_expr.value, cell_output_types):
+            # CAREFUL WITH UTF8!
+            expr_end_slice = filtered[last_expr.lineno-1][:last_expr.col_offset]
+            expr_start_slice = filtered[last_expr.lineno-1][last_expr.col_offset:]
+            start = '\n'.join(filtered[:last_expr.lineno-1]
+                              + ([expr_end_slice] if expr_end_slice else []))
+            ending = '\n'.join(([expr_start_slice] if expr_start_slice else [])
+                            + filtered[last_expr.lineno:])
+
+            if ending.strip().endswith(';'):
+                return source
+            # BUG!! Adds newline for 'foo'; <expr>
+            return start + '\n' + template.format(expr=ending)
+    return source
+
 
 
 def strip_specific_magics(source, magic):
