@@ -206,7 +206,8 @@ DEFAULT_GALLERY_CONF = {
 def get_deployed_url(deployment_urls, basename):
     for deployment_url in deployment_urls:
         # Test the deployment_url/basename, then deployment_url/notebooks/basename.ipynb
-        candidates = [os.path.join(deployment_url, basename),
+        candidates = [os.path.join(deployment_url,
+                                   basename[:-6] if basename.endswith('.ipynb') else basename,
                       os.path.join(deployment_url, 'notebooks',
                                    basename if basename.endswith('ipynb')
                                    else '%s.ipynb' % basename )]
