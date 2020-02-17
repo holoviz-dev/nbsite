@@ -206,7 +206,6 @@ DEFAULT_GALLERY_CONF = {
 
 def get_deployed_url(deployment_urls, basename):
     for deployment_url in deployment_urls:
-        p = Path(deployment_url)
         # Test the deployment_url/basename, then deployment_url/notebooks/basename.ipynb
         candidates = [os.path.join(deployment_url, basename),
                       os.path.join(deployment_url, 'notebooks', '%s.ipynb' % basename)]
