@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 import glob
 import logging
 
@@ -203,6 +202,18 @@ DEFAULT_GALLERY_CONF = {
     'nblink': 'both',  # use this to control the position of the nblink
 }
 
+
+def get_deployed_url(deployment_urls, basename):
+    for deployment_url in deployment_urls:
+        # Test the deployment_url/basename, then deployment_url/notebooks/basename.ipynb
+        candidates = [os.path.join(deployment_url, basename),
+                      os.path.join(deployment_url, 'notebooks', '%s.ipynb' % basename)]
+        for candidate in candidates:
+            r = requests.get(candidates)
+            if r.status_code != 200:
+                return candidate
+    return None
+
 def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
                       img_extension, skip, deployment_urls):
     gallery_conf = app.config.nbsite_gallery_conf
@@ -261,23 +272,7 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
             rst_file.write(title+'\n')
             rst_file.write('_'*len(title)+'\n\n')
 
-            deployed_file = False
-            for deployment_url in deployment_urls:
-                if deployed_file:
-                    continue
-                p = Path(deployment_url)
-                if p.parts[-1] == 'notebooks':
-                    deployed_file = os.path.join(deployment_url, basename)
-                else:
-                    deployed_file = os.path.join(deployment_url, name)
-                # First try name at deployment_url, then try deployment_url itself
-                r = requests.get(deployed_file)
-                if r.status_code != 200:
-                    deployed_file = deployment_url
-                    r = requests.get(deployed_file)
-                    if r.status_code != 200:
-                        deployed_file = False
-
+            deployed_file = get_deployed_url(deployment_urls, basename)
             if nblink in ['top', 'both']:
                 add_nblink(rst_file, host, deployed_file, download_as,
                            org, proj, components, basename, ftype, section)
