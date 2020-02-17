@@ -207,9 +207,11 @@ def get_deployed_url(deployment_urls, basename):
     for deployment_url in deployment_urls:
         # Test the deployment_url/basename, then deployment_url/notebooks/basename.ipynb
         candidates = [os.path.join(deployment_url, basename),
-                      os.path.join(deployment_url, 'notebooks', '%s.ipynb' % basename)]
+                      os.path.join(deployment_url, 'notebooks',
+                                   basename if basename.endswith('ipynb')
+                                   else '%s.ipynb' % basename ))]
         for candidate in candidates:
-            r = requests.get(candidates)
+            r = requests.get(candidate)
             if r.status_code != 200:
                 return candidate
     return None
