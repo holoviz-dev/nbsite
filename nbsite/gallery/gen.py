@@ -212,8 +212,14 @@ def get_deployed_url(deployment_urls, basename):
                                    else '%s.ipynb' % basename )]
         for candidate in candidates:
             r = requests.get(candidate)
-            if r.status_code != 200:
+            if r.status_code == 200:
                 return candidate
+
+    # Check deployment_urls directly
+    for deployment_url in deployment_urls:
+        r = requests.get(deployment_url)
+        if r.status_code == 200:
+                return deployment_url
     return None
 
 def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
