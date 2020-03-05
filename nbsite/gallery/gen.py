@@ -525,6 +525,7 @@ def generate_gallery(app, page):
                     pass
                 elif extension == 'ipynb':
                     verb = 'Successfully generated'
+                    print('getting thumbnail code for %s' % f)
                     code = notebook_thumbnail(f, dest_dir)
                     code = script_prefix + code
                     print('CODE: %r' % code)
