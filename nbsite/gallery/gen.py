@@ -475,6 +475,7 @@ def generate_gallery(app, page):
                             % (len(files), heading, title, backend_str))
 
             for f in sorted(files, key=subsection_order):
+                print("FILE> %s" % f)
                 extension = f.split('.')[-1]
                 basename = os.path.basename(f)[:-(len(extension)+1)]
 
@@ -526,6 +527,7 @@ def generate_gallery(app, page):
                     verb = 'Successfully generated'
                     code = notebook_thumbnail(f, dest_dir)
                     code = script_prefix + code
+                    print('CODE: %r' % code)
                     my_env = os.environ.copy()
                     retcode = execute(code.encode('utf8'), env=my_env, cwd=os.path.split(f)[0])
                 else:
