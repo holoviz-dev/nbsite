@@ -525,8 +525,9 @@ def generate_gallery(app, page):
                     pass
                 elif extension == 'ipynb':
                     verb = 'Successfully generated'
-                    print('getting thumbnail code for %s' % f)
-                    code = notebook_thumbnail(f, dest_dir)
+                    print('getting thumbnail code for %s' % os.path.abspath(f))
+                    print('Path exists %s' % os.path.exists(os.path.abspath(f)))
+                    code = notebook_thumbnail(os.path.abspath(f), dest_dir)
                     code = script_prefix + code
                     print('CODE: %r' % code)
                     my_env = os.environ.copy()
