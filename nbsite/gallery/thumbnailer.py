@@ -152,7 +152,7 @@ def execute(code, cwd, env):
 
 def notebook_thumbnail(filename, subpath):
     basename = os.path.splitext(os.path.basename(filename))[0]
-    dir_path = os.path.join(subpath, 'thumbnails')
+    dir_path = os.path.abspath(os.path.join(subpath, 'thumbnails'))
     absdirpath= os.path.abspath(os.path.join('.', dir_path))
     if not os.path.exists(absdirpath):
         os.makedirs(absdirpath)
