@@ -157,8 +157,6 @@ def notebook_thumbnail(filename, subpath):
     if not os.path.exists(absdirpath):
         os.makedirs(absdirpath)
 
-    print('IN thumbnailer %s, %s, %s' % (filename, dir_path, basename))
-
     preprocessors = [OptsMagicProcessor(),
                      OutputMagicProcessor(),
                      StripTimeMagicsProcessor(),
