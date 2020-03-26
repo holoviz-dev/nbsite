@@ -146,7 +146,7 @@ class ThumbnailProcessor(Preprocessor):
 
 
 def execute(code, cwd, env):
-    with tempfile.NamedTemporaryFile('wb', delete=True) as f:
+    with tempfile.NamedTemporaryFile('wb') as f:
         f.write(code)
         proc = subprocess.Popen(['python', f.name], cwd=cwd, env=env)
     return proc.returncode
