@@ -7,6 +7,7 @@ from holoviews.ipython.preprocessors import OptsMagicProcessor, OutputMagicProce
 from holoviews.ipython.preprocessors import StripMagicsProcessor
 from holoviews.util.command import export_to_python
 
+import tempfile
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 
@@ -145,9 +146,9 @@ class ThumbnailProcessor(Preprocessor):
 
 
 def execute(code, cwd, env):
-    proc = subprocess.Popen(['python'],
-                            stdin=subprocess.PIPE, cwd=cwd, env=env)
-    proc.communicate(code)
+    with tempfile.NamedTemporaryFile('wb', delete=True) as f:
+        f.write(code)
+        proc = subprocess.Popen(['python', f.name], cwd=cwd, env=env)
     return proc.returncode
 
 def notebook_thumbnail(filename, subpath):
