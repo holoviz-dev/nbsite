@@ -12,7 +12,8 @@ param.parameterized.docstring_describe_params = False
 IGNORED_ATTRS = [
     'precedence', 'check_on_set', 'instantiate', 'pickle_default_value',
     'watchers', 'compute_default_fn', 'doc', 'owner', 'per_instance',
-    'constant', 'is_instance', 'name', 'allow_None'
+    'constant', 'is_instance', 'name', 'allow_None', 'time_fn',
+    'time_dependent'
 ]
 
 # Default parameter attribute values (value not shown if it matches defaults)
