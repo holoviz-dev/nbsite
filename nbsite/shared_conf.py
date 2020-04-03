@@ -6,8 +6,9 @@ from nbsite import nbbuild
 
 def setup(app):
     try:
-        from nbsite.paramdoc import param_formatter
+        from nbsite.paramdoc import param_formatter, param_skip
         app.connect('autodoc-process-docstring', param_formatter)
+        app.connect('autodoc-skip-member', param_skip)
     except ImportError:
         print('no param_formatter (no param?)')
 
