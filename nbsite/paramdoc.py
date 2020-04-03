@@ -1,4 +1,5 @@
 import inspect
+from functools import partial
 
 import param
 
@@ -11,7 +12,8 @@ param.parameterized.docstring_describe_params = False
 IGNORED_ATTRS = [
     'precedence', 'check_on_set', 'instantiate', 'pickle_default_value',
     'watchers', 'compute_default_fn', 'doc', 'owner', 'per_instance',
-    'constant', 'is_instance', 'name', 'allow_None']
+    'constant', 'is_instance', 'name', 'allow_None'
+]
 
 # Default parameter attribute values (value not shown if it matches defaults)
 DEFAULT_VALUES = {'allow_None': False, 'readonly': False}
@@ -22,7 +24,7 @@ def param_formatter(app, what, name, obj, options, lines):
         lines = ["start"]
 
     if what == 'class' and isinstance(obj, param.parameterized.ParameterizedMetaclass):
-        params = obj.params()
+        params = obj.param.params()
         for child in params:
             if child in ["print_level", "name"]:
                 continue
@@ -43,3 +45,13 @@ def param_formatter(app, what, name, obj, options, lines):
                 lines.extend(["", "``%s`` = param.%s(%s)" % (child, ptype, params_str), "    %s" % doc])
             else:
                 lines.extend(["", "``%s`` = param.%s()" % (child, ptype), "    %s" % doc])
+
+
+def param_skip(app, what, name, obj, skip, options):
+    if what == 'class' and not skip:
+        return (
+            getattr(obj, '__qualname__', '').startswith('Parameters.deprecate') or
+            (isinstance(obj, partial) and obj.args and isinstance(obj.args[0], param.Parameterized)) or
+            (getattr(obj, '__qualname__', '').startswith('Parameterized.') and
+             getattr(obj, '__class__', str).__name__ == 'function')
+        )
