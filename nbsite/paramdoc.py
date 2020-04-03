@@ -25,11 +25,29 @@ def param_formatter(app, what, name, obj, options, lines):
         lines = ["start"]
 
     if what == 'class' and isinstance(obj, param.parameterized.ParameterizedMetaclass):
-        params = obj.param.params()
+
+        parameters = ['name']
+        mro = obj.mro()[::-1]
+        inherited = []
+        for cls in mro[:-1]:
+            if not issubclass(cls, param.Parameterized) or cls is param.Parameterized:
+                continue
+            cls_params = [p for p in cls.param if p not in parameters and
+                          cls.param[p] == obj.param[p]]
+            if not cls_params:
+                continue
+            parameters += cls_params
+            inherited.extend(['', '    :class:`{module}.{name}`: {params}'.format(
+                name=cls.__name__, module=cls.__module__, params=['``%s``' % p for p in cls_params])
+            ])
+        if inherited:
+            lines.extend(["Parameters inherited from:"]+inherited)
+
+        params = [p for p in obj.param if p not in parameters]
         for child in params:
             if child in ["print_level", "name"]:
                 continue
-            pobj = params[child]
+            pobj = obj.param[child]
             label = label_formatter(pobj.name)
             doc = pobj.doc or ""
             members = inspect.getmembers(pobj)
@@ -41,7 +59,7 @@ def param_formatter(app, what, name, obj, options, lines):
                     (m[0] != 'label' or pobj.label != label)):
                     params_str += "%s=%s, " % (m[0], repr(m[1]))
             params_str = params_str[:-2]
-            ptype = params[child].__class__.__name__
+            ptype = pobj.__class__.__name__
             if params_str.lstrip():
                 lines.extend(["", "``%s`` = param.%s(%s)" % (child, ptype, params_str), "    %s" % doc])
             else:
