@@ -37,11 +37,13 @@ def param_formatter(app, what, name, obj, options, lines):
             if not cls_params:
                 continue
             parameters += cls_params
+            cname = cls.__name__
+            module = cls.__module__
             inherited.extend(['', '    :class:`{module}.{name}`: {params}'.format(
-                name=cls.__name__, module=cls.__module__, params=['``%s``' % p for p in cls_params])
+                name=cname, module=module, params=', '.join(cls_params))
             ])
         if inherited:
-            lines.extend(["Parameters inherited from:"]+inherited)
+            lines.extend(["Parameters inherited from: "]+inherited)
 
         params = [p for p in obj.param if p not in parameters]
         for child in params:
