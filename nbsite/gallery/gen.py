@@ -212,13 +212,13 @@ def get_deployed_url(deployment_urls, basename):
                                    basename if basename.endswith('ipynb')
                                    else '%s.ipynb' % basename )]
         for candidate in candidates:
-            r = requests.get(candidate)
+            r = requests.get(candidate, verify=False)
             if r.status_code == 200:
                 return candidate
 
     # Check deployment_urls directly
     for deployment_url in deployment_urls:
-        r = requests.get(deployment_url)
+        r = requests.get(deployment_url, verify=False)
         if r.status_code == 200:
                 return deployment_url
     return None
@@ -251,7 +251,7 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
     # Try to fetch all deployed examples
     deployed_examples = []
     if bs4 and endpoint is not None:
-        r = requests.get(endpoint)
+        r = requests.get(endpoint, verify=False)
         if r.status_code == 200:
             soup = bs4.BeautifulSoup(r.content, features='lxml')
             deployed_examples = [l.text for l in soup.find('div', {"class": "list-group"}).find_all('h4')]
@@ -504,13 +504,13 @@ def generate_gallery(app, page):
 
                 # Try download
                 if download and retcode:
-                    thumb_req = requests.get(thumb_url)
+                    thumb_req = requests.get(thumb_url, verify=False)
                     verb = 'Successfully downloaded'
                     if thumb_req.status_code == 200:
                         verb = 'Successfully downloaded'
                         retcode = 0
                     else:
-                        thumb_req = requests.get(thumb_url[:-4]+'.gif')
+                        thumb_req = requests.get(thumb_url[:-4]+'.gif', verify=False)
                         if thumb_req.status_code == 200:
                             thumb_extension = 'gif'
                             thumb_path = thumb_path[:-4]+'.gif'
