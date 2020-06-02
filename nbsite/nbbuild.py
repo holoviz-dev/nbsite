@@ -166,9 +166,15 @@ class NotebookDirective(Directive):
     """
     required_arguments = 2
     optional_arguments = 6
-    option_spec = {'skip_exceptions' : directives.flag,
-                   'substring':str, 'end':str,
-                   'skip_execute':bool, 'skip_output':str, 'offset':int}
+    option_spec = {
+        'skip_exceptions': directives.flag,
+        'substring': str,
+        'end': str,
+        'skip_execute': bool,
+        'skip_output': str,
+        'offset': int,
+        'template': str
+    }
 
     def run(self):
         # check if raw html is supported
@@ -225,8 +231,9 @@ class NotebookDirective(Directive):
                                            skip_output=self.options.get('skip_output'),
                                            offset=self.options.get('offset', 0),
                                            timeout=setup.config.nbbuild_cell_timeout,
+                                           template=self.options.get('template', dict),
                                            ipython_startup=setup.config.nbbuild_ipython_startup,
-                                           patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along)
+                                        patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along)
 
         # Insert evaluated notebook HTML into Sphinx
 
@@ -261,9 +268,9 @@ def nb_to_python(nb_path):
     return output
 
 
-def nb_to_html(nb_path, preprocessors=[]):
+def nb_to_html(nb_path, preprocessors=[], template='basic'):
     """convert notebook to html"""
-    exporter = HTMLExporter(template_file='basic',
+    exporter = HTMLExporter(template_file=template,
                             preprocessors=preprocessors)
     output, resources = exporter.from_filename(nb_path)
     # get rid of comments to allow rendering.
@@ -274,7 +281,7 @@ def nb_to_html(nb_path, preprocessors=[]):
 
 # TODO: (does it matter) have lost NotebookRunner.MIME_MAP['application/vnd.bokehjs_load.v0+json'] = 'html'
 # TODO: (does it matter) have lost NotebookRunner.MIME_MAP['application/vnd.bokehjs_exec.v0+json'] = 'html'
-def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=None, end=None, skip_execute=None,skip_output=None, offset=0, timeout=300, ipython_startup=None,patterns_to_take_with_me=None):
+def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=None, end=None, skip_execute=None, skip_output=None, offset=0, timeout=300, ipython_startup=None, patterns_to_take_with_me=None, template='basic'):
 
     if patterns_to_take_with_me is None:
         patterns_to_take_with_me = []
@@ -325,7 +332,7 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
         preprocessors.append(NotebookSlice(substring, end, offset))
     if skip_output:
         preprocessors.append(SkipOutput(skip_output))
-    ret = nb_to_html(dest_path, preprocessors=preprocessors)
+    ret = nb_to_html(dest_path, preprocessors=preprocessors, template=template)
     return ret
 
 
