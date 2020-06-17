@@ -24,7 +24,7 @@ stages:
   - name: pip_package
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
   - name: website_release
-    if: tag =~ ^v(\d+|\.)+[^a-z]\d+$ OR tag =~ ^v(\d+|\.)+[a-z]\d+$ OR tag = website
+    if: tag =~ ^v(\d+|\.)+[^a-z]\d+$ OR tag = website
 
 jobs:
   include:
