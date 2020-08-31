@@ -5,25 +5,25 @@ function expand(e) {
 		var p = e.target.parentNode;
 	}
 
-	if (p.className == "class rm_collapsed")
-		p.className = "class rm_expanded";
-	else if (p.className == "class rm_expanded")
-		p.className = "class rm_collapsed";
+	if (p.className == "py class rm_collapsed")
+		p.className = "py class rm_expanded";
+	else if (p.className == "py class rm_expanded")
+		p.className = "py class rm_collapsed";
 }
 
 function expand_ref(ref) {
 	if (ref == null) {
 		return
 	}
-	while (ref.className !== 'class rm_collapsed' &&
+	while (ref.className !== 'py class rm_collapsed' &&
 		   ref.parentNode !== undefined) {
 		ref = ref.parentNode;
 		if (ref == null) {
 			return
 		}
 	}
-	if (ref.className == 'class rm_collapsed') {
-		ref.className = "class rm_expanded";
+	if (ref.className == 'py class rm_collapsed') {
+		ref.className = "py class rm_expanded";
 	}
 }
 
