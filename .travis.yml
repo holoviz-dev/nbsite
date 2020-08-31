@@ -1,5 +1,4 @@
-sudo: false
-language: generic
+language: python
 os:
   - linux
 
