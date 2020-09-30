@@ -15,7 +15,7 @@
 ## What is it?
 
 NBSite lets you build a website from a set of notebooks plus a minimal
-amount of config. Sites built with nbsite include
+amount of config. Sites built with nbsite include-
 [pyviz.org](https://pyviz.org),
 [datashader.org](https://datashader.org/), and [hvplot.pyviz.org](https:/hvplot.pyviz.org).
 
