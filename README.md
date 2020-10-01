@@ -14,8 +14,8 @@
 
 ## What is it?
 
-NBSite lets you build a website from a set of notebooks plus a minimal
-amount of config. Sites built with nbsite include
+NBSite let's you build a website from a set of notebooks plus a minimal
+amount of config !. Sites built with nbsite include:
 [pyviz.org](https://pyviz.org),
 [datashader.org](https://datashader.org/), and [hvplot.pyviz.org](https:/hvplot.pyviz.org).
 
@@ -30,6 +30,6 @@ more information.
 
 ## About PyViz
 
-NBSite is part of the PyViz initiative for making Python-based visualization tools work well together.
+NBSite is a part of the PyViz initiative for making Python-based visualization tools work well together.
 See [pyviz.org](https://pyviz.org) for related packages that you can use with NBSite and
 [status.pyviz.org](https://status.pyviz.org) for the current status of each PyViz project.
