@@ -2,7 +2,7 @@
 
 -----------------
 
-# NBSite: Build a tested, sphinx-based website from notebooks
+# NBSite: Build a tested, sphinx-based website from notebooks and all Details.
 
 |    |    |
 | --- | --- |
