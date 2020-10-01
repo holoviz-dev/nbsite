@@ -1,6 +1,6 @@
 <img src="doc/_static/nbsite-logo.png" height=150><br>
 
------------------
+-----https://nbsite.holoviz.org/-----------
 
 # NBSite: Build a tested, sphinx-based website from notebooks
 
