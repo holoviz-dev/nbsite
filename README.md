@@ -12,7 +12,7 @@
 | Latest release | [![Github release](https://img.shields.io/github/release/pyviz-dev/nbsite.svg?label=tag&colorB=11ccbb)](https://github.com/pyviz-dev/nbsite/releases) [![PyPI version](https://img.shields.io/pypi/v/nbsite.svg?colorB=cc77dd)](https://pypi.python.org/pypi/nbsite) [![nbsite version](https://img.shields.io/conda/v/pyviz/nbsite.svg?colorB=4488ff&style=flat)](https://anaconda.org/pyviz/nbsite) [![conda-forge version](https://img.shields.io/conda/v/conda-forge/nbsite.svg?label=conda%7Cconda-forge&colorB=4488ff)](https://anaconda.org/conda-forge/nbsite) [![defaults version](https://img.shields.io/conda/v/anaconda/nbsite.svg?label=conda%7Cdefaults&style=flat&colorB=4488ff)](https://anaconda.org/anaconda/nbsite) |
 | Docs | [![gh-pages](https://img.shields.io/github/last-commit/pyviz/nbsite/gh-pages.svg)](https://github.com/pyviz/nbsite/tree/gh-pages) [![site](https://img.shields.io/website-up-down-green-red/https/nbsite.pyviz.org.svg)](https://nbsite.pyviz.org) |
 
-## What is it?
+## What is this?
 
 NBSite lets you build a website from a set of notebooks plus a minimal
 amount of config. Sites built with nbsite include
