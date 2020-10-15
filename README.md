@@ -15,15 +15,15 @@
 ## What is it?
 
 NBSite lets you build a website from a set of notebooks plus a minimal
-amount of config. Sites built with nbsite include
+amount of configuration. Sites built with nbsite include
 [pyviz.org](https://pyviz.org),
 [datashader.org](https://datashader.org/), and [hvplot.pyviz.org](https:/hvplot.pyviz.org).
 
 The idea behind nbsite is that notebooks can simultaneously be
-documentation (things you want to tell people about), examples (a
+documented (things you want to tell people about), examples (a
 starting point for people to run and use themselves), and test cases.
 
-This project is currently an early work in progress. See the
+This project is currently in early work in progress. See the
 documentation at [nbsite.pyviz.org](https://nbsite.pyviz.org) for
 more information.
 
