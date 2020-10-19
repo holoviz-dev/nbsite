@@ -34,6 +34,7 @@ def main(args=None):
     generaterst_parser.add_argument('--branch',type=str,help='branch to point to in notebook links',default='master')
     generaterst_parser.add_argument('--offset',type=int,help='number of cells to delete from top of notebooks',default=0)
     generaterst_parser.add_argument('--nblink',type=str,help='where to place notebook links',choices=['bottom', 'top', 'both', 'none'], default='bottom')
+    generaterst_parser.add_argument('--binder',type=str,help='where to place binder link',choices=['bottom', 'top', 'both', 'none'], default='none')
     generaterst_parser.add_argument('--skip',type=str,help='notebooks to skip running; comma separated case insensitive re to match',default='')
     generaterst_parser.add_argument('--keep-numbers',action='store_true',help='whether to keep the leading numbers of notebook URLs and titles')
     _set_defaults(generaterst_parser,generate_rst)
