@@ -119,7 +119,7 @@ def generate_rst(
         nblink='bottom',
         skip='',
         keep_numbers=False,
-        binder="",
+        binder='none',
 ):
     """Auto-generates notebook-including rsts from notebooks in examples.
 
