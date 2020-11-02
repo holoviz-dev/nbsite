@@ -5,7 +5,7 @@ os:
 
 env:
   global:
-    - PYENV_VERSION=3.7
+    - PYTHON_VERSION=3.7
     # conda-forge for phantomjs on linux (https://github.com/AnacondaRecipes/aggregate/issues/38)
     - CHANS_DEV="-c pyviz/label/dev -c defaults -c conda-forge"
     - CHANS_REL="-c pyviz -c conda-forge"
