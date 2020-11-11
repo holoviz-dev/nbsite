@@ -168,7 +168,8 @@ class NotebookDirective(Directive):
     optional_arguments = 6
     option_spec = {'skip_exceptions' : directives.flag,
                    'substring':str, 'end':str,
-                   'skip_execute':bool, 'skip_output':str, 'offset':int}
+                   'skip_execute':bool, 'skip_output':str, 'offset':int,
+                   'no_interactivity_warning':bool}
 
     def run(self):
         # check if raw html is supported
@@ -215,6 +216,7 @@ class NotebookDirective(Directive):
 
         # Evaluate Notebook and insert into Sphinx doc
         skip_exceptions = 'skip_exceptions' in self.options
+        no_interactivity_warning = 'no_interactivity_warning' in self.options
 
         # Parse slice
         evaluated_text = evaluate_notebook(nb_abs_path, dest_path,
@@ -224,6 +226,7 @@ class NotebookDirective(Directive):
                                            skip_execute=self.options.get('skip_execute'),
                                            skip_output=self.options.get('skip_output'),
                                            offset=self.options.get('offset', 0),
+                                           no_interactivity_warning=no_interactivity_warning,
                                            timeout=setup.config.nbbuild_cell_timeout,
                                            ipython_startup=setup.config.nbbuild_ipython_startup,
                                            patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along)
@@ -274,7 +277,7 @@ def nb_to_html(nb_path, preprocessors=[]):
 
 # TODO: (does it matter) have lost NotebookRunner.MIME_MAP['application/vnd.bokehjs_load.v0+json'] = 'html'
 # TODO: (does it matter) have lost NotebookRunner.MIME_MAP['application/vnd.bokehjs_exec.v0+json'] = 'html'
-def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=None, end=None, skip_execute=None,skip_output=None, offset=0, timeout=300, ipython_startup=None,patterns_to_take_with_me=None):
+def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=None, end=None, skip_execute=None,skip_output=None, offset=0, no_interactivity_warning=False, timeout=300, ipython_startup=None,patterns_to_take_with_me=None):
 
     if patterns_to_take_with_me is None:
         patterns_to_take_with_me = []
@@ -326,6 +329,9 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
     if skip_output:
         preprocessors.append(SkipOutput(skip_output))
     ret = nb_to_html(dest_path, preprocessors=preprocessors)
+
+    if not no_interactivity_warning:
+        ret += '<div id="scroller-right">Not all interactivity in this notebook may work.</div>'
     return ret
 
 
