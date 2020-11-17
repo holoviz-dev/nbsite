@@ -49,7 +49,7 @@ interactivity.
 interactivity_warning="""
 This web page was generated from a Jupyter notebook and not all
 interactivity will work on this website. <a
-href="{download_link}">Right-click to download and run</a> for full
+href="{download_link}">Right click to download and run locally</a> for full
 Python-backed interactivity.
 """
 
