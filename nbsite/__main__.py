@@ -42,7 +42,7 @@ def main(args=None):
     build_parser = subparsers.add_parser("build", help=inspect.getdoc(build))
     build_parser.add_argument('--what',type=str,help='type of output to generate',default='html')
 
-    build_parser.add_argument('--project-name', type=str, help='name of project')
+    build_parser.add_argument('--project-name', type=str, help='name of project', default='')
     build_parser.add_argument('--org',type=str,help='github organization',default='')
     build_parser.add_argument('--host',type=str,help='host to use when generating notebook links',default='GitHub')
     build_parser.add_argument('--repo',type=str,help='name of repo',default='')
