@@ -35,7 +35,23 @@ import nbformat
 from nbconvert import NotebookExporter, PythonExporter, HTMLExporter
 from nbconvert.preprocessors import (ExecutePreprocessor, CellExecutionError,
                                      Preprocessor)
+from .cmd import hosts, _prepare_paths
 
+
+interactivity_warning_binder="""
+This web page was generated from a Jupyter notebook and not all
+interactivity will work on this website. <a
+href="{download_link}">Right-click to download and run</a> or <a
+href="{binder_link}">Launch on Binder</a> for full Python-backed
+interactivity.
+"""
+
+interactivity_warning="""
+This web page was generated from a Jupyter notebook and not all
+interactivity will work on this website. <a
+href="{download_link}">Right-click to download and run</a> for full
+Python-backed interactivity.
+"""
 
 #from nbformat.v4 import output_from_msg
 class ExecutePreprocessor1000(ExecutePreprocessor):
@@ -158,6 +174,17 @@ class FixBackticksInDetails(Preprocessor):
     def __call__(self, nb, resources): return self.preprocess(nb,resources)
 
 
+def get_download_link(relpath, org, branch, repo, examples, host):
+    info = (hosts[host], org, repo, branch, examples, relpath)
+    return '%s/%s/%s/%s/%s/%s' % info
+
+
+def get_binder_link(relpath, org, repo, branch, examples):
+    # SVG logo: https://mybinder.org/badge_logo.svg
+    url="https://mybinder.org/v2/gh/{org}/{repo}/{branch}?filepath={examples}/{relpath}"
+    return  url.format(org=org,repo=repo,branch=branch,relpath=relpath,examples=examples)
+
+
 class NotebookDirective(Directive):
     """Insert an evaluated notebook into a document
 
@@ -216,7 +243,6 @@ class NotebookDirective(Directive):
 
         # Evaluate Notebook and insert into Sphinx doc
         skip_exceptions = 'skip_exceptions' in self.options
-        disable_interactivity_warning = 'disable_interactivity_warning' in self.options
 
         # Parse slice
         evaluated_text = evaluate_notebook(nb_abs_path, dest_path,
@@ -226,13 +252,44 @@ class NotebookDirective(Directive):
                                            skip_execute=self.options.get('skip_execute'),
                                            skip_output=self.options.get('skip_output'),
                                            offset=self.options.get('offset', 0),
-                                           disable_interactivity_warning=disable_interactivity_warning,
                                            timeout=setup.config.nbbuild_cell_timeout,
                                            ipython_startup=setup.config.nbbuild_ipython_startup,
                                            patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along)
 
-        # Insert evaluated notebook HTML into Sphinx
+        project_name = os.environ.get('PROJECT_NAME','')
+        project_root = os.environ.get('PROJECT_ROOT','')
+        host = os.environ.get('HOST','GitHub')
+        branch = os.environ.get('BRANCH','master')
+        repo = os.environ.get('REPO','')
+        org = os.environ.get('ORG','')
+        doc = os.environ.get('DOC','doc')
+        examples = os.environ.get('EXAMPLES','examples')
+        examples_assets = os.environ.get('EXAMPLES_ASSETS','assets')
+        binder = os.environ.get('BINDER','none')
 
+        if repo == '' or project_name == '':
+            project_name = repo = project_name or repo
+        if org == '':
+            org = repo
+
+        paths = _prepare_paths(project_root, examples=examples,
+                               doc=doc, examples_assets=examples_assets)
+        relpath = os.path.relpath(nb_abs_path, paths['examples'])
+        dl_link = get_download_link(relpath, org, branch, repo, examples, host)
+        binder_link = get_binder_link(relpath, org, repo, branch, examples)
+
+        if not ('disable_interactivity_warning' in self.options):
+            if binder == 'none':
+                inner_msg = interactivity_warning.format(download_link=dl_link)
+                evaluated_text += '''
+                <div id="scroller-right">{inner_msg}</div>'''.format(inner_msg=inner_msg)
+            else:
+                inner_msg = interactivity_warning_binder.format(download_link=dl_link,
+                                                                binder_link=binder_link)
+                evaluated_text += '''
+                <div id="scroller-right">{inner_msg}</div>'''.format(inner_msg=inner_msg)
+
+        # Insert evaluated notebook HTML into Sphinx
         self.state_machine.insert_input([link_rst], rst_file)
 
         # create notebook node
@@ -277,7 +334,7 @@ def nb_to_html(nb_path, preprocessors=[]):
 
 # TODO: (does it matter) have lost NotebookRunner.MIME_MAP['application/vnd.bokehjs_load.v0+json'] = 'html'
 # TODO: (does it matter) have lost NotebookRunner.MIME_MAP['application/vnd.bokehjs_exec.v0+json'] = 'html'
-def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=None, end=None, skip_execute=None,skip_output=None, offset=0, disable_interactivity_warning=False, timeout=300, ipython_startup=None,patterns_to_take_with_me=None):
+def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=None, end=None, skip_execute=None,skip_output=None, offset=0, timeout=300, ipython_startup=None,patterns_to_take_with_me=None):
 
     if patterns_to_take_with_me is None:
         patterns_to_take_with_me = []
@@ -328,11 +385,7 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
         preprocessors.append(NotebookSlice(substring, end, offset))
     if skip_output:
         preprocessors.append(SkipOutput(skip_output))
-    ret = nb_to_html(dest_path, preprocessors=preprocessors)
-
-    if not disable_interactivity_warning:
-        ret += '<div id="scroller-right">Not all interactivity in this notebook may work.</div>'
-    return ret
+    return nb_to_html(dest_path, preprocessors=preprocessors)
 
 
 def formatted_link(path):

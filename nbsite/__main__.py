@@ -41,6 +41,14 @@ def main(args=None):
 
     build_parser = subparsers.add_parser("build", help=inspect.getdoc(build))
     build_parser.add_argument('--what',type=str,help='type of output to generate',default='html')
+
+    build_parser.add_argument('--project-name', type=str, help='name of project')
+    build_parser.add_argument('--org',type=str,help='github organization',default='')
+    build_parser.add_argument('--host',type=str,help='host to use when generating notebook links',default='GitHub')
+    build_parser.add_argument('--repo',type=str,help='name of repo',default='')
+    build_parser.add_argument('--branch',type=str,help='branch to point to in notebook links',default='master')
+    build_parser.add_argument('--binder',type=str,help='where to place binder link',choices=['bottom', 'top', 'both', 'none'], default='none')
+
     build_parser.add_argument('--output',type=str,help='where to place output',default="builtdocs")
     _add_common_args(build_parser,'--project-root','--doc','--examples', '--overwrite')
     build_parser.add_argument('--examples-assets',type=str,default="assets",
