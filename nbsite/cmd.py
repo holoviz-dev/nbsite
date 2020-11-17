@@ -67,19 +67,6 @@ def build(what='html',
 
     Usually this is run after `nbsite scaffold`
     """
-    env={'PROJECT_NAME':project_name,
-         'PROJECT_ROOT':project_root if project_root!='' else os.getcwd(),
-         'HOST':host,
-         'REPO':repo,
-         'BRANCH':branch,
-         'ORG':org,
-         'EXAMPLES':examples,
-         'DOC':doc,
-         'EXAMPLES_ASSETS':examples_assets,
-         'BINDER':binder
-         }
-    merged_env = dict(os.environ, **env)
-
     paths = _prepare_paths(project_root, examples=examples, doc=doc, examples_assets=examples_assets)
     if overwrite:
         for path in glob.glob(os.path.join(paths['doc'], '**', '*.ipynb'), recursive=True):
