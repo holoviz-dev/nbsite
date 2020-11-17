@@ -79,6 +79,9 @@ def build(what='html',
          'BINDER':binder
          }
     merged_env = dict(os.environ, **env)
+    none_vals = {k:v for k,v in merged_env.items() if v is None}
+    if none_vals:
+        raise Exception("Missing value for %s" % list(none_vals.keys()))
 
     paths = _prepare_paths(project_root, examples=examples, doc=doc, examples_assets=examples_assets)
     if overwrite:
