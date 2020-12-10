@@ -51,6 +51,12 @@ def build(what='html',
           output='builtdocs',
           project_root='',
           doc='doc',
+          project_name='',
+          host='GitHub',
+          repo='',
+          branch='master',
+          org='',
+          binder='none',
           examples='examples',
           examples_assets='assets',
           clean_dry_run=False,
@@ -61,12 +67,28 @@ def build(what='html',
 
     Usually this is run after `nbsite scaffold`
     """
+    env={'PROJECT_NAME':project_name,
+         'PROJECT_ROOT':project_root if project_root!='' else os.getcwd(),
+         'HOST':host,
+         'REPO':repo,
+         'BRANCH':branch,
+         'ORG':org,
+         'EXAMPLES':examples,
+         'DOC':doc,
+         'EXAMPLES_ASSETS':examples_assets,
+         'BINDER':binder
+         }
+    merged_env = dict(os.environ, **env)
+    none_vals = {k:v for k,v in merged_env.items() if v is None}
+    if none_vals:
+        raise Exception("Missing value for %s" % list(none_vals.keys()))
+
     paths = _prepare_paths(project_root, examples=examples, doc=doc, examples_assets=examples_assets)
     if overwrite:
         for path in glob.glob(os.path.join(paths['doc'], '**', '*.ipynb'), recursive=True):
             print('Removing evaluated notebook from {}'.format(path))
             os.remove(path)
-    subprocess.check_call(["sphinx-build","-b",what,paths['doc'],output])
+    subprocess.check_call(["sphinx-build","-b",what,paths['doc'],output], env=merged_env)
     print('Copying json blobs (used for holomaps) from {} to {}'.format(paths['doc'], output))
     copy_files(paths['doc'], output, '**/*.json')
     copy_files(paths['doc'], output, 'json_*')
