@@ -37,10 +37,14 @@ jobs:
     - &default
       stage: test
       env: DESC="dev test_all"
-      before_install: pip install pyctdev && doit ecosystem_setup
+      before_install:
+        - pip install pyctdev && doit miniconda_install && pip uninstall -y doit pyctdev
+        - export PATH="$HOME/miniconda/bin:$PATH" && hash -r
+        - conda config --set always_yes True
+        - conda install -c pyviz "pyctdev>=0.5" && doit ecosystem_setup
       install:
-        # TODO: pyctdev does not yet have env_create support for pip ecosystem
-        #- doit env_create --python=$PYTHON_VERSION
+        - doit env_create --python=$PYTHON_VERSION
+        - source activate test-environment
         - doit develop_install -o examples -o tests
         - doit env_capture
       script:
