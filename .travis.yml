@@ -43,9 +43,10 @@ jobs:
         - conda config --set always_yes True
         - conda install -c pyviz "pyctdev>=0.5" && doit ecosystem_setup
       install:
+        # TODO: pyctdev does not yet have env_create support for pip ecosystem
         - doit env_create --python=$PYTHON_VERSION
         - source activate test-environment
-        - doit develop_install -o examples -o tests
+        - doit develop_install -c pyviz -o examples -o tests
         - doit env_capture
       script:
         - doit test_all
