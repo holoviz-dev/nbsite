@@ -6,7 +6,7 @@
 
 |    |    |
 | --- | --- |
-| Build Status | [![Build Status](https://github.com/pyviz-dev/nbsite/workflows/tests/badge.svg)](https://github.com/pyviz-dev/nbsite/workflows/tests)
+| Build Status | [![Build Status](https://github.com/pyviz-dev/nbsite/workflows/tests/badge.svg)](https://github.com/pyviz-dev/nbsite/actions?query=workflow%3Atests)
 | Coverage | [![codecov](https://codecov.io/gh/pyviz-dev/nbsite/branch/master/graph/badge.svg)](https://codecov.io/gh/pyviz-dev/nbsite) |
 | Latest dev release | [![Github tag](https://img.shields.io/github/tag/pyviz-dev/nbsite.svg?label=tag&colorB=11ccbb)](https://github.com/pyviz-dev/nbsite/tags) |
 | Latest release | [![Github release](https://img.shields.io/github/release/pyviz-dev/nbsite.svg?label=tag&colorB=11ccbb)](https://github.com/pyviz-dev/nbsite/releases) [![PyPI version](https://img.shields.io/pypi/v/nbsite.svg?colorB=cc77dd)](https://pypi.python.org/pypi/nbsite) [![nbsite version](https://img.shields.io/conda/v/pyviz/nbsite.svg?colorB=4488ff&style=flat)](https://anaconda.org/pyviz/nbsite) [![conda-forge version](https://img.shields.io/conda/v/conda-forge/nbsite.svg?label=conda%7Cconda-forge&colorB=4488ff)](https://anaconda.org/conda-forge/nbsite) [![defaults version](https://img.shields.io/conda/v/anaconda/nbsite.svg?label=conda%7Cdefaults&style=flat&colorB=4488ff)](https://anaconda.org/anaconda/nbsite) |
