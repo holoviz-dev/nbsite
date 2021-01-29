@@ -10,7 +10,7 @@ on:
 
 jobs:
   test_suite:
-    name: Tox on ${{ matrix.python-version }}, ${{ matrix.os }}
+    name: Test on ${{ matrix.python-version }}, ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
