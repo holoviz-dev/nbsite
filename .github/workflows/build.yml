@@ -15,7 +15,7 @@ jobs:
       run:
         shell: bash -l {0}
     env:
-      CHANS_DEV: "-c pyviz/label/dev"
+      CHANS_DEV: "-c pyviz/label/dev -c defaults -c conda-forge"
       PKG_TEST_PYTHON: "--test-python=py37"
       PYTHON_VERSION: "3.7"
       CHANS: "-c pyviz"
@@ -35,26 +35,20 @@ jobs:
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: conda setup
         run: |
-          eval "$(conda shell.bash hook)"
-          conda config --set always_yes yes --set changeps1 no
-          conda update conda
-          conda install anaconda-client conda-build
-          conda install -c pyviz "pyctdev>=0.5.5"
+          conda config --set always_yes True
+          conda install -c pyviz "pyctdev>=0.5"
           doit ecosystem=conda ecosystem_setup
       - name: conda build
         run: |
-          eval "$(conda shell.bash hook)"
-          conda build conda.recipe/
+          doit ecosystem=conda package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=unit
       - name: conda dev upload
         if: (contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc'))
         run: |
-          eval "$(conda shell.bash hook)"
-          anaconda --token $CONDA_UPLOAD_TOKEN upload --user pyviz --label=dev $(conda build --output conda.recipe)
+          doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev
       - name: conda main upload
         if: (!(contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc')))
         run: |
-          eval "$(conda shell.bash hook)"
-          anaconda --token $CONDA_UPLOAD_TOKEN upload --user pyviz --label=dev --label=main $(conda build --output conda.recipe)
+          doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev --label=main
   pip_build:
     name: Build PyPI Packages
     runs-on: 'ubuntu-latest'
@@ -62,7 +56,7 @@ jobs:
       run:
         shell: bash -l {0}
     env:
-      TOX_ENV: "py3.7"
+      PKG_TEST_PYTHON: "--test-python=py37"
     steps:
       - uses: actions/checkout@v2
       - name: Fetch unshallow
@@ -72,11 +66,11 @@ jobs:
           python-version: "3.7"
       - name: env setup
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install setuptools wheel twine tox pyctdev
+          pip install pyctdev
+          doit ecosystem_setup
       - name: pip build
         run: |
-          python setup.py sdist bdist_wheel
+          doit package_build $PKG_TEST_PYTHON --test-group=installed --sdist-install-build-deps
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@master
         with:
