@@ -55,11 +55,22 @@ def param_formatter(app, what, name, obj, options, lines):
             members = inspect.getmembers(pobj)
             params_str = ""
             for m in members:
-                if (m[0][0] != "_" and m[0] not in IGNORED_ATTRS and
-                    not inspect.ismethod(m[1]) and not inspect.isfunction(m[1]) and
-                    m[1] is not None and DEFAULT_VALUES.get(m[0]) != m[1] and
-                    (m[0] != 'label' or pobj.label != label)):
-                    params_str += "%s=%s, " % (m[0], repr(m[1]))
+                name, value = m
+                try:
+                    is_default = DEFAULT_VALUES.get(name) != value
+                except Exception:
+                    is_default = False
+                skip = (
+                    name.startswith('_') or
+                    name in IGNORED_ATTRS or
+                    inspect.ismethod(value) or
+                    inspect.isfunction(value) or
+                    value is None or
+                    is_default or
+                    (name == 'label' and pobj.label != label)
+                )
+                if not skip:
+                    params_str += "%s=%s, " % (name, repr(value))
             params_str = params_str[:-2]
             ptype = pobj.__class__.__name__
             if params_str.lstrip():

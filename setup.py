@@ -59,7 +59,7 @@ setup_args = dict(
         'jupyter_client',
         'ipykernel',
         'nbformat',
-        'nbconvert <6',
+        'nbconvert <5.6',
         'notebook',
         'sphinx',
         'beautifulsoup4'
