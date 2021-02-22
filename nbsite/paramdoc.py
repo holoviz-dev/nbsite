@@ -54,10 +54,9 @@ def param_formatter(app, what, name, obj, options, lines):
             doc = pobj.doc or ""
             members = inspect.getmembers(pobj)
             params_str = ""
-            for m in members:
-                name, value = m
+            for name, value in members:
                 try:
-                    is_default = DEFAULT_VALUES.get(name) != value
+                    is_default = bool(DEFAULT_VALUES.get(name) != value)
                 except Exception:
                     is_default = False
                 skip = (
