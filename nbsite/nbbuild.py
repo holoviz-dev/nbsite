@@ -250,16 +250,18 @@ class NotebookDirective(Directive):
         skip_exceptions = 'skip_exceptions' in self.options
 
         # Parse slice
-        evaluated_text = evaluate_notebook(nb_abs_path, dest_path,
-                                           skip_exceptions=skip_exceptions,
-                                           substring=self.options.get('substring'),
-                                           end=self.options.get('end'),
-                                           skip_execute=self.options.get('skip_execute'),
-                                           skip_output=self.options.get('skip_output'),
-                                           offset=self.options.get('offset', 0),
-                                           timeout=setup.config.nbbuild_cell_timeout,
-                                           ipython_startup=setup.config.nbbuild_ipython_startup,
-                                           patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along)
+        evaluated_text = evaluate_notebook(
+            nb_abs_path, dest_path,
+            skip_exceptions=skip_exceptions,
+            substring=self.options.get('substring'),
+            end=self.options.get('end'),
+            skip_execute=self.options.get('skip_execute'),
+            skip_output=self.options.get('skip_output'),
+            offset=self.options.get('offset', 0),
+            timeout=setup.config.nbbuild_cell_timeout,
+            ipython_startup=setup.config.nbbuild_ipython_startup,
+            patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
+        )
 
         project_name = os.environ.get('PROJECT_NAME','')
         project_root = os.environ.get('PROJECT_ROOT','')
@@ -286,14 +288,11 @@ class NotebookDirective(Directive):
         if not ('disable_interactivity_warning' in self.options):
             if binder == 'none':
                 inner_msg = interactivity_warning.format(download_link=dl_link)
-                evaluated_text += '''
-                <div id="scroller-right">{inner_msg}</div>'''.format(inner_msg=inner_msg)
             else:
                 inner_msg = interactivity_warning_binder.format(download_link=dl_link,
                                                                 binder_link=binder_link)
-                evaluated_text += '''
-                <div id="scroller-right">{inner_msg}</div>'''.format(inner_msg=inner_msg)
-
+            scroller = f'<div id="scroller-right">{inner_msg}</div>'
+            evaluated_text += f'\n.. raw:: html\n\n    {scroller}'
         # Insert evaluated notebook HTML into Sphinx
         self.state_machine.insert_input([link_rst], rst_file)
 
@@ -343,9 +342,19 @@ def nb_to_html(nb_path, preprocessors=[]):
 def nb_to_rst(nb_path, preprocessors=[]):
     """convert notebook to html"""
     exporter = NbSphinxExporter(execute='never')
-    exporter.preprocessors = preprocessors
-    output, _ = exporter.from_filename(nb_path)
-    return output
+    for preprocessor in preprocessors:
+        exporter.register_preprocessor(preprocessor)
+
+    rsttext, resources = exporter.from_filename(nb_path)
+
+    # Create additional output files (figures etc.),
+    # see nbconvert.writers.FilesWriter.write()
+    for filename, data in resources.get('outputs', {}).items():
+        dest = os.path.normpath(os.path.join(os.path.dirname(nb_path), filename))
+        with open(dest, 'wb') as f:
+            f.write(data)
+
+    return rsttext
 
 
 # TODO: (does it matter) have lost NotebookRunner.MIME_MAP['application/vnd.bokehjs_load.v0+json'] = 'html'
