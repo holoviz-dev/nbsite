@@ -60,6 +60,7 @@ setup_args = dict(
         'ipykernel',
         'nbformat',
         'nbconvert <5.6',
+        'nbsphinx',
         'notebook',
         'sphinx',
         'beautifulsoup4'

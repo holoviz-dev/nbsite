@@ -27,8 +27,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os, string, glob, copy, sys, shutil
 
+import docutils
+
 from docutils import nodes
 from docutils.parsers.rst import directives, Directive
+
+from nbsphinx import Exporter as NbSphinxExporter
+from sphinx.util.nodes import nested_parse_with_titles
 
 import nbformat
 
@@ -292,11 +297,14 @@ class NotebookDirective(Directive):
         # Insert evaluated notebook HTML into Sphinx
         self.state_machine.insert_input([link_rst], rst_file)
 
-        # create notebook node
-        attributes = {'format': 'html', 'source': 'nb_path'}
-        nb_node = notebook_node('', evaluated_text, **attributes)
-        (nb_node.source, nb_node.line) = \
-            self.state_machine.get_source_and_line(self.lineno)
+        node = nodes.section()
+        node.document = self.state.document
+
+        vl = docutils.statemachine.ViewList()
+        for index, el in enumerate(evaluated_text.splitlines()):
+            vl.append(el, 'fakefile.rst', index + 1)
+
+        nested_parse_with_titles(self.state, vl, node)
 
         # add dependency
         self.state.document.settings.record_dependencies.add(nb_abs_path)
@@ -307,7 +315,7 @@ class NotebookDirective(Directive):
         for file in png_files:
             os.remove(file)
 
-        return [nb_node]
+        return node.children
 
 
 class notebook_node(nodes.raw):
@@ -329,6 +337,14 @@ def nb_to_html(nb_path, preprocessors=[]):
     # get rid of comments to allow rendering.
     output = output.replace('<!-- UNCOMMENT DETAILS AFTER RENDERING ', '')
     output = output.replace(' END OF LINE TO UNCOMMENT -->', '')
+    return output
+
+
+def nb_to_rst(nb_path, preprocessors=[]):
+    """convert notebook to html"""
+    exporter = NbSphinxExporter(execute='never')
+    exporter.preprocessors = preprocessors
+    output, _ = exporter.from_filename(nb_path)
     return output
 
 
@@ -385,7 +401,7 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
         preprocessors.append(NotebookSlice(substring, end, offset))
     if skip_output:
         preprocessors.append(SkipOutput(skip_output))
-    return nb_to_html(dest_path, preprocessors=preprocessors)
+    return nb_to_rst(dest_path, preprocessors=preprocessors)
 
 
 def formatted_link(path):

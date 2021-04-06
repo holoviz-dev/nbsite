@@ -493,5 +493,35 @@ dl.dl-horizontal {
 
 /* Avoid wrapping in HoloViews extension logo block */
 div.logo-block {
-	display: inline-block;
+  display: inline-block;
+}
+
+div.bk-root {
+  min-height: 50px
+}
+
+.bk.accordion-header {
+  color: black;
+}
+
+.bk.card-header {
+  color: black;
+}
+
+div.nbinput.container {
+    padding: 0;
+}
+
+div.nbinput.container div.prompt {
+    width: 0px !important;
+    display: none;
+}
+
+div.nboutput.container div.prompt {
+    width: 0px !important;
+    display: none;
+}
+
+div.nblast.container {
+    padding: 0;
 }
