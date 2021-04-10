@@ -507,21 +507,3 @@ div.bk-root {
 .bk.card-header {
   color: black;
 }
-
-div.nbinput.container {
-    padding: 0;
-}
-
-div.nbinput.container div.prompt {
-    width: 0px !important;
-    display: none;
-}
-
-div.nboutput.container div.prompt {
-    width: 0px !important;
-    display: none;
-}
-
-div.nblast.container {
-    padding: 0;
-}
