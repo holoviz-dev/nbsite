@@ -62,7 +62,6 @@ setup_args = dict(
         'nbconvert <5.6',
         'myst_nb',
         'notebook',
-        'pandoc',
         'sphinx',
         'beautifulsoup4'
     ],
