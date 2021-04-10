@@ -31,17 +31,22 @@ import docutils
 
 from docutils import nodes
 from docutils.parsers.rst import directives, Directive
+from docutils.utils import new_document
 
-from nbsphinx import Exporter as NbSphinxExporter
+from myst_nb.nb_glue.domain import NbGlueDomain
+from myst_nb.parser import nb_to_tokens, nb_output_to_disc, tokens_to_docutils
 from sphinx.util.nodes import nested_parse_with_titles
 
 import nbformat
 
 from nbconvert import NotebookExporter, PythonExporter, HTMLExporter
-from nbconvert.preprocessors import (ExecutePreprocessor, CellExecutionError,
-                                     Preprocessor)
+from nbconvert.preprocessors import (
+    ExecutePreprocessor, CellExecutionError, Preprocessor
+)
 from .cmd import hosts, _prepare_paths
 
+
+NOTEBOOK_VERSION = 4
 
 interactivity_warning_binder="""
 This web page was generated from a Jupyter notebook and not all
@@ -86,7 +91,7 @@ class ExecutePreprocessor1000(ExecutePreprocessor):
         pass
 
 
-            
+
 class SkipOutput(Preprocessor):
     """A transformer to skip the output for cells containing a certain string"""
 
@@ -100,8 +105,8 @@ class SkipOutput(Preprocessor):
                 cell['outputs'] = []
         return cell, resources
 
-
-    def __call__(self, nb, resources): return self.preprocess(nb,resources)
+    def __call__(self, nb, resources):
+        return self.preprocess(nb,resources)
 
 
 class NotebookSlice(Preprocessor):
@@ -152,7 +157,8 @@ class NotebookSlice(Preprocessor):
         nbc.cells = nbc.cells[start:end]
         return nbc, resources
 
-    def __call__(self, nb, resources): return self.preprocess(nb,resources)
+    def __call__(self, nb, resources):
+        return self.preprocess(nb,resources)
 
 
 def comment_out_details(source):
@@ -176,7 +182,8 @@ class FixBackticksInDetails(Preprocessor):
                 cell['source'] = comment_out_details(cell['source'])
         return cell, resources
 
-    def __call__(self, nb, resources): return self.preprocess(nb,resources)
+    def __call__(self, nb, resources):
+        return self.preprocess(nb,resources)
 
 
 def get_download_link(relpath, org, branch, repo, examples, host):
@@ -190,6 +197,40 @@ def get_binder_link(relpath, org, repo, branch, examples):
     return  url.format(org=org,repo=repo,branch=branch,relpath=relpath,examples=examples)
 
 
+def render_notebook(nb_path, document, preprocessors=[]):
+    env = document.settings.env
+
+    with open(nb_path, encoding='utf-8') as f:
+        text = f.read()
+
+    ntbk = nbformat.reads(text, as_version=NOTEBOOK_VERSION)
+
+    for preprocessor in preprocessors:
+        ntbk, _ = preprocessor(ntbk, {})
+
+    md_parser, env, tokens = nb_to_tokens(
+        ntbk,
+        env.myst_config,
+        env.config["nb_render_plugin"],
+    )
+
+    rst_path = nb_path[:-5]+'rst'
+    if os.path.isfile(rst_path):
+        with open(rst_path) as f:
+            rst_text = f.read()
+        os.remove(rst_path)
+    else:
+        rst_text = None
+
+    path_doc = nb_output_to_disc(ntbk, document)
+
+    if rst_text is not None:
+        with open(rst_path, 'w') as f:
+            f.write(rst_text)
+
+    tokens_to_docutils(md_parser, env, tokens, document)
+
+
 class NotebookDirective(Directive):
     """Insert an evaluated notebook into a document
 
@@ -198,10 +239,15 @@ class NotebookDirective(Directive):
     """
     required_arguments = 2
     optional_arguments = 6
-    option_spec = {'skip_exceptions' : directives.flag,
-                   'substring':str, 'end':str,
-                   'skip_execute':bool, 'skip_output':str, 'offset':int,
-                   'disable_interactivity_warning':bool}
+    option_spec = {
+        'skip_exceptions' : directives.flag,
+        'substring': str,
+        'end': str,
+        'skip_execute': bool,
+        'skip_output': str,
+        'offset': int,
+        'disable_interactivity_warning': bool
+    }
 
     def run(self):
         # check if raw html is supported
@@ -250,18 +296,28 @@ class NotebookDirective(Directive):
         skip_exceptions = 'skip_exceptions' in self.options
 
         # Parse slice
-        evaluated_text = evaluate_notebook(
+        evaluate_notebook(
             nb_abs_path, dest_path,
             skip_exceptions=skip_exceptions,
-            substring=self.options.get('substring'),
-            end=self.options.get('end'),
             skip_execute=self.options.get('skip_execute'),
-            skip_output=self.options.get('skip_output'),
-            offset=self.options.get('offset', 0),
             timeout=setup.config.nbbuild_cell_timeout,
             ipython_startup=setup.config.nbbuild_ipython_startup,
             patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
         )
+
+        preprocessors = [FixBackticksInDetails()]
+        if self.options.get('substring') or self.options.get('offset'):
+            preprocessors.append(
+                NotebookSlice(
+                    self.options.get('substring'),
+                    self.options.get('end'),
+                    self.options.get('offset')
+                )
+            )
+        if self.options.get('skip_output'):
+            preprocessors.append(SkipOutput(self.options['skip_output']))
+
+        render_notebook(dest_path, self.state.document, preprocessors)
 
         project_name = os.environ.get('PROJECT_NAME','')
         project_root = os.environ.get('PROJECT_ROOT','')
@@ -292,7 +348,7 @@ class NotebookDirective(Directive):
                 inner_msg = interactivity_warning_binder.format(download_link=dl_link,
                                                                 binder_link=binder_link)
             scroller = f'<div id="scroller-right">{inner_msg}</div>'
-            evaluated_text += f'\n.. raw:: html\n\n    {scroller}'
+            evaluated_text = f'\n.. raw:: html\n\n    {scroller}'
         # Insert evaluated notebook HTML into Sphinx
         self.state_machine.insert_input([link_rst], rst_file)
 
@@ -328,38 +384,7 @@ def nb_to_python(nb_path):
     return output
 
 
-def nb_to_html(nb_path, preprocessors=[]):
-    """convert notebook to html"""
-    exporter = HTMLExporter(template_file='basic',
-                            preprocessors=preprocessors)
-    output, resources = exporter.from_filename(nb_path)
-    # get rid of comments to allow rendering.
-    output = output.replace('<!-- UNCOMMENT DETAILS AFTER RENDERING ', '')
-    output = output.replace(' END OF LINE TO UNCOMMENT -->', '')
-    return output
-
-
-def nb_to_rst(nb_path, preprocessors=[]):
-    """convert notebook to html"""
-    exporter = NbSphinxExporter(execute='never')
-    for preprocessor in preprocessors:
-        exporter.register_preprocessor(preprocessor)
-
-    rsttext, resources = exporter.from_filename(nb_path)
-
-    # Create additional output files (figures etc.),
-    # see nbconvert.writers.FilesWriter.write()
-    for filename, data in resources.get('outputs', {}).items():
-        dest = os.path.normpath(os.path.join(os.path.dirname(nb_path), filename))
-        with open(dest, 'wb') as f:
-            f.write(data)
-
-    return rsttext
-
-
-# TODO: (does it matter) have lost NotebookRunner.MIME_MAP['application/vnd.bokehjs_load.v0+json'] = 'html'
-# TODO: (does it matter) have lost NotebookRunner.MIME_MAP['application/vnd.bokehjs_exec.v0+json'] = 'html'
-def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=None, end=None, skip_execute=None,skip_output=None, offset=0, timeout=300, ipython_startup=None,patterns_to_take_with_me=None):
+def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False, skip_execute=None, timeout=300, ipython_startup=None, patterns_to_take_with_me=None):
 
     if patterns_to_take_with_me is None:
         patterns_to_take_with_me = []
@@ -372,14 +397,11 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
     cwd = os.getcwd()
     filedir, filename = os.path.split(nb_path)
     os.chdir(filedir)
-    #profile_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profile_docs')
-    #print("Ignoring %s...hope that's ok"%profile_dir)
     not_nb_runner = ExecutePreprocessor1000(**kwargs)
     if ipython_startup is not None:
         not_nb_runner._ipython_startup = ipython_startup
 
     if not os.path.isfile(dest_path):
-        # TODO but this isn't true, is it? it's running the originl nb
         print('INFO: Writing evaluated notebook to {dest_path!s}'.format(
             dest_path=os.path.abspath(dest_path)))
         try:
@@ -404,13 +426,6 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,substring=N
     else:
         print('INFO: Skipping existing evaluated notebook {dest_path!s}'.format(
             dest_path=os.path.abspath(dest_path)))
-
-    preprocessors = [FixBackticksInDetails()]
-    if substring or offset:
-        preprocessors.append(NotebookSlice(substring, end, offset))
-    if skip_output:
-        preprocessors.append(SkipOutput(skip_output))
-    return nb_to_rst(dest_path, preprocessors=preprocessors)
 
 
 def formatted_link(path):

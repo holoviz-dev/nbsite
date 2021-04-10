@@ -22,7 +22,8 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinx.ext.inheritance_diagram'
+    'sphinx.ext.inheritance_diagram',
+    'myst_nb'
 ]
 
 inheritance_graph_attrs = dict(rankdir="LR", size='"12.0, 12.0"', fontsize=18)
