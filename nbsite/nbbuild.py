@@ -29,17 +29,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os, string, glob, copy, sys, shutil
 
-import docutils
 import nbformat
 
 from docutils.parsers.rst import directives, Directive
 from docutils.statemachine import string2lines
 from docutils.utils import new_document
-from myst_nb.nb_glue.domain import NbGlueDomain
 from myst_nb.parser import nb_to_tokens, nb_output_to_disc, tokens_to_docutils
-from sphinx.util.nodes import nested_parse_with_titles
 
-from nbconvert import NotebookExporter, PythonExporter, HTMLExporter
+from nbconvert import NotebookExporter, PythonExporter
 from nbconvert.preprocessors import (
     ExecutePreprocessor, CellExecutionError, Preprocessor
 )
@@ -159,6 +156,30 @@ class NotebookSlice(Preprocessor):
         return self.preprocess(nb,resources)
 
 
+class FixBackticksInDetails(Preprocessor):
+    """A preprocessor to make backticks in details cells work."""
+
+    def comment_out_details(self, source):
+        """
+        Given the source of a cell, comment out  any lines that contain <details>
+        """
+        filtered = []
+        for line in source.splitlines():
+            if "details>" in line:
+                line ='<!--' + line + '-->'
+            filtered.append(line)
+        return '\n'.join(filtered)
+
+    def preprocess_cell(self, cell, resources, index):
+        if cell['cell_type'] == 'markdown':
+            if '<details>' in cell['source'] and "```" in cell['source']:
+                cell['source'] = self.comment_out_details(cell['source'])
+        return cell, resources
+
+    def __call__(self, nb, resources):
+        return self.preprocess(nb,resources)
+
+
 def get_download_link(relpath, org, branch, repo, examples, host):
     info = (hosts[host], org, repo, branch, examples, relpath)
     return '%s/%s/%s/%s/%s/%s' % info
@@ -254,7 +275,7 @@ def render_notebook(nb_path, document, preprocessors=[]):
     else:
         rst_text = None
 
-    path_doc = nb_output_to_disc(ntbk, doc)
+    nb_output_to_disc(ntbk, doc)
 
     if rst_text is not None:
         with open(rst_path, 'w') as f:
@@ -283,7 +304,7 @@ class NotebookDirective(Directive):
         'disable_interactivity_warning': bool
     }
 
-    def link_rst(self):
+    def link_rst(self, nb_basename, nb_abs_path, dest_path):
         # Process file inclusion options
         include_opts = self.arguments[2:]
         include_nb = True if 'ipynb' in include_opts else False
@@ -312,7 +333,7 @@ class NotebookDirective(Directive):
         return link_rst
 
     def preprocessors(self):
-        preprocessors = []
+        preprocessors = [FixBackticksInDetails()]
         if self.options.get('substring') or self.options.get('offset'):
             preprocessors.append(
                 NotebookSlice(
@@ -389,9 +410,8 @@ class NotebookDirective(Directive):
         rendered_nodes = render_notebook(
             dest_path, self.state.document, preprocessors
         )
-
         
-        link_rst = self.link_rst()
+        link_rst = self.link_rst(nb_basename, nb_abs_path, dest_path)
         if not ('disable_interactivity_warning' in self.options):
             link_rst += self.interactivity_warning(nb_abs_path)
 
