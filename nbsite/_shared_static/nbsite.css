@@ -500,10 +500,30 @@ div.bk-root {
   min-height: 50px
 }
 
+#scroller-right {
+  position: fixed;
+  top: 80%;
+  right: 1%;
+  max-width: 10%;
+  background: #f2f2f2;
+  padding: 0.8%;
+  transform: translate(0%, -50%);
+  border: 1px solid black;
+  font-size: smaller;
+}
+
 .bk.accordion-header {
   color: black;
 }
 
 .bk.card-header {
   color: black;
+}
+
+.cell_output {
+  padding-left: 0;
+}
+
+.bk.bk-root {
+  display: none;
 }

@@ -1,4 +1,6 @@
 """
+Copyright (c) 2017-2021 HoloViz developers.
+
 Copyright (c) 2013 Nathan Goldbaum. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -28,16 +30,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os, string, glob, copy, sys, shutil
 
 import docutils
+import nbformat
 
-from docutils import nodes
 from docutils.parsers.rst import directives, Directive
+from docutils.statemachine import string2lines
 from docutils.utils import new_document
-
 from myst_nb.nb_glue.domain import NbGlueDomain
 from myst_nb.parser import nb_to_tokens, nb_output_to_disc, tokens_to_docutils
 from sphinx.util.nodes import nested_parse_with_titles
-
-import nbformat
 
 from nbconvert import NotebookExporter, PythonExporter, HTMLExporter
 from nbconvert.preprocessors import (
@@ -45,10 +45,9 @@ from nbconvert.preprocessors import (
 )
 from .cmd import hosts, _prepare_paths
 
-
 NOTEBOOK_VERSION = 4
 
-interactivity_warning_binder="""
+interactivity_warning_binder = """
 This web page was generated from a Jupyter notebook and not all
 interactivity will work on this website. <a
 href="{download_link}">Right-click to download and run</a> or <a
@@ -56,7 +55,7 @@ href="{binder_link}">Launch on Binder</a> for full Python-backed
 interactivity.
 """
 
-interactivity_warning="""
+interactivity_warning = """
 This web page was generated from a Jupyter notebook and not all
 interactivity will work on this website. <a
 href="{download_link}">Right click to download and run locally</a> for full
@@ -89,7 +88,6 @@ class ExecutePreprocessor1000(ExecutePreprocessor):
         just ignore them during export.
         """
         pass
-
 
 
 class SkipOutput(Preprocessor):
@@ -161,31 +159,6 @@ class NotebookSlice(Preprocessor):
         return self.preprocess(nb,resources)
 
 
-def comment_out_details(source):
-    """
-    Given the source of a cell, comment out  any lines that contain <details>
-    """
-    filtered=[]
-    for line in source.splitlines():
-        if "details>" in line:
-            filtered.append('<!-- UNCOMMENT DETAILS AFTER RENDERING ' + line + ' END OF LINE TO UNCOMMENT -->')
-        else:
-            filtered.append(line)
-    return '\n'.join(filtered)
-
-class FixBackticksInDetails(Preprocessor):
-    """A preprocessor to make backticks in details cells work."""
-
-    def preprocess_cell(self, cell, resources, index):
-        if cell['cell_type'] == 'markdown':
-            if '<details>' in cell['source'] and "```" in cell['source']:
-                cell['source'] = comment_out_details(cell['source'])
-        return cell, resources
-
-    def __call__(self, nb, resources):
-        return self.preprocess(nb,resources)
-
-
 def get_download_link(relpath, org, branch, repo, examples, host):
     info = (hosts[host], org, repo, branch, examples, relpath)
     return '%s/%s/%s/%s/%s/%s' % info
@@ -197,184 +170,8 @@ def get_binder_link(relpath, org, repo, branch, examples):
     return  url.format(org=org,repo=repo,branch=branch,relpath=relpath,examples=examples)
 
 
-def render_notebook(nb_path, document, preprocessors=[]):
-    env = document.settings.env
-
-    with open(nb_path, encoding='utf-8') as f:
-        text = f.read()
-
-    ntbk = nbformat.reads(text, as_version=NOTEBOOK_VERSION)
-
-    for preprocessor in preprocessors:
-        ntbk, _ = preprocessor(ntbk, {})
-
-    md_parser, env, tokens = nb_to_tokens(
-        ntbk,
-        env.myst_config,
-        env.config["nb_render_plugin"],
-    )
-
-    rst_path = nb_path[:-5]+'rst'
-    if os.path.isfile(rst_path):
-        with open(rst_path) as f:
-            rst_text = f.read()
-        os.remove(rst_path)
-    else:
-        rst_text = None
-
-    path_doc = nb_output_to_disc(ntbk, document)
-
-    if rst_text is not None:
-        with open(rst_path, 'w') as f:
-            f.write(rst_text)
-
-    tokens_to_docutils(md_parser, env, tokens, document)
-
-
-class NotebookDirective(Directive):
-    """Insert an evaluated notebook into a document
-
-    This uses runipy and nbconvert to transform a path to an unevaluated notebook
-    into html suitable for embedding in a Sphinx document.
-    """
-    required_arguments = 2
-    optional_arguments = 6
-    option_spec = {
-        'skip_exceptions' : directives.flag,
-        'substring': str,
-        'end': str,
-        'skip_execute': bool,
-        'skip_output': str,
-        'offset': int,
-        'disable_interactivity_warning': bool
-    }
-
-    def run(self):
-        # check if raw html is supported
-        if not self.state.document.settings.raw_enabled:
-            raise self.warning('"%s" directive disabled.' % self.name)
-
-        # Process paths and directories
-        #project = self.arguments[0].lower()
-        rst_file = os.path.abspath(self.state.document.current_source)
-        rst_dir = os.path.dirname(rst_file)
-        nb_abs_path = os.path.abspath(os.path.join(rst_dir, self.arguments[1]))
-        nb_filepath, nb_basename = os.path.split(nb_abs_path)
-
-        dest_dir = rst_dir
-        dest_path = os.path.join(dest_dir, nb_basename)
-
-        if not os.path.exists(dest_dir):
-            os.makedirs(dest_dir)
-
-        # Process file inclusion options
-        include_opts = self.arguments[2:]
-        include_nb = True if 'ipynb' in include_opts else False
-        include_script = True if 'py' in include_opts else False
-
-        link_rst = ''
-        if len(include_opts):
-            link_rst = 'Direct Downloads: ('
-
-        if include_nb:
-            link_rst += formatted_link(nb_basename) + '; '
-
-        if include_script:
-            dest_path_script = string.replace(dest_path, '.ipynb', '.py')
-            rel_path_script = string.replace(nb_basename, '.ipynb', '.py')
-            script_text = nb_to_python(nb_abs_path)
-            f = open(dest_path_script, 'w')
-            f.write(script_text.encode('utf8'))
-            f.close()
-
-            link_rst += formatted_link(rel_path_script)
-
-        if len(include_opts):
-            link_rst = ')'
-
-        # Evaluate Notebook and insert into Sphinx doc
-        skip_exceptions = 'skip_exceptions' in self.options
-
-        # Parse slice
-        evaluate_notebook(
-            nb_abs_path, dest_path,
-            skip_exceptions=skip_exceptions,
-            skip_execute=self.options.get('skip_execute'),
-            timeout=setup.config.nbbuild_cell_timeout,
-            ipython_startup=setup.config.nbbuild_ipython_startup,
-            patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
-        )
-
-        preprocessors = [FixBackticksInDetails()]
-        if self.options.get('substring') or self.options.get('offset'):
-            preprocessors.append(
-                NotebookSlice(
-                    self.options.get('substring'),
-                    self.options.get('end'),
-                    self.options.get('offset')
-                )
-            )
-        if self.options.get('skip_output'):
-            preprocessors.append(SkipOutput(self.options['skip_output']))
-
-        render_notebook(dest_path, self.state.document, preprocessors)
-
-        project_name = os.environ.get('PROJECT_NAME','')
-        project_root = os.environ.get('PROJECT_ROOT','')
-        host = os.environ.get('HOST','GitHub')
-        branch = os.environ.get('BRANCH','master')
-        repo = os.environ.get('REPO','')
-        org = os.environ.get('ORG','')
-        doc = os.environ.get('DOC','doc')
-        examples = os.environ.get('EXAMPLES','examples')
-        examples_assets = os.environ.get('EXAMPLES_ASSETS','assets')
-        binder = os.environ.get('BINDER','none')
-
-        if repo == '' or project_name == '':
-            project_name = repo = project_name or repo
-        if org == '':
-            org = repo
-
-        paths = _prepare_paths(project_root, examples=examples,
-                               doc=doc, examples_assets=examples_assets)
-        relpath = os.path.relpath(nb_abs_path, paths['examples'])
-        dl_link = get_download_link(relpath, org, branch, repo, examples, host)
-        binder_link = get_binder_link(relpath, org, repo, branch, examples)
-
-        if not ('disable_interactivity_warning' in self.options):
-            if binder == 'none':
-                inner_msg = interactivity_warning.format(download_link=dl_link)
-            else:
-                inner_msg = interactivity_warning_binder.format(download_link=dl_link,
-                                                                binder_link=binder_link)
-            scroller = f'<div id="scroller-right">{inner_msg}</div>'
-            evaluated_text = f'\n.. raw:: html\n\n    {scroller}'
-        # Insert evaluated notebook HTML into Sphinx
-        self.state_machine.insert_input([link_rst], rst_file)
-
-        node = nodes.section()
-        node.document = self.state.document
-
-        vl = docutils.statemachine.ViewList()
-        for index, el in enumerate(evaluated_text.splitlines()):
-            vl.append(el, 'fakefile.rst', index + 1)
-
-        nested_parse_with_titles(self.state, vl, node)
-
-        # add dependency
-        self.state.document.settings.record_dependencies.add(nb_abs_path)
-
-        # TODO: doubt this isdoing anyting
-        # clean up png files left behind by notebooks.
-        png_files = glob.glob("*.png")
-        for file in png_files:
-            os.remove(file)
-
-        return node.children
-
-
-class notebook_node(nodes.raw):
-    pass
+def formatted_link(path):
+    return "`%s <%s>`__" % (os.path.basename(path), path)
 
 
 def nb_to_python(nb_path):
@@ -384,7 +181,9 @@ def nb_to_python(nb_path):
     return output
 
 
-def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False, skip_execute=None, timeout=300, ipython_startup=None, patterns_to_take_with_me=None):
+def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
+                      skip_execute=None, timeout=300, ipython_startup=None,
+                      patterns_to_take_with_me=None):
 
     if patterns_to_take_with_me is None:
         patterns_to_take_with_me = []
@@ -428,16 +227,189 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False, skip_execu
             dest_path=os.path.abspath(dest_path)))
 
 
-def formatted_link(path):
-    return "`%s <%s>`__" % (os.path.basename(path), path)
+def render_notebook(nb_path, document, preprocessors=[]):
+    env = document.settings.env
+    doc = new_document(nb_path, document.settings)
+
+    with open(nb_path, encoding='utf-8') as f:
+        text = f.read()
+
+    ntbk = nbformat.reads(text, as_version=NOTEBOOK_VERSION)
+
+    for preprocessor in preprocessors:
+        ntbk, _ = preprocessor(ntbk, {})
+
+    md_parser, env, tokens = nb_to_tokens(
+        ntbk,
+        env.myst_config,
+        env.config["nb_render_plugin"],
+    )
+
+    # Delete rst temporarily to ensure 
+    rst_path = nb_path[:-5]+'rst'
+    if os.path.isfile(rst_path):
+        with open(rst_path) as f:
+            rst_text = f.read()
+        os.remove(rst_path)
+    else:
+        rst_text = None
+
+    path_doc = nb_output_to_disc(ntbk, doc)
+
+    if rst_text is not None:
+        with open(rst_path, 'w') as f:
+            f.write(rst_text)
+
+    tokens_to_docutils(md_parser, env, tokens, doc)
+
+    return doc.children[1:]
 
 
-def visit_notebook_node(self, node):
-    self.visit_raw(node)
+class NotebookDirective(Directive):
+    """Insert an evaluated notebook into a document
 
+    This uses runipy and nbconvert to transform a path to an unevaluated notebook
+    into html suitable for embedding in a Sphinx document.
+    """
+    required_arguments = 2
+    optional_arguments = 6
+    option_spec = {
+        'skip_exceptions' : directives.flag,
+        'substring': str,
+        'end': str,
+        'skip_execute': bool,
+        'skip_output': str,
+        'offset': int,
+        'disable_interactivity_warning': bool
+    }
 
-def depart_notebook_node(self, node):
-    self.depart_raw(node)
+    def link_rst(self):
+        # Process file inclusion options
+        include_opts = self.arguments[2:]
+        include_nb = True if 'ipynb' in include_opts else False
+        include_script = True if 'py' in include_opts else False
+
+        link_rst = ''
+        if len(include_opts):
+            link_rst = 'Direct Downloads: ('
+
+        if include_nb:
+            link_rst += formatted_link(nb_basename) + '; '
+
+        if include_script:
+            dest_path_script = string.replace(dest_path, '.ipynb', '.py')
+            rel_path_script = string.replace(nb_basename, '.ipynb', '.py')
+            script_text = nb_to_python(nb_abs_path)
+            f = open(dest_path_script, 'w')
+            f.write(script_text.encode('utf8'))
+            f.close()
+
+            link_rst += formatted_link(rel_path_script)
+
+        if len(include_opts):
+            link_rst = ')'
+
+        return link_rst
+
+    def preprocessors(self):
+        preprocessors = []
+        if self.options.get('substring') or self.options.get('offset'):
+            preprocessors.append(
+                NotebookSlice(
+                    self.options.get('substring'),
+                    self.options.get('end'),
+                    self.options.get('offset')
+                )
+            )
+        if self.options.get('skip_output'):
+            preprocessors.append(SkipOutput(self.options['skip_output']))
+        return preprocessors
+
+    def interactivity_warning(self, nb_abs_path):        
+        project_name = os.environ.get('PROJECT_NAME','')
+        project_root = os.environ.get('PROJECT_ROOT','')
+        host = os.environ.get('HOST','GitHub')
+        branch = os.environ.get('BRANCH','master')
+        repo = os.environ.get('REPO','')
+        org = os.environ.get('ORG','')
+        doc = os.environ.get('DOC','doc')
+        examples = os.environ.get('EXAMPLES','examples')
+        examples_assets = os.environ.get('EXAMPLES_ASSETS','assets')
+        binder = os.environ.get('BINDER','none')
+
+        if repo == '' or project_name == '':
+            project_name = repo = project_name or repo
+        if org == '':
+            org = repo
+
+        paths = _prepare_paths(project_root, examples=examples,
+                               doc=doc, examples_assets=examples_assets)
+        relpath = os.path.relpath(nb_abs_path, paths['examples'])
+        dl_link = get_download_link(relpath, org, branch, repo, examples, host)
+        binder_link = get_binder_link(relpath, org, repo, branch, examples)
+        
+        if binder == 'none':
+            inner_msg = interactivity_warning.format(download_link=dl_link)
+        else:
+            inner_msg = interactivity_warning_binder.format(download_link=dl_link,
+                                                            binder_link=binder_link)
+        inner_msg = inner_msg.replace('\n', '')
+        scroller = f'<div id="scroller-right">{inner_msg}</div>'
+        return f'\n.. raw:: html\n\n    {scroller}'
+
+    def run(self):
+        # check if raw html is supported
+        if not self.state.document.settings.raw_enabled:
+            raise self.warning('"%s" directive disabled.' % self.name)
+
+        # Process paths and directories
+        #project = self.arguments[0].lower()
+        rst_file = os.path.abspath(self.state.document.current_source)
+        rst_dir = os.path.dirname(rst_file)
+        nb_abs_path = os.path.abspath(os.path.join(rst_dir, self.arguments[1]))
+        nb_filepath, nb_basename = os.path.split(nb_abs_path)
+
+        dest_dir = rst_dir
+        dest_path = os.path.join(dest_dir, nb_basename)
+
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
+
+        # Evaluate Notebook and insert into Sphinx doc
+        evaluate_notebook(
+            nb_abs_path, dest_path,
+            skip_exceptions='skip_exceptions' in self.options,
+            skip_execute=self.options.get('skip_execute'),
+            timeout=setup.config.nbbuild_cell_timeout,
+            ipython_startup=setup.config.nbbuild_ipython_startup,
+            patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
+        )
+
+        preprocessors = self.preprocessors()
+        rendered_nodes = render_notebook(
+            dest_path, self.state.document, preprocessors
+        )
+
+        
+        link_rst = self.link_rst()
+        if not ('disable_interactivity_warning' in self.options):
+            link_rst += self.interactivity_warning(nb_abs_path)
+
+        # Insert evaluated notebook HTML into Sphinx
+        if link_rst:
+            include_lines = string2lines(link_rst, convert_whitespace=True)
+            self.state_machine.insert_input(include_lines, rst_file)
+
+        # add dependency
+        self.state.document.settings.record_dependencies.add(nb_abs_path)
+
+        # TODO: doubt this isdoing anyting
+        # clean up png files left behind by notebooks.
+        png_files = glob.glob("*.png")
+        for file in png_files:
+            os.remove(file)
+
+        return rendered_nodes
 
 
 def setup(app):
@@ -448,8 +420,5 @@ def setup(app):
     app.add_config_value('nbbuild_cell_timeout',300,'html')
     app.add_config_value('nbbuild_ipython_startup',"from nbsite.ipystartup import *",'html')
     app.add_config_value('nbbuild_patterns_to_take_along',["*.json", "json_*"],'html')
-
-    app.add_node(notebook_node,
-                 html=(visit_notebook_node, depart_notebook_node))
 
     app.add_directive('notebook', NotebookDirective)

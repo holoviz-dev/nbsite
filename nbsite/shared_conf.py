@@ -15,6 +15,7 @@ def setup(app):
     nbbuild.setup(app)
 
 extensions = [
+    'myst_nb',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
@@ -23,10 +24,13 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.inheritance_diagram',
-    'myst_nb'
 ]
 
-inheritance_graph_attrs = dict(rankdir="LR", size='"12.0, 12.0"', fontsize=18)
+inheritance_graph_attrs = dict(
+    rankdir="LR",
+    size='"12.0, 12.0"',
+    fontsize=18
+)
 
 default_edge_attrs = {
     'arrowsize': 1.0,
@@ -34,10 +38,21 @@ default_edge_attrs = {
 }
 
 source_suffix = '.rst'
+
 master_doc = 'index'
+
 pygments_style = 'sphinx'
+
 exclude_patterns = ['_build']
-html_static_path = [os.path.abspath(os.path.join(os.path.dirname(__file__),'_shared_static'))]
+
+html_static_path = [
+    os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            '_shared_static'
+        )
+    )
+]
 
 html_context = {
     'js_includes': ['nbsite.js', 'require.js'],
