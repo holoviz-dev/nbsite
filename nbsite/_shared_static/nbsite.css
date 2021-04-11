@@ -527,3 +527,7 @@ div.bk-root {
 .bk.bk-root {
   display: none;
 }
+
+.output {
+  overflow-x: scroll;
+}

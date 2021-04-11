@@ -45,17 +45,17 @@ from .cmd import hosts, _prepare_paths
 NOTEBOOK_VERSION = 4
 
 interactivity_warning_binder = """
-This web page was generated from a Jupyter notebook and not all
+This web page was generated from a Jupyter notebook and not all 
 interactivity will work on this website. <a
 href="{download_link}">Right-click to download and run</a> or <a
-href="{binder_link}">Launch on Binder</a> for full Python-backed
+href="{binder_link}">Launch on Binder</a> for full Python-backed 
 interactivity.
 """
 
 interactivity_warning = """
-This web page was generated from a Jupyter notebook and not all
+This web page was generated from a Jupyter notebook and not all 
 interactivity will work on this website. <a
-href="{download_link}">Right click to download and run locally</a> for full
+href="{download_link}">Right click to download and run locally</a> for full 
 Python-backed interactivity.
 """
 

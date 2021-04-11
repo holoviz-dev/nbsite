@@ -13,6 +13,13 @@ def setup(app):
         print('no param_formatter (no param?)')
 
     nbbuild.setup(app)
+    app.connect("builder-inited", remove_mystnb_static)
+
+def remove_mystnb_static(app):
+    # Ensure our myst_nb.css is loaded
+    app.config.html_static_path = [
+        p for p in app.config.html_static_path if 'myst_nb' not in p
+    ]
 
 extensions = [
     'myst_nb',
