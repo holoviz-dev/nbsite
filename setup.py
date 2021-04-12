@@ -59,8 +59,8 @@ setup_args = dict(
         'ipykernel',
         'nbformat',
         'nbconvert ==5.6.1',
-        'jupyter-client <6.2',
-        'myst_nb',
+        'jupyter_client <6.2',
+        'myst-nb',
         'notebook',
         'sphinx',
         'beautifulsoup4'
