@@ -478,7 +478,6 @@ def test_build_with_fixes_links(tmp_project):
     assert (project / "doc" / "1_First_Notebook.ipynb").is_file()
     assert (project / "builtdocs" / "First_Notebook.html").is_file()
     html = (project / "builtdocs" / "First_Notebook.html").read_text()
-    print(html)
     assert '<a class="reference internal" href="Zeroth_Notebook.html"><span class="doc std std-doc">right number' in html
     assert '<a class="reference internal" href="Zeroth_Notebook.html"><span class="doc std std-doc">wrong number' in html
     assert '<a class="reference internal" href="Zeroth_Notebook.html"><span class="doc std std-doc">no number' in html
