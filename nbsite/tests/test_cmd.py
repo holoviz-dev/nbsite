@@ -478,9 +478,10 @@ def test_build_with_fixes_links(tmp_project):
     assert (project / "doc" / "1_First_Notebook.ipynb").is_file()
     assert (project / "builtdocs" / "First_Notebook.html").is_file()
     html = (project / "builtdocs" / "First_Notebook.html").read_text()
-    assert '<a href="Zeroth_Notebook.html">right number</a>' in html
-    assert '<a href="Zeroth_Notebook.html">wrong number</a>' in html
-    assert '<a href="Zeroth_Notebook.html">no number</a>' in html
+    print(html)
+    assert '<a class="reference internal" href="Zeroth_Notebook.html"><span class="doc std std-doc">right number' in html
+    assert '<a class="reference internal" href="Zeroth_Notebook.html"><span class="doc std std-doc">wrong number' in html
+    assert '<a class="reference internal" href="Zeroth_Notebook.html"><span class="doc std std-doc">no number' in html
 
 @pytest.mark.slow
 def test_build_with_keep_numbers_passes_even_when_link_target_does_not_exist(tmp_project):
@@ -493,6 +494,6 @@ def test_build_with_keep_numbers_passes_even_when_link_target_does_not_exist(tmp
     assert (project / "doc" / "1_First_Notebook.ipynb").is_file()
     assert (project / "builtdocs" / "1_First_Notebook.html").is_file()
     html = (project / "builtdocs" / "1_First_Notebook.html").read_text()
-    assert '<a href="0_Zeroth_Notebook.html">right number</a>' in html
-    assert '<a href="1_Zeroth_Notebook.html">wrong number</a>' in html
-    assert '<a href="Zeroth_Notebook.html">no number</a>' in html
+    assert '<a class="reference internal" href="0_Zeroth_Notebook.html"><span class="doc std std-doc">right number' in html
+    assert '<span class="xref myst">wrong number</span>' in html
+    assert '<span class="xref myst">no number</span>' in html

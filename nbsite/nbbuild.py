@@ -27,7 +27,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os, string, glob, copy, sys, shutil
+import os, string, glob, copy, re, sys, shutil
 
 import nbformat
 
@@ -47,14 +47,14 @@ NOTEBOOK_VERSION = 4
 interactivity_warning_binder = """
 This web page was generated from a Jupyter notebook and not all 
 interactivity will work on this website. <a
-href="{download_link}">Right-click to download and run</a> or <a
+href="{download_link}">Right-click to download and run</a> or <a 
 href="{binder_link}">Launch on Binder</a> for full Python-backed 
 interactivity.
 """
 
 interactivity_warning = """
 This web page was generated from a Jupyter notebook and not all 
-interactivity will work on this website. <a
+interactivity will work on this website. <a 
 href="{download_link}">Right click to download and run locally</a> for full 
 Python-backed interactivity.
 """
@@ -151,6 +151,48 @@ class NotebookSlice(Preprocessor):
         start,end = self._find_slice(nbc, self.substring, self.end)
         nbc.cells = nbc.cells[start:end]
         return nbc, resources
+
+    def __call__(self, nb, resources):
+        return self.preprocess(nb,resources)
+
+
+class FixNotebookLinks(Preprocessor):
+    """
+    Fixes relative notebook links by pointing to ReST or Markdown
+    source files and if necessary stripping leading numbering
+    (e.g. 0_notebook.ipynb) which are stripped by the generate-rst
+    script.
+    """
+
+    file_types = ['rst', 'md']
+
+    def __init__(self, nb_path, **kwargs):
+        self.nb_path = nb_path
+        super(FixNotebookLinks, self).__init__(**kwargs)
+
+    def preprocess_cell(self, cell, resources, index):
+        if cell['cell_type'] != 'markdown':
+            return cell, resources
+        matches = re.findall('\[.+\]\((.+\.ipynb)\)', cell['source'])
+        for match in matches:
+            for ft in self.file_types:
+                file_path = os.path.join(self.nb_path, match[:-5] + ft)
+                if os.path.isfile(file_path):
+                    cell['source'] = cell['source'].replace(
+                        '(%s)' % match, '(%s)' % (match[:-5] + ft)
+                    )
+                    break
+
+                # Try unnumbered path
+                num_name = os.path.basename(file_path)
+                name = re.split(r"^\d+( |-|_)", num_name)[-1]
+                unnumbered_path = file_path.replace(num_name, name)
+                if os.path.isfile(unnumbered_path):
+                    cell['source'] = cell['source'].replace(
+                        '(%s)' % match, '(%s)' % name
+                    )
+                    break
+        return cell, resources
 
     def __call__(self, nb, resources):
         return self.preprocess(nb,resources)
@@ -332,8 +374,8 @@ class NotebookDirective(Directive):
 
         return link_rst
 
-    def preprocessors(self):
-        preprocessors = [FixBackticksInDetails()]
+    def preprocessors(self, dest_dir):
+        preprocessors = [FixBackticksInDetails(), FixNotebookLinks(dest_dir)]
         if self.options.get('substring') or self.options.get('offset'):
             preprocessors.append(
                 NotebookSlice(
@@ -406,7 +448,7 @@ class NotebookDirective(Directive):
             patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
         )
 
-        preprocessors = self.preprocessors()
+        preprocessors = self.preprocessors(dest_dir)
         rendered_nodes = render_notebook(
             dest_path, self.state.document, preprocessors
         )
