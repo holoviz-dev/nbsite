@@ -56,10 +56,11 @@ setup_args = dict(
         'param >=1.7.0',
         'pyct >=0.4.4',
         'pyviz_comms',
-        'jupyter_client',
         'ipykernel',
         'nbformat',
-        'nbconvert <5.6',
+        'nbconvert ==5.6.1',
+        'jupyter-client <6.2',
+        'myst_nb',
         'notebook',
         'sphinx',
         'beautifulsoup4'
