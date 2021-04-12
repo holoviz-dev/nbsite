@@ -56,7 +56,6 @@ setup_args = dict(
         'param >=1.7.0',
         'pyct >=0.4.4',
         'pyviz_comms',
-        'jupyter_client',
         'ipykernel',
         'nbformat',
         'nbconvert ==5.6.1',
