@@ -395,8 +395,6 @@ def generate_gallery(app, page):
     if inline:
         gallery_rst += INLINE_GALLERY_STYLE
 
-    toc = "\n\n.. toctree::\n   :glob:\n   :hidden:\n   :maxdepth: 2\n\n   Gallery <index>\n"
-
     for section in sections:
         if isinstance(section, dict):
             section_backends = section.get('backends', backends)
@@ -418,8 +416,6 @@ def generate_gallery(app, page):
             labels = []
             deployment_urls = []
 
-        toc += f'   {section}/*\n'
-
         if not heading:
             gallery_rst += f'\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="{section}-section"></div><br>\n\n'
         elif inline:
@@ -427,6 +423,8 @@ def generate_gallery(app, page):
         else:
             underline = '-'*len(heading)
             gallery_rst += f'\n\n{heading}\n{underline}\n\n'
+
+        gallery_rst += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   {heading}\n   {section}/*\n\n'
 
         if labels:
             gallery_rst += '\n\n.. raw:: html\n\n'
@@ -563,8 +561,6 @@ def generate_gallery(app, page):
                               backend, thumb_extension, skip, deployment_urls)
         # clear at the end of the section
         gallery_rst += CLEAR_DIV
-
-    gallery_rst += toc
 
     if backends or section_backends:
         gallery_rst += HIDE_JS.format(backends=repr(backends[1:]))
