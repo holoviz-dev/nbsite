@@ -416,10 +416,15 @@ def generate_gallery(app, page):
             labels = []
             deployment_urls = []
 
-        if heading:
-            gallery_rst += f'\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="{section}-section"><h2>{heading}</h2>\n\n'
-        else:
+        if not heading:
             gallery_rst += f'\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="{section}-section"></div><br>\n\n'
+        elif inline:
+            gallery_rst += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n   :maxdepth: 2\n\n   {section}/*'
+        else:
+            underline = '-'*len(heading)
+            gallery_rst += f'\n\n{heading}\n{underline}\n\n'
+
+        gallery_rst += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   {heading}\n   {section}/*\n\n'
 
         if labels:
             gallery_rst += '\n\n.. raw:: html\n\n'
@@ -480,6 +485,7 @@ def generate_gallery(app, page):
 
                 # Try to fetch thumbnail otherwise regenerate it
                 url_components = [thumbnail_url, page]
+
                 if section:
                     url_components.append(section)
                 if backend:
@@ -555,7 +561,6 @@ def generate_gallery(app, page):
                               backend, thumb_extension, skip, deployment_urls)
         # clear at the end of the section
         gallery_rst += CLEAR_DIV
-        gallery_rst += '\n\n.. raw:: html\n\n    </div>\n\n'
 
     if backends or section_backends:
         gallery_rst += HIDE_JS.format(backends=repr(backends[1:]))
