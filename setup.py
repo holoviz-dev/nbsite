@@ -58,7 +58,7 @@ setup_args = dict(
         'pyviz_comms',
         'ipykernel',
         'nbformat',
-        'nbconvert ==5.6.1',
+        'nbconvert <6.0',
         'jupyter_client <6.2',
         'myst-nb',
         'notebook',
