@@ -254,7 +254,10 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
         r = requests.get(endpoint, verify=False)
         if r.status_code == 200:
             soup = bs4.BeautifulSoup(r.content, features='lxml')
-            deployed_examples = [l.text for l in soup.find('div', {"class": "list-group"}).find_all('h4')]
+            try:
+                deployed_examples = [l.text for l in soup.find('div', {"class": "list-group"}).find_all('h4')]
+            except:
+                deployed_examples = [l.get('id')[1:] for l in soup.find('ul', {"class": "cards-grid"}).find_all('a', {"class": "card-link"})]
             if not deployed_examples:
                 deployed_examples = [l.text for l in soup.find('ul').find_all('a')]
 
