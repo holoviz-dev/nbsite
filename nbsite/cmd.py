@@ -207,7 +207,7 @@ def generate_rst(
     paths=_prepare_paths(project_root,examples=examples,doc=doc)
 
     print("Project='%s': Converting notebooks at '%s' to rst at '%s'..."%(project_name,paths['examples'],paths['doc']))
-    for filename in glob.iglob(os.path.join(paths['examples'],"**","*.ipynb"), recursive=True):
+    for filename in glob.iglob(os.path.abspath(os.path.join(paths['examples'],"**","*.ipynb")), recursive=True):
         relpath = os.path.relpath(filename, paths['examples'])
         # TODO: decide what to do about gallery later
         if relpath.startswith('gallery'):
