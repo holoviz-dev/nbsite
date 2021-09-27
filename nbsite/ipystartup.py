@@ -5,7 +5,7 @@ import matplotlib as mpl
 mpl.use('agg')
 
 try:
-    import holoviews.plotting.bokeh
+    import holoviews.plotting.bokeh # noqa
 except:
     pass
 
