@@ -420,14 +420,17 @@ def generate_gallery(app, page):
             deployment_urls = []
 
         if not heading:
-            gallery_rst += f'\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="{section}-section"></div><br>\n\n'
+            gallery_rst += f'\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="section"></div><br>\n\n'
         elif inline:
             gallery_rst += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n   :maxdepth: 2\n\n   {section}/*'
         else:
             underline = '-'*len(heading)
             gallery_rst += f'\n\n{heading}\n{underline}\n\n'
 
-        gallery_rst += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   {heading}\n   {section}/*\n\n'
+        if section:
+            gallery_rst += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   {heading}\n   {section}/*\n\n'
+        else:
+            gallery_rst += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   {heading}\n   *\n\n'
 
         if labels:
             gallery_rst += '\n\n.. raw:: html\n\n'
