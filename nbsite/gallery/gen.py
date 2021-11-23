@@ -269,7 +269,7 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
         rel_path = os.path.relpath(os.path.join(src_dir, basename), dest_dir)
         rst_path = os.path.join(dest_dir, basename[:-len(extension)].replace(' ', '_') + 'rst')
         name = basename[:-(len(extension)+1)]
-        title = name.replace('_', ' ').capitalize()
+        title = ' '.join([n[0].capitalize()+n[1:] for n in name.replace('_', ' ').split(' ')])
         deployed = name in deployed_examples
         ftype = 'notebook' if extension == 'ipynb' else 'script'
 
