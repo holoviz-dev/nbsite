@@ -3,7 +3,7 @@
 import os
 
 from nbsite import nbbuild
-from nbsite.util import get_release_version
+from nbsite.util import get_release_version  # noqa
 
 def setup(app):
     try:
