@@ -1,6 +1,6 @@
 import pytest
 
-from nbsite.util import get_release_version
+from nbsite.util import base_version
 
 @pytest.mark.parametrize(
     "version,expected",
@@ -16,5 +16,5 @@ from nbsite.util import get_release_version
         ("v0.3.0", "v0.3.0"),
     ]
 )
-def test_get_release_version(version, expected):
-    assert get_release_version(version) == expected
+def test_base_version(version, expected):
+    assert base_version(version) == expected

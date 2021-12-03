@@ -19,7 +19,7 @@ def copy_files(src, dest, pattern='**'):
             shutil.copy(path, f)
 
 
-def get_release_version(version):
+def base_version(version):
     """Extract the final release and if available pre-release (alpha, beta,
     release candidate) segments of a PEP440 version, defined with three
     components (major.minor.micro).
@@ -28,7 +28,7 @@ def get_release_version(version):
     with a not so informative and rather ugly long version (e.g.
     ``0.13.0a19.post4+g0695e214``). Use it in ``conf.py``::
 
-        version = release = get_release_version(package.__version__)
+        version = release = base_version(package.__version__)
 
     Return the version passed as input if no match is found with the pattern.
     """
