@@ -532,3 +532,24 @@ div.bk-root {
 .output {
   overflow-x: auto;
 }
+
+/* Copied from the sphinx book theme */
+main.bd-content a.headerlink {
+  opacity:0;
+  margin-left:.2em
+ }
+
+ main.bd-content a.headerlink:hover {
+  background-color:transparent;
+  color:rgba(var(--pst-color-link), 1);
+  opacity:1 !important
+ }
+ 
+ main.bd-content h1:hover a.headerlink,
+ main.bd-content h2:hover a.headerlink,
+ main.bd-content h3:hover a.headerlink,
+ main.bd-content h4:hover a.headerlink,
+ main.bd-content h5:hover a.headerlink {
+  opacity:.5
+ }
+ /* End of copy  */
