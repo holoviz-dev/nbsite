@@ -533,7 +533,7 @@ div.bk-root {
   overflow-x: auto;
 }
 
-/* Copied from the sphinx book theme */
+/* Adapted from the sphinx book theme */
 main.bd-content a.headerlink {
   opacity:0;
   margin-left:.2em
@@ -541,7 +541,7 @@ main.bd-content a.headerlink {
 
  main.bd-content a.headerlink:hover {
   background-color:transparent;
-  color:rgba(var(--pst-color-link), 1);
+  color:rgba(var(--pst-color-headerlink-hover), 1);
   opacity:1 !important
  }
  
@@ -553,3 +553,9 @@ main.bd-content a.headerlink {
   opacity:.5
  }
  /* End of copy  */
+
+ /* Color of the  paragraph symbol of the header link */
+ :root {
+  --pst-color-headerlink: 170,170,170;
+  --pst-color-headerlink-hover: 170,170,170;
+}
