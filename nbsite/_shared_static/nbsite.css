@@ -350,6 +350,7 @@ ul.tab {
     margin: 0;
     padding:0;
     border-radius: 5px;
+    overflow: hidden;
 }
 ul.tab li {
     list-style-type: none !important;
