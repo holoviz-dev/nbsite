@@ -39,6 +39,7 @@ jobs:
           python -VV
           python -m site
           python -m pip install --upgrade pip
+          pytyon -m pip install toml
           python -m pip install pyctdev
           doit ecosystem_setup
       - name: doit develop_install
