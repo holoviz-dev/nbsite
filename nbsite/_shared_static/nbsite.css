@@ -559,3 +559,16 @@ main.bd-content a.headerlink {
   --pst-color-headerlink: 170,170,170;
   --pst-color-headerlink-hover: 170,170,170;
 }
+
+/* White icons in the nav bar instead of the default colors set by pydata sphinx theme */
+#navbar-icon-links i.fa-github-square:before {
+  color: white;
+}
+
+#navbar-icon-links i.fa-discourse:before {
+  color: white;
+}
+
+#navbar-icon-links i.fa-twitter-square:before {
+  color: white;
+}
