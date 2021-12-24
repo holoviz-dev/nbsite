@@ -572,3 +572,12 @@ main.bd-content a.headerlink {
 #navbar-icon-links i.fa-twitter-square:before {
   color: white;
 }
+
+/* Binder links displayed in the left sidebar when the page is built from a notebook */
+.bd-toc #binder-link {
+  display: inline-block;
+  font-size: 0.9rem;
+  padding-left: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
