@@ -66,8 +66,13 @@ jobs:
         with:
           python-version: "3.7"
       - name: env setup
+        # tomli is installed since a version of doit was raising an error while trying
+        # to parse pyproject.toml, looking for potential doit settings.
+        #  https://github.com/pydoit/doit/issues/410
+        # Can be probably removed when doit > 0.34.0 is released
         run: |
           pip install pyctdev
+          pip install tomli
           doit ecosystem_setup
       - name: pip build
         run: |
