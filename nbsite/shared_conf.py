@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import os
 
 from nbsite import nbbuild
@@ -63,7 +64,33 @@ html_static_path = [
     )
 ]
 
+templates_path = [
+    os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            '_shared_templates'
+        )
+    )
+]
+
 html_context = {
     'js_includes': ['nbsite.js', 'require.js'],
     'css_includes': ['nbsite.css'] 
 }
+
+# A single line footer that includes the copyright and the last updated date.
+html_theme_options = {
+    "footer_items": [
+        "copyright-last-updated",
+    ],
+}
+
+# To be reused in a conf.py file to define the `copyright` string reused
+# by sphinx to populate the footer content:
+# copyright_years['start_year'] = '2000'
+# copyright = copyright_fmt.format(**copyright_years)
+copyright_years = {'current_year': str(datetime.date.today().year)}
+copyright_fmt = "© Copyright {start_year}-{current_year} Holoviz contributors."
+
+# Format of the last updated date in the footer.
+html_last_updated_fmt = '%Y-%m-%d'

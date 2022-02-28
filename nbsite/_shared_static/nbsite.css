@@ -573,7 +573,7 @@ main.bd-content a.headerlink {
   color: white;
 }
 
-/* Binder links displayed in the left sidebar when the page is built from a notebook */
+/* Binder links displayed in the right sidebar when the page is built from a notebook */
 .bd-toc #binder-link {
   display: inline-block;
   font-size: 0.9rem;
