@@ -1,0 +1,10 @@
+<p class="nbsite-copyright-last-updated">
+    <span class="copyright">
+        {%- if hasdoc('copyright') %}
+            {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}
+        {%- else %}
+            {% trans copyright=copyright|e %}&copy; Copyright {{ copyright }}.{% endtrans %}
+        {%- endif %}
+    </span>
+    <span class="last-updated">{% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}</span><br>
+</p>
