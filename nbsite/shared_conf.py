@@ -90,7 +90,7 @@ html_theme_options = {
 # copyright_years['start_year'] = '2000'
 # copyright = copyright_fmt.format(**copyright_years)
 copyright_years = {'current_year': str(datetime.date.today().year)}
-copyright_fmt = "© Copyright {start_year}-{current_year} Holoviz contributors."
+copyright_fmt = "{start_year}-{current_year} Holoviz contributors"
 
 # Format of the last updated date in the footer.
 html_last_updated_fmt = '%Y-%m-%d'
