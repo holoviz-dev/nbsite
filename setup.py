@@ -63,7 +63,8 @@ setup_args = dict(
         'myst-nb',
         'notebook',
         'sphinx',
-        'beautifulsoup4'
+        'beautifulsoup4',
+        'jinja2 <3.1',
     ],
     extras_require= {
         'refman':[
