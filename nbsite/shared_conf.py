@@ -3,8 +3,22 @@
 import datetime
 import os
 
+import nbsite as _nbsite
+import pathlib as _pathlib
+
 from nbsite import nbbuild
 from nbsite.util import base_version  # noqa
+
+NBSITE_DIR = _pathlib.Path(_nbsite.__file__).parent
+
+
+def holoviz_icon_white(cur_file):
+    """Return the path as a string of the holoviz white icon SVG."""
+    doc_root = _pathlib.Path(cur_file).parent
+    shared_static_dir = _pathlib.Path(os.path.relpath(NBSITE_DIR / '_shared_static', start=doc_root))
+    icon_path = shared_static_dir / 'holoviz-icon-white.svg'
+    return str(icon_path)
+
 
 def setup(app):
     try:
