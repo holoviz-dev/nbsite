@@ -200,6 +200,7 @@ DEFAULT_GALLERY_CONF = {
     'thumbnail_size': (400, 280),
     'within_subsection_order': lambda key: key,
     'nblink': 'both',  # use this to control the position of the nblink
+    'github_ref': 'master',  # branch or tag
 }
 
 
@@ -229,6 +230,7 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
     content = gallery_conf['galleries'][page]
     host = gallery_conf['host']
     download_as = gallery_conf['download_as']
+    ref = gallery_conf['github_ref']
     nblink = gallery_conf['nblink']
     org = gallery_conf['github_org']
     proj = gallery_conf['github_project']
@@ -287,7 +289,7 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
             deployed_file = get_deployed_url(deployment_urls, basename)
             if nblink in ['top', 'both']:
                 add_nblink(rst_file, host, deployed_file, download_as,
-                           org, proj, components, basename, ftype, section)
+                           org, proj, ref, components, basename, ftype, section)
                 rst_file.write('\n\n-------\n\n')
 
             if ftype == 'notebook':
@@ -305,16 +307,16 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
             if nblink in ['bottom', 'both']:
                 rst_file.write('\n\n-------\n\n')
                 add_nblink(rst_file, host, deployed_file, download_as,
-                           org, proj, components, basename, ftype, section)
+                           org, proj, ref, components, basename, ftype, section)
 
 def add_nblink(rst_file, host, deployed_file, download_as,
-               org, proj, components, basename, ftype, section):
+               org, proj, ref, components, basename, ftype, section):
     if deployed_file:
         rst_file.write(f'`View a running version of this notebook. <{deployed_file}>`_ | ')
     if host == 'GitHub' and org and proj:
         rst_file.write('`Download this {ftype} from GitHub (right-click to download).'
-                        ' <https://raw.githubusercontent.com/{org}/{proj}/master/{path}/{basename}>`_'.format(
-                            org=org, proj=proj, path='/'.join(components),
+                        ' <https://raw.githubusercontent.com/{org}/{proj}/{ref}/{path}/{basename}>`_'.format(
+                            org=org, proj=proj, ref=ref, path='/'.join(components),
                             basename=basename, ftype=ftype))
     elif host == 'assets':
         if download_as == 'project':
