@@ -355,6 +355,7 @@ def generate_gallery(app, page):
     content = gallery_conf['galleries'][page]
     backends = content.get('backends', gallery_conf.get('backends', []))
     titles = content.get('titles', {})
+    normalize = content.get('normalize_titles', True)
 
     # Get directories
     doc_dir = app.builder.srcdir
@@ -558,8 +559,10 @@ def generate_gallery(app, page):
                         thumb_prefix += '_'
                     if basename in titles:
                         label = titles[basename]
-                    else:
+                    elif normalize:
                         label = basename.replace('_', ' ').title()
+                    else:
+                        label = basename
                     this_entry = THUMBNAIL_TEMPLATE.format(
                         backend=backend_str, prefix=thumb_prefix, thumbnail=logo_path,
                         ref_name=basename, label=label)
