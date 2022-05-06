@@ -354,6 +354,7 @@ def generate_gallery(app, page):
     gallery_conf = app.config.nbsite_gallery_conf
     content = gallery_conf['galleries'][page]
     backends = content.get('backends', gallery_conf.get('backends', []))
+    titles = content.get('titles', {})
 
     # Get directories
     doc_dir = app.builder.srcdir
@@ -555,9 +556,13 @@ def generate_gallery(app, page):
                     backend_str = backend+'_' if backend else '' 
                     if thumb_prefix:
                         thumb_prefix += '_'
+                    if basename in titles:
+                        label = titles[basename]
+                    else:
+                        label = basename.replace('_', ' ').title()
                     this_entry = THUMBNAIL_TEMPLATE.format(
                         backend=backend_str, prefix=thumb_prefix, thumbnail=logo_path,
-                        ref_name=basename, label=basename.replace('_', ' ').title())
+                        ref_name=basename, label=label)
                 else:
                     logger.info('%s %s thumbnail' % (verb, basename))
                     this_entry = _thumbnail_div(
