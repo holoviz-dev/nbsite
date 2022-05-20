@@ -326,9 +326,14 @@ def add_nblink(rst_file, host, deployed_file, download_as,
                                 path='/'.join(components), basename=basename, ftype=ftype))
 
 
-def _thumbnail_div(path_components, section, backend, fname, extension):
+def _thumbnail_div(path_components, section, backend, fname, extension, normalize=True, title=None):
     """Generates RST to place a thumbnail in a gallery"""
-    label = fname.replace('_', ' ').title()
+    if title is not None:
+        label = title
+    elif normalize:
+        label = fname.replace('_', ' ').title()
+    else:
+        label = fname
     thumb = os.path.join(*path_components+['thumbnails', '%s.%s' % (fname, extension)])
 
     # Inside rst files forward slash defines paths
@@ -554,7 +559,7 @@ def generate_gallery(app, page):
                     if extension == 'py':
                         continue
                     thumb_prefix = '_'.join([pre for pre in (section, backend) if pre])
-                    backend_str = backend+'_' if backend else '' 
+                    backend_str = backend+'_' if backend else ''
                     if thumb_prefix:
                         thumb_prefix += '_'
                     if basename in titles:
@@ -569,7 +574,8 @@ def generate_gallery(app, page):
                 else:
                     logger.info('%s %s thumbnail' % (verb, basename))
                     this_entry = _thumbnail_div(
-                        path_components, section, backend, basename, thumb_extension
+                        path_components, section, backend, basename,
+                        thumb_extension, normalize, titles.get(basename)
                     )
 
                 gallery_rst += this_entry
