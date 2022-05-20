@@ -581,3 +581,8 @@ main.bd-content a.headerlink {
   padding-top: 1rem;
   padding-bottom: 1rem;
 }
+
+/* Hide cell toggle */
+details.toggle-details {
+  display: none;
+}
