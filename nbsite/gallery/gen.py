@@ -58,13 +58,6 @@ HIDE_JS = """
     </script>
 """
 
-CLEAR_DIV = """
-.. raw:: html
-
-    <div style='clear:both'></div>
-
-"""
-
 THUMBNAIL_URL = 'https://assets.holoviews.org/thumbnails'
 
 PREFIX = """
@@ -117,19 +110,16 @@ guide and for more detailed documentation our `User Guide
 """
 
 THUMBNAIL_TEMPLATE = """
-.. raw:: html
+    .. grid-item-card:: {label}
+        :link: {section}/{fname}
+        :link-type: doc
+        :class-card: {backend}example
+        :shadow: md
 
-    <div class="sphx-glr-thumbcontainer {backend}example" tooltip="{label}">
-
-.. figure:: /{thumbnail}
-
-    :ref:`{label} <{prefix}gallery_{ref_name}>`
-
-.. raw:: html
-
-    </div>
-
+        .. image:: /{thumbnail}
+            :alt: {label}
 """
+
 IFRAME_TEMPLATE = """
 
 .. raw:: html
@@ -157,19 +147,6 @@ IFRAME_TEMPLATE = """
     </div>
 """
 
-INLINE_GALLERY_STYLE = """
-
-.. raw:: html
-
-   <style>
-     .sphx-glr-section {
-       display: inline-block;
-       vertical-align: top;
-       padding-right: 20px;
-     }
-   </style>
-
-"""
 
 DEFAULT_GALLERY_CONF = {
     'backends': None,
@@ -281,10 +258,8 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
                     continue
 
         with open(rst_path, 'w') as rst_file:
-            prefix = '_'.join([p for p in (section, backend, 'gallery') if p])
-            rst_file.write('.. _%s_%s:\n\n' % (prefix, name))
             rst_file.write(title+'\n')
-            rst_file.write('_'*len(title)+'\n\n')
+            rst_file.write('='*len(title)+'\n\n')
 
             deployed_file = get_deployed_url(deployment_urls, basename)
             if nblink in ['top', 'both']:
@@ -326,26 +301,30 @@ def add_nblink(rst_file, host, deployed_file, download_as,
                                 path='/'.join(components), basename=basename, ftype=ftype))
 
 
+def _normalize_label(string):
+    return ' '.join([s[0].upper()+s[1:] for s in string.split('_')])
+
+            
 def _thumbnail_div(path_components, section, backend, fname, extension, normalize=True, title=None):
     """Generates RST to place a thumbnail in a gallery"""
     if title is not None:
         label = title
     elif normalize:
-        label = fname.replace('_', ' ').title()
+        label = _normalize_label(fname)
     else:
         label = fname
     thumb = os.path.join(*path_components+['thumbnails', '%s.%s' % (fname, extension)])
 
     # Inside rst files forward slash defines paths
     thumb = thumb.replace(os.sep, "/")
-    prefix = '_'.join([pre for pre in (section, backend) if pre])
-    backend = backend+'_' if backend else ''
-    if prefix:
-        prefix += '_'
+
+    if backend:
+        section = f'{section}/{backend}'
 
     return THUMBNAIL_TEMPLATE.format(
-        backend=backend, prefix=prefix, thumbnail=thumb, ref_name=fname,
-        label=label)
+        backend=backend, section=section, thumbnail=thumb, label=label,
+        fname=fname
+    )
 
 
 def generate_gallery(app, page):
@@ -404,9 +383,6 @@ def generate_gallery(app, page):
                                                   label=backend.capitalize()))
         gallery_rst += BUTTON_GROUP_TEMPLATE.format(buttons=''.join(buttons), backends=backends)
 
-    if inline:
-        gallery_rst += INLINE_GALLERY_STYLE
-
     for section in sections:
         if isinstance(section, dict):
             section_backends = section.get('backends', backends)
@@ -437,9 +413,9 @@ def generate_gallery(app, page):
             gallery_rst += f'\n\n{heading}\n{underline}\n\n'
 
         if section:
-            gallery_rst += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   {heading}\n   {section}/*\n\n'
+            gallery_rst += f'.. toctree::\n   :glob:\n   :hidden:\n\n   {heading}\n   {section}/*\n\n'
         else:
-            gallery_rst += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   {heading}\n   *\n\n'
+            gallery_rst += f'.. toctree::\n   :glob:\n   :hidden:\n\n   {heading}\n   *\n\n'
 
         if labels:
             gallery_rst += '\n\n.. raw:: html\n\n'
@@ -457,6 +433,8 @@ def generate_gallery(app, page):
 
         if description:
             gallery_rst += description + '\n\n'
+
+        gallery_rst += '.. grid:: 2 2 4 5\n    :gutter: 3\n    :margin: 0\n'
 
         thumb_extension = 'png'
         for backend in (section_backends or ('',)):
@@ -559,18 +537,22 @@ def generate_gallery(app, page):
                     if extension == 'py':
                         continue
                     thumb_prefix = '_'.join([pre for pre in (section, backend) if pre])
-                    backend_str = backend+'_' if backend else ''
                     if thumb_prefix:
                         thumb_prefix += '_'
                     if basename in titles:
                         label = titles[basename]
                     elif normalize:
-                        label = basename.replace('_', ' ').title()
+                        label = _normalize_label(basename)
                     else:
                         label = basename
+                    if backend:
+                        section_path = f'{section}/{backend}'
+                    else:
+                        section_path = section
                     this_entry = THUMBNAIL_TEMPLATE.format(
-                        backend=backend_str, prefix=thumb_prefix, thumbnail=logo_path,
-                        ref_name=basename, label=label)
+                        section=section_path, thumbnail=logo_path,
+                        fname=basename, label=label
+                    )
                 else:
                     logger.info('%s %s thumbnail' % (verb, basename))
                     this_entry = _thumbnail_div(
@@ -581,8 +563,6 @@ def generate_gallery(app, page):
                 gallery_rst += this_entry
             generate_file_rst(app, path, dest_dir, page, section,
                               backend, thumb_extension, skip, deployment_urls)
-        # clear at the end of the section
-        gallery_rst += CLEAR_DIV
 
     if backends or section_backends:
         gallery_rst += HIDE_JS.format(backends=repr(backends[1:]))
