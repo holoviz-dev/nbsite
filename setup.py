@@ -66,6 +66,7 @@ setup_args = dict(
         'sphinx',
         'beautifulsoup4',
         'jinja2 <3.1',
+        'pillow'
     ],
     extras_require= {
         'refman':[
@@ -85,7 +86,6 @@ setup_args = dict(
             'sphinx_holoviz_theme',
             'holoviews',
             'bokeh',
-            'pillow',
             'matplotlib',
             'xarray',
             'pandas',

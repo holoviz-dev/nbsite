@@ -5,6 +5,8 @@ import logging
 import requests
 import sphinx.util
 
+from PIL import Image, ImageOps
+
 try:
     import bs4
 except:
@@ -304,8 +306,8 @@ def add_nblink(rst_file, host, deployed_file, download_as,
 def _normalize_label(string):
     return ' '.join([s[0].upper()+s[1:] for s in string.split('_')])
 
-            
-def _thumbnail_div(path_components, section, backend, fname, extension, normalize=True, title=None):
+
+def _thumbnail_div(thumb_path, section, backend, fname, normalize=True, title=None):
     """Generates RST to place a thumbnail in a gallery"""
     if title is not None:
         label = title
@@ -313,18 +315,32 @@ def _thumbnail_div(path_components, section, backend, fname, extension, normaliz
         label = _normalize_label(fname)
     else:
         label = fname
-    thumb = os.path.join(*path_components+['thumbnails', '%s.%s' % (fname, extension)])
 
     # Inside rst files forward slash defines paths
-    thumb = thumb.replace(os.sep, "/")
+    thumb_path = thumb_path.replace(os.sep, "/")
 
     if backend:
         section = f'{section}/{backend}'
 
     return THUMBNAIL_TEMPLATE.format(
-        backend=backend, section=section, thumbnail=thumb, label=label,
+        backend=backend, section=section, thumbnail=thumb_path, label=label,
         fname=fname
     )
+
+
+def resize_pad(im_pth, desired_size=500):
+    im = Image.open(im_pth)
+    old_size = im.size  # old_size[0] is in (width, height) format
+
+    ratio = float(desired_size)/max(old_size)
+    new_size = tuple([int(x*ratio) for x in old_size])
+    w = (desired_size-new_size[0])//2
+    h = (desired_size-new_size[1])//2
+
+    im = im.resize(new_size, Image.ANTIALIAS)
+    new_im = Image.new("RGBA", (desired_size, desired_size), color=(0, 0, 0, 0))
+    new_im.paste(im, (w, h))
+    new_im.save(im_pth)
 
 
 def generate_gallery(app, page):
@@ -550,14 +566,17 @@ def generate_gallery(app, page):
                     else:
                         section_path = section
                     this_entry = THUMBNAIL_TEMPLATE.format(
-                        backend=section=section_path, thumbnail=logo_path,
+                        backend=backend, section=section_path, thumbnail=logo_path,
                         fname=basename, label=label
                     )
                 else:
                     logger.info('%s %s thumbnail' % (verb, basename))
+                    thumb_path = os.path.join(*path_components+['thumbnails', '%s.%s' % (basename, thumb_extension)])
+                    if thumb_extension not in ('svg', 'gif'):
+                        resize_pad(os.path.join(doc_dir, thumb_path))
                     this_entry = _thumbnail_div(
-                        path_components, section, backend, basename,
-                        thumb_extension, normalize, titles.get(basename)
+                        thumb_path, section, backend, basename,
+                        normalize, titles.get(basename)
                     )
 
                 gallery_rst += this_entry
