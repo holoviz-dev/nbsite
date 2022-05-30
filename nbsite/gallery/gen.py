@@ -113,7 +113,7 @@ THUMBNAIL_TEMPLATE = """
     .. grid-item-card:: {label}
         :link: {section}/{fname}
         :link-type: doc
-        :class-card: {backend}example
+        :class-card: {backend}_example
         :shadow: md
 
         .. image:: /{thumbnail}
@@ -550,7 +550,7 @@ def generate_gallery(app, page):
                     else:
                         section_path = section
                     this_entry = THUMBNAIL_TEMPLATE.format(
-                        section=section_path, thumbnail=logo_path,
+                        backend=section=section_path, thumbnail=logo_path,
                         fname=basename, label=label
                     )
                 else:
