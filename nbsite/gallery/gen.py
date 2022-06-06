@@ -24,7 +24,7 @@ BUTTON_GROUP_TEMPLATE = """
     function gallery_toggle(input) {{
         backends = {backends};
         for (i in backends) {{
-            entries = $('.'+backends[i]+'_example');
+            entries = $('.'+backends[i]+'-example');
             if (backends[i] == input) {{
                 entries.show();
             }} else {{
@@ -54,7 +54,7 @@ HIDE_JS = """
         $(document).ready(function () {{
             backends = {backends};
             for (var i=0; i<backends.length; i++){{
-                $('.'+backends[i]+'_example').hide();
+                $('.'+backends[i]+'-example').hide();
             }}
         }});
     </script>
@@ -115,7 +115,7 @@ THUMBNAIL_TEMPLATE = """
     .. grid-item-card:: {label}
         :link: {section}/{fname}
         :link-type: doc
-        :class-card: {backend}_example
+        :class-card: {backend_prefix}example
         :shadow: md
 
         .. image:: /{thumbnail}
@@ -323,8 +323,8 @@ def _thumbnail_div(thumb_path, section, backend, fname, normalize=True, title=No
         section = f'{section}/{backend}'
 
     return THUMBNAIL_TEMPLATE.format(
-        backend=backend, section=section, thumbnail=thumb_path, label=label,
-        fname=fname
+        backend_prefix=backend+'-', section=section, thumbnail=thumb_path,
+        label=label, fname=fname
     )
 
 
@@ -566,7 +566,7 @@ def generate_gallery(app, page):
                     else:
                         section_path = section
                     this_entry = THUMBNAIL_TEMPLATE.format(
-                        backend=backend, section=section_path, thumbnail=logo_path,
+                        backend_prefix=backend+'-', section=section_path, thumbnail=logo_path,
                         fname=basename, label=label
                     )
                 else:
