@@ -30,17 +30,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os, string, glob, copy, re, sys, shutil
 
 import nbformat
+import myst_nb
 
 from docutils.parsers.rst import directives, Directive
 from docutils.statemachine import string2lines
 from docutils.utils import new_document
-from myst_nb.parser import nb_to_tokens, nb_output_to_disc, tokens_to_docutils
 
 from nbconvert import NotebookExporter, PythonExporter
 from nbconvert.preprocessors import (
     ExecutePreprocessor, CellExecutionError, Preprocessor
 )
+from packaging.version import Version
+
 from .cmd import hosts, _prepare_paths
+
 
 NOTEBOOK_VERSION = 4
 
@@ -295,37 +298,98 @@ def render_notebook(nb_path, document, preprocessors=[]):
     doc = new_document(nb_path, document.settings)
 
     with open(nb_path, encoding='utf-8') as f:
-        text = f.read()
+        notebook_sourcestring = f.read()
 
-    ntbk = nbformat.reads(text, as_version=NOTEBOOK_VERSION)
+    # myst-nb has been entirely rewritten in 0.14 so we need two
+    # different code paths so handle this transition.
+    if Version(myst_nb.__version__) < Version('0.14'):
+        from myst_nb.parser import nb_to_tokens, nb_output_to_disc, tokens_to_docutils
 
-    for preprocessor in preprocessors:
-        ntbk, _ = preprocessor(ntbk, {})
+        ntbk = nbformat.reads(notebook_sourcestring, as_version=NOTEBOOK_VERSION)
 
-    md_parser, env, tokens = nb_to_tokens(
-        ntbk,
-        env.myst_config,
-        env.config["nb_render_plugin"],
-    )
-
-    # Delete rst temporarily to ensure 
-    rst_path = nb_path[:-5]+'rst'
-    if os.path.isfile(rst_path):
-        with open(rst_path) as f:
-            rst_text = f.read()
-        os.remove(rst_path)
+        for preprocessor in preprocessors:
+            ntbk, _ = preprocessor(ntbk, {})
+        md_parser, env, tokens = nb_to_tokens(
+            ntbk,
+            env.myst_config,
+            env.config["nb_render_plugin"],
+        )
+        # Delete rst temporarily to ensure 
+        rst_path = nb_path[:-5]+'rst'
+        if os.path.isfile(rst_path):
+            with open(rst_path) as f:
+                rst_text = f.read()
+            os.remove(rst_path)
+        else:
+            rst_text = None
+        nb_output_to_disc(ntbk, doc)
+        if rst_text is not None:
+            with open(rst_path, 'w') as f:
+                f.write(rst_text)
+        tokens_to_docutils(md_parser, env, tokens, doc)
+        # The first children includes some metadata like nbconvert_exporter,
+        # pygments_lexer, etc.
+        return doc.children[1:]
     else:
-        rst_text = None
+        # This is basically an adaptation of the code in myst_nb/sphinx_.py,
+        # of the method Parser.parse(). Except that the parse method of myst-nb
+        # executes the notebook, while we want to skip this step.
 
-    nb_output_to_disc(ntbk, doc)
+        from myst_nb.core.loggers import SphinxDocLogger
+        from myst_nb.core.parse import notebook_to_tokens
+        from myst_nb.core.preprocess import preprocess_notebook
+        from myst_nb.core.read import create_nb_reader
+        from myst_nb.core.render import load_renderer
+        from myst_nb.sphinx_ import SphinxNbRenderer
+        from myst_parser.main import create_md_parser
 
-    if rst_text is not None:
-        with open(rst_path, 'w') as f:
-            f.write(rst_text)
+        # get a logger for this document
+        logger = SphinxDocLogger(doc)
+        # get markdown parsing configuration
+        md_config = env.myst_config
+        # get notebook rendering configuration
+        nb_config = env.mystnb_config
+        # create a reader for the notebook
+        nb_reader = create_nb_reader(nb_path, md_config, nb_config, notebook_sourcestring)
+        notebook = nb_reader.read(notebook_sourcestring)
 
-    tokens_to_docutils(md_parser, env, tokens, doc)
+        # myst-nb doesn't allow preprocessing notebooks a la nbconvert
+        # See https://github.com/executablebooks/MyST-NB/issues/360
+        # This step does not originate from myst-nb, but from nbsite.
+        for preprocessor in preprocessors:
+            notebook, _ = preprocessor(notebook, {})
 
-    return doc.children[1:]
+        # Setup the parser
+        mdit_parser = create_md_parser(nb_reader.md_config, SphinxNbRenderer)
+        mdit_parser.options["document"] = doc
+        mdit_parser.options["notebook"] = notebook
+        mdit_parser.options["nb_config"] = nb_config
+        mdit_renderer = mdit_parser.renderer
+        renderer_name = nb_config.render_plugin
+        mdit_env = {}
+        # load notebook element renderer class from entry-point name
+        # this is separate from SphinxNbRenderer, so that users can override it
+        nb_renderer = load_renderer(renderer_name)(
+            mdit_renderer, logger
+        )
+        # we temporarily store nb_renderer on the document,
+        # so that roles/directives can access it
+        doc.attributes["nb_renderer"] = nb_renderer
+        # we currently do this early, so that the nb_renderer has access to things
+        mdit_renderer.setup_render(mdit_parser.options, mdit_env)
+        # pre-process notebook and store resources for render
+        resources = preprocess_notebook(notebook, logger, nb_config)
+        mdit_renderer.md_options["nb_resources"] = resources
+        # parse to tokens
+        mdit_tokens = notebook_to_tokens(notebook, mdit_parser, mdit_env, logger)
+        # convert to docutils AST, which is added to the document
+        mdit_renderer.render(mdit_tokens, mdit_parser.options, mdit_env)
+        # remove temporary state
+        doc.attributes.pop("nb_renderer")
+
+        # Compared to myst-nb 0.13.2 the children no longer starts with
+        # a metadata field.
+        return doc.children
 
 
 class NotebookDirective(Directive):
