@@ -68,6 +68,7 @@ setup_args = dict(
         'pydata-sphinx-theme <0.9.0',
         'myst-parser',
         'sphinx-copybutton',
+        'sphinx-design',
     ],
     extras_require= {
         'refman':[

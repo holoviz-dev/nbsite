@@ -41,6 +41,7 @@ def remove_mystnb_static(app):
 extensions = [
     'myst_nb',
     'sphinx_copybutton',
+    'sphinx_design',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
