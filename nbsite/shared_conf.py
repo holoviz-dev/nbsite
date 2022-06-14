@@ -100,6 +100,9 @@ html_theme_options = {
     "footer_items": [
         "copyright-last-updated",
     ],
+    # Pygment to modify the code highlighting colors in light and dark mode
+    "pygment_light_style": "monokai",
+    "pygment_dark_style": "monokai"
 }
 
 # To be reused in a conf.py file to define the `copyright` string reused
