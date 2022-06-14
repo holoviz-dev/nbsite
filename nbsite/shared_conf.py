@@ -107,6 +107,8 @@ html_theme_options = {
     # Override the navbar end not to include the theme switcher
     # as plots and likes don't yet render very well in dark mode
     "navbar_end": ["navbar-icon-links"],
+    # Enforce the light mode
+    "default_mode": "light"
 }
 
 # To be reused in a conf.py file to define the `copyright` string reused
