@@ -111,6 +111,9 @@ html_theme_options = {
     "default_mode": "light"
 }
 
+# Enable the colon_fence myst extension: https://myst-parser.readthedocs.io/en/latest/syntax/optional.html#code-fences-using-colons
+myst_enable_extensions = ["colon_fence"]
+
 # To be reused in a conf.py file to define the `copyright` string reused
 # by sphinx to populate the footer content:
 # copyright_years['start_year'] = '2000'
