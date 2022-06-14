@@ -103,7 +103,10 @@ html_theme_options = {
     ],
     # Pygment to modify the code highlighting colors in light and dark mode
     "pygment_light_style": "monokai",
-    "pygment_dark_style": "monokai"
+    "pygment_dark_style": "monokai",
+    # Override the navbar end not to include the theme switcher
+    # as plots and likes don't yet render very well in dark mode
+    "navbar_end": ["navbar-icon-links"],
 }
 
 # To be reused in a conf.py file to define the `copyright` string reused
