@@ -66,6 +66,7 @@ setup_args = dict(
         'beautifulsoup4',
         'jinja2 <3.1',
         'pydata-sphinx-theme <0.9.0',
+        'myst-parser',
     ],
     extras_require= {
         'refman':[
