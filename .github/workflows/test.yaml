@@ -1,12 +1,18 @@
 # things not included
 # language
 # notifications - no email notifications set up
-
 name: tests
+
 on:
+  push:
+    branches:
+      - master
   pull_request:
     branches:
-    - '*'
+      - '*'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 20 * * SUN'
 
 jobs:
   test_suite:
@@ -16,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu-latest']
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.7, 3.8, 3.9]
     timeout-minutes: 30
     defaults:
       run:

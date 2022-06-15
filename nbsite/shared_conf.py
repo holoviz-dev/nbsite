@@ -51,6 +51,9 @@ extensions = [
     'sphinx.ext.inheritance_diagram',
 ]
 
+# Default theme is the PyData Sphinx Theme
+html_theme = "pydata_sphinx_theme"
+
 inheritance_graph_attrs = dict(
     rankdir="LR",
     size='"12.0, 12.0"',
