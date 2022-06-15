@@ -5,7 +5,7 @@ import logging
 import requests
 import sphinx.util
 
-from PIL import Image, ImageOps
+from PIL import Image
 
 try:
     import bs4
