@@ -65,7 +65,7 @@ setup_args = dict(
         'sphinx',
         'beautifulsoup4',
         'jinja2 <3.1',
-        'pydata-sphinx-theme <0.9.0',
+        'pydata-sphinx-theme',
         'myst-parser',
     ],
     extras_require= {
