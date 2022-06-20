@@ -60,7 +60,7 @@ setup_args = dict(
         'nbformat',
         'nbconvert <6.0',
         'jupyter_client <6.2',
-        'myst-nb <0.14',
+        'myst-nb',
         'notebook',
         'sphinx',
         'beautifulsoup4',
