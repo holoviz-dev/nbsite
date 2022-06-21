@@ -330,18 +330,21 @@ def render_notebook(nb_path, document, preprocessors=[]):
         # The first children includes some metadata like nbconvert_exporter,
         # pygments_lexer, etc.
         return doc.children[1:]
+    elif Version('0.14.0') <= Version(myst_nb.__version__) < Version('0.16.0'):
+        raise RuntimeError('nbsite does not support myst-nb 0.14.0 and 0.15.0')
     else:
-        # This is basically an adaptation of the code in myst_nb/sphinx_.py,
+        # MLTALERT: This is basically an adaptation of the code in myst_nb/sphinx_.py,
         # of the method Parser.parse(). Except that the parse method of myst-nb
-        # executes the notebook, while we want to skip this step.
-
+        # executes the notebook, while we don't need this step.
+        # myst-nb also fetches its configuration (e.g. cell metadata), we skip
+        # that too.
+        from myst_nb.core.execute import create_client
         from myst_nb.core.loggers import SphinxDocLogger
-        from myst_nb.core.parse import notebook_to_tokens
-        from myst_nb.core.preprocess import preprocess_notebook
+        from myst_nb.core.nb_to_tokens import notebook_to_tokens
         from myst_nb.core.read import create_nb_reader
         from myst_nb.core.render import load_renderer
         from myst_nb.sphinx_ import SphinxNbRenderer
-        from myst_parser.main import create_md_parser
+        from myst_parser.parsers.mdit import create_md_parser
 
         # get a logger for this document
         logger = SphinxDocLogger(doc)
@@ -349,11 +352,15 @@ def render_notebook(nb_path, document, preprocessors=[]):
         md_config = env.myst_config
         # get notebook rendering configuration
         nb_config = env.mystnb_config
+
+        # MLTALERT: myst-nb executes the notebook by default, disable that.
+        nb_config.execution_mode = "off"
+
         # create a reader for the notebook
         nb_reader = create_nb_reader(nb_path, md_config, nb_config, notebook_sourcestring)
         notebook = nb_reader.read(notebook_sourcestring)
 
-        # myst-nb doesn't allow preprocessing notebooks a la nbconvert
+        # MLTALERT: myst-nb doesn't allow preprocessing notebooks a la nbconvert
         # See https://github.com/executablebooks/MyST-NB/issues/360
         # This step does not originate from myst-nb, but from nbsite.
         for preprocessor in preprocessors:
@@ -362,7 +369,6 @@ def render_notebook(nb_path, document, preprocessors=[]):
         # Setup the parser
         mdit_parser = create_md_parser(nb_reader.md_config, SphinxNbRenderer)
         mdit_parser.options["document"] = doc
-        mdit_parser.options["notebook"] = notebook
         mdit_parser.options["nb_config"] = nb_config
         mdit_renderer = mdit_parser.renderer
         renderer_name = nb_config.render_plugin
@@ -377,17 +383,21 @@ def render_notebook(nb_path, document, preprocessors=[]):
         doc.attributes["nb_renderer"] = nb_renderer
         # we currently do this early, so that the nb_renderer has access to things
         mdit_renderer.setup_render(mdit_parser.options, mdit_env)
-        # pre-process notebook and store resources for render
-        resources = preprocess_notebook(notebook, logger, nb_config)
-        mdit_renderer.md_options["nb_resources"] = resources
-        # parse to tokens
+        # parse notebook structure to markdown-it tokens
+        # note, this does not assume that the notebook has been executed yet
         mdit_tokens = notebook_to_tokens(notebook, mdit_parser, mdit_env, logger)
-        # convert to docutils AST, which is added to the document
-        mdit_renderer.render(mdit_tokens, mdit_parser.options, mdit_env)
+        # open the notebook execution client,
+        # this may execute the notebook immediately or during the page render
+        with create_client(
+            notebook, nb_path, nb_config, logger, nb_reader.read_fmt
+        ) as nb_client:
+            mdit_parser.options["nb_client"] = nb_client
+            # convert to docutils AST, which is added to the document
+            mdit_renderer.render(mdit_tokens, mdit_parser.options, mdit_env)
         # remove temporary state
         doc.attributes.pop("nb_renderer")
 
-        # Compared to myst-nb 0.13.2 the children no longer starts with
+        # MLTALERT: Compared to myst-nb 0.13.2 the children no longer starts with
         # a metadata field.
         return doc.children
 
