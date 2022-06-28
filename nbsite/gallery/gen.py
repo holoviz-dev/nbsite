@@ -24,11 +24,11 @@ BUTTON_GROUP_TEMPLATE = """
     function gallery_toggle(input) {{
         backends = {backends};
         for (i in backends) {{
-            entries = $('.'+backends[i]+'-example');
+            entries = $('.'+backends[i]+'-example').parent();
             if (backends[i] == input) {{
                 entries.show();
             }} else {{
-                entries.hide()
+                entries.attr('style','display: none !important')
             }}
         }}
     }}
@@ -54,7 +54,7 @@ HIDE_JS = """
         $(document).ready(function () {{
             backends = {backends};
             for (var i=0; i<backends.length; i++){{
-                $('.'+backends[i]+'-example').hide();
+                $('.'+backends[i]+'-example').parent().attr('style','display: none !important');
             }}
         }});
     </script>
