@@ -429,7 +429,9 @@ def test_build_deletes_by_default(tmp_project_with_docs_skeleton):
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
     assert not (project / "builtdocs" / ".doctrees").is_dir()
     assert (project / "builtdocs" / "First_Notebook.html").is_file()
-    assert len(list((project / "builtdocs").iterdir())) == 10
+    # Used to test for 10, bumped to 11 as the sphinx-design extension
+    # adds a `_sphinx_design_static` folder in `builtdocs/`.
+    assert len(list((project / "builtdocs").iterdir())) == 11
 
 @pytest.mark.slow
 def test_build_with_clean_dry_run_does_not_delete(tmp_project_with_docs_skeleton):
@@ -439,7 +441,7 @@ def test_build_with_clean_dry_run_does_not_delete(tmp_project_with_docs_skeleton
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='', clean_dry_run=True)
     assert (project / "builtdocs" / ".doctrees").is_dir()
     assert (project / "builtdocs" / "First_Notebook.html").is_file()
-    # Used to test for 12, bumped to 13` as the sphinx-design extension
+    # Used to test for 12, bumped to 13 as the sphinx-design extension
     # adds a `_sphinx_design_static` folder in `builtdocs/`.
     assert len(list((project / "builtdocs").iterdir())) == 13
 
