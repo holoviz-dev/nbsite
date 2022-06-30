@@ -439,7 +439,9 @@ def test_build_with_clean_dry_run_does_not_delete(tmp_project_with_docs_skeleton
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='', clean_dry_run=True)
     assert (project / "builtdocs" / ".doctrees").is_dir()
     assert (project / "builtdocs" / "First_Notebook.html").is_file()
-    assert len(list((project / "builtdocs").iterdir())) == 12
+    # Used to test for 12, bumped to 13` as the sphinx-design extension
+    # adds a `_sphinx_design_static` folder in `builtdocs/`.
+    assert len(list((project / "builtdocs").iterdir())) == 13
 
 @pytest.mark.slow
 def test_build_copies_json(tmp_project_with_docs_skeleton):
