@@ -16,20 +16,20 @@
 
 NBSite lets you build a website from a set of notebooks plus a minimal
 amount of config. Sites built with nbsite include
-[pyviz.org](https://pyviz.org),
-[datashader.org](https://datashader.org/), and [hvplot.pyviz.org](https:/hvplot.pyviz.org).
+[holoviz.org](https://holoviz.org/),
+[datashader.org](https://datashader.org/), and [hvplot.holoviz.org](https://hvplot.holoviz.org/).
 
 The idea behind nbsite is that notebooks can simultaneously be
 documentation (things you want to tell people about), examples (a
 starting point for people to run and use themselves), and test cases.
 
 This project is currently an early work in progress. See the
-documentation at [nbsite.pyviz.org](https://nbsite.pyviz.org) for
+documentation at [nbsite.holoviz.org](https://nbsite.holoviz.org/) for
 more information.
 
 
-## About PyViz
+## About HoloViz
 
-NBSite is part of the PyViz initiative for making Python-based visualization tools work well together.
-See [pyviz.org](https://pyviz.org) for related packages that you can use with NBSite and
-[status.pyviz.org](https://status.pyviz.org) for the current status of each PyViz project.
+NBSite is part of the HoloViz initiative for making Python-based visualization tools work well together.
+See [holoviz.org](https://holoviz.org/) for related packages that you can use with NBSite and
+[status.holoviz.org](https://status.holoviz.org/) for the current status of each HoloViz project.
