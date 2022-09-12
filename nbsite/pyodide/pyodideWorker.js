@@ -9,16 +9,24 @@ function sendPatch(patch, buffers, cell_id) {
   })
 }
 
-async function loadApplication() {
+async function loadApplication(cell_id) {
   console.log("Loading pyodide!");
   self.pyodide = await loadPyodide();
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  await self.pyodide.runPythonAsync(`
-    import micropip
-    await micropip.install([{{ env_spec }}]);
-  `);
+  const packages = [{{ env_spec }}];
+  await self.pyodide.runPythonAsync("import micropip")
+  for (const pkg of packages) {
+    self.postMessage({
+      type: 'loading',
+      msg: `Loading ${pkg}`,
+      id: cell_id
+    });
+    await self.pyodide.runPythonAsync(`
+      await micropip.install('${pkg}');
+    `);
+  }
   console.log("Packages loaded!");
 }
 
@@ -27,9 +35,10 @@ self.onmessage = async (event) => {
     if (self.pyodide == null) {
       self.postMessage({
 	type: 'loading',
+	msg: 'Loading pyodide',
 	id: event.data.id
       });
-      await loadApplication()
+      await loadApplication(event.data.id)
       self.postMessage({
 	type: 'loaded',
 	id: event.data.id
@@ -45,12 +54,23 @@ out = eval(lines[-1])
 doc, model_json = _model_json(panel(out), 'output-${event.data.id}')
 state.cache['${event.data.id}'] = doc
 model_json`
-    const model_json = await self.pyodide.runPythonAsync(code)
-    self.postMessage({
-      type: 'render',
-      id: event.data.id,
-      model_json: model_json
-    });
+    try {
+      const model_json = await self.pyodide.runPythonAsync(code)
+      self.postMessage({
+	type: 'render',
+	id: event.data.id,
+	model_json: model_json
+      });
+    } catch (e) {
+      const traceback = `${e}`
+      const tblines = traceback.split('\n')
+      self.postMessage({
+        type: 'error',
+	traceback: traceback,
+	msg: tblines[tblines.length-2],
+	id: event.data.id
+      });
+    }
   } else if (event.data.type === 'rendered') {
     self.pyodide.runPythonAsync(`
     import pyodide

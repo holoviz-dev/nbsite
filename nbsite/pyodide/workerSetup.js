@@ -18,14 +18,19 @@ function loadScripts(scripts) {
 pyodideWorker.onmessage = async (event) => {
   const button = document.getElementById(`button-${event.data.id}`)
   if (event.data.type === 'loading') {
-    _temporarilyChangeTooltip(button, 'Loading pyodide')
+    _ChangeTooltip(button, event.data.msg)
+    _ChangeIcon(button, iconLoading)
     if (window.Bokeh === undefined || window.Bokeh.Panel === undefined) {
       loadScripts({{ scripts }})
     }
   } else if (event.data.type === 'loaded') {
-    _temporarilyChangeTooltip(button, 'Executing code')
+    _ChangeTooltip(button, 'Executing code')
+  } else if (event.data.type === 'error') {
+    _ChangeTooltip(button, event.data.msg)
+    _ChangeIcon(button, iconError)
   } else if (event.data.type === 'render') {
-    _temporarilyChangeTooltip(button, 'Run code')
+    _ChangeTooltip(button, 'Run code')
+    _ChangeIcon(button, iconLoaded)
     const [view] = await Bokeh.embed.embed_item(JSON.parse(event.data.model_json))
 
     // Setup bi-directional syncing

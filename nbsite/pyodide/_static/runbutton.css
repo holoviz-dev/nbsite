@@ -17,18 +17,6 @@ button.runbtn {
     color: #57606a;
 }
 
-button.runbtn.success {
-    border-color: #22863a;
-    color: #22863a;
-}
-
-button.runbtn svg {
-    stroke: currentColor;
-    width: 1.5em;
-    height: 1.5em;
-    padding: 0.1em;
-}
-
 div.highlight  {
     position: relative;
 }
@@ -84,4 +72,21 @@ div.highlight  {
     button.runbtn {
         display: none;
     }
+}
+
+button.runbtn svg.loading {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation-duration: 3s;
+  animation-name: rotate;
+  animation-iteration-count: infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
