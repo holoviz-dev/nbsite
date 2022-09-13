@@ -20,6 +20,10 @@ let iconError = `<svg style="width:24px;height:24px" viewBox="0 0 24 24">
     <path fill="#ff0000" d="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M15.59,7L12,10.59L8.41,7L7,8.41L10.59,12L7,15.59L8.41,17L12,13.41L15.59,17L17,15.59L13.41,12L17,8.41L15.59,7Z" />
 </svg>`
 
+let iconAlert = `<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+    <path fill="#f6be00" d="M13 13H11V7H13M11 15H13V17H11M15.73 3H8.27L3 8.27V15.73L8.27 21H15.73L21 15.73V8.27L15.73 3Z" />
+</svg>`
+
 /**
  * Set up run for code blocks
  */
@@ -39,7 +43,7 @@ const _runWhenDOMLoaded = cb => {
 const _codeCellId = index => `codecell${index}`
 
 // Changes tooltip text for two seconds, then changes it back
-const _ChangeTooltip = (el, newText, timeout) => {
+const _ChangeTooltip = (el, newText) => {
   const oldText = el.getAttribute('data-tooltip')
   el.setAttribute('data-tooltip', newText)
 }
@@ -67,6 +71,8 @@ function executeCell(id) {
   cell.setAttribute('executed', true)
 }
 
+let ACCEPTED = false;
+
 const _addRunButtonToCodeCells = () => {
   // If Pyodide Worker hasn't loaded, wait a bit and try again.
   if (window.pyodideWorker === undefined) {
@@ -92,7 +98,13 @@ const _addRunButtonToCodeCells = () => {
     </button>`
     codeCell.insertAdjacentHTML('afterend', RunButton(id))
     const run_button = document.getElementById(`button-${id}`)
-    run_button.onclick = () => {
+    run_button.addEventListener('click', (e) => {
+      if (!ACCEPTED) {
+	_ChangeTooltip(e.currentTarget, 'Executing this cell will download Python runtime (~80+ MB). Click again to proceed.')
+	_ChangeIcon(e.currentTarget, iconAlert)
+	ACCEPTED = true
+	return
+      }
       for (let i=0; i<=index; i++) {
 	let cell_id = _codeCellId(i)
 	let cell = document.getElementById(cell_id)
@@ -100,7 +112,7 @@ const _addRunButtonToCodeCells = () => {
 	  executeCell(cell_id)
 	}
       }
-    }
+    })
   })
 }
 
