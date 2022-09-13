@@ -56,7 +56,12 @@ div.highlight  {
     border-radius: 2px;
     transform: translateX(-102%) translateY(0);
     transition: opacity 0.2s cubic-bezier(0.64, 0.09, 0.08, 1), transform 0.2s cubic-bezier(0.64, 0.09, 0.08, 1);
-}
+ }
+
+ .o-tooltip--left:has(.pyodide-alert-icon):after {
+     opacity: 1;
+     visibility: visible;
+ }
 
 .o-tooltip--left:hover:after {
     display: block;
