@@ -28,6 +28,7 @@ WEB_MANIFEST_TEMPLATE = _env.get_template('site.webmanifest')
 DEFAULT_PYODIDE_CONF = {
     'PYODIDE_URL': 'https://cdn.jsdelivr.net/pyodide/v0.21.2/full/pyodide.js',
     'autodetect_deps': True,
+    'enable_pwa': True,
     'requirements': [
         'panel==0.14.0a11',
         'pandas',
@@ -87,6 +88,9 @@ def write_worker(app: Sphinx, exc):
     with open(staticdir/ 'WorkerHandler.js', 'w') as f:
         f.write(worker_setup)
 
+    if not pyodide_conf['enable_pwa']:
+        return
+
     # Render service worker
     service_worker = SERVICE_WORKER_TEMPLATE.render({
         'name': app.config.html_title,
@@ -106,13 +110,17 @@ def write_worker(app: Sphinx, exc):
     with open(builddir / 'site.webmanifest', 'w') as f:
         f.write(site_manifest)
 
-
 def init_conf(app: Sphinx) -> None:
     pyodide_conf = dict(DEFAULT_PYODIDE_CONF, **app.config.nbsite_pyodide_conf)
     app.config.nbsite_pyodide_conf = pyodide_conf
     app.config.html_static_path.append(
         str((HERE /'_static' ).absolute())
     )
+    app.add_css_file('runbutton.css')
+    app.add_js_file('run_cell.js')
+    app.add_js_file('WorkerHandler.js')
+    if pyodide_conf['enable_pwa']:
+        app.add_js_file('ServiceHandler.js')
 
 def html_page_context(
     app: Sphinx,
@@ -122,7 +130,7 @@ def html_page_context(
     doctree: nodes.document,
 ) -> None:
 
-    if doctree:
+    if doctree and app.config.nbsite_pyodide_conf['enable_pwa']:
         relpath = '/'.join(['..']*pagename.count('/'))
         if relpath:
             relpath += '/'
@@ -142,10 +150,6 @@ def setup(app):
 
     app.add_directive('pyodide', PyodideDirective)
 
-    app.add_css_file('runbutton.css')
-    app.add_js_file('run_cell.js')
-    app.add_js_file('ServiceHandler.js')
-    app.add_js_file('WorkerHandler.js')
 
     return {
         'version': '0.5',
