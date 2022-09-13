@@ -1,4 +1,4 @@
-const pyodideWorker = new Worker(DOCUMENTATION_OPTIONS.URL_ROOT + '_static/webWorker.js');
+const pyodideWorker = new Worker(DOCUMENTATION_OPTIONS.URL_ROOT + '_static/PyodideWebWorker.js');
 
 pyodideWorker.documents = {}
 
@@ -31,7 +31,7 @@ pyodideWorker.onmessage = async (event) => {
   } else if (event.data.type === 'render') {
     _ChangeTooltip(button, 'Run code')
     _ChangeIcon(button, iconLoaded)
-    const [view] = await Bokeh.embed.embed_item(JSON.parse(event.data.model_json))
+    const [view] = await Bokeh.embed.embed_item(JSON.parse(event.data.out))
 
     // Setup bi-directional syncing
     pyodideWorker.documents[event.data.id] = jsdoc = view.model.document

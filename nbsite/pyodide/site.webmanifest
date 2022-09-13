@@ -1,0 +1,27 @@
+{
+  "name": "{{ name }}",
+  "short_name": "{{ name }}",
+  "start_url": "index.html",
+  "icons": [
+    {
+      "src": "_static/icons/icon-32x32.png",
+      "type": "image/png",
+      "sizes": "32x32"
+    },
+    {
+      "src": "_static/icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "_static/icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "display": "{{ display|default('standalone', true) }}",
+  "scope": "/",
+  "background_color": "{{ background_color|default('#fdfdfd', true) }}",
+  "theme_color": "{{ background_color|default('#0072B5', true) }}",
+  "orientation": "{{ orientation|default('any', true) }}"
+}

@@ -60,7 +60,8 @@ const _addRunButtonToCodeCells = () => {
   const RUNBUTTON_SELECTOR = 'div.highlight pre';
   const codeCells = document.querySelectorAll(RUNBUTTON_SELECTOR)
   codeCells.forEach((codeCell, index) => {
-    if (!codeCell.parentElement.parentElement.classList.contains('highlight-python')) {
+    const cell = codeCell.parentElement.parentElement
+    if (!cell.classList.contains('pyodide')) {
       return
     }
     const id = _codeCellId(index)
@@ -82,7 +83,7 @@ const _addRunButtonToCodeCells = () => {
 	output.innerHTML = ''
       }
       window.pyodideWorker.postMessage({
-	type: 'render',
+	type: 'execute',
 	id: id,
 	code: codeCell.textContent
       })
