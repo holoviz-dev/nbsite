@@ -1,5 +1,7 @@
 const pyodideWorker = new Worker(DOCUMENTATION_OPTIONS.URL_ROOT + '_static/PyodideWebWorker.js');
 
+let BOKEH_LOADING = false;
+
 pyodideWorker.documents = {}
 
 function send_change(jsdoc, doc_id, event) {
@@ -20,7 +22,8 @@ pyodideWorker.onmessage = async (event) => {
   if (event.data.type === 'loading') {
     _ChangeTooltip(button, event.data.msg)
     _ChangeIcon(button, iconLoading)
-    if (window.Bokeh === undefined || window.Bokeh.Panel === undefined) {
+    if ((window.Bokeh === undefined || window.Bokeh.Panel === undefined) && !BOKEH_LOADING) {
+      BOKEH_LOADING = true
       loadScripts({{ scripts }})
     }
   } else if (event.data.type === 'loaded') {
@@ -28,9 +31,10 @@ pyodideWorker.onmessage = async (event) => {
   } else if (event.data.type === 'error') {
     _ChangeTooltip(button, event.data.msg)
     _ChangeIcon(button, iconError)
-  } else if (event.data.type === 'render') {
-    _ChangeTooltip(button, 'Run code')
+  } else if (event.data.type == 'idle') {
+    _ChangeTooltip(button, 'Executed successfully')
     _ChangeIcon(button, iconLoaded)
+  } else if (event.data.type === 'render') {
     const [view] = await Bokeh.embed.embed_item(JSON.parse(event.data.out))
 
     // Setup bi-directional syncing

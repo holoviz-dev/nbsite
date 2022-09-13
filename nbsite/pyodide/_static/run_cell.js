@@ -49,6 +49,24 @@ const _ChangeIcon = (el, icon) => {
   el.innerHTML = icon;
 }
 
+function executeCell(id) {
+  const cell = document.getElementById(id)
+  let output = document.getElementById(`output-${id}`)
+  if (output == null) {
+    output = document.createElement('div');
+    output.setAttribute('id', `output-${id}`)
+    cell.parentElement.parentElement.appendChild(output)
+  } else {
+    output.innerHTML = ''
+  }
+  window.pyodideWorker.postMessage({
+    type: 'execute',
+    id: id,
+    code: cell.textContent
+  })
+  cell.setAttribute('executed', true)
+}
+
 const _addRunButtonToCodeCells = () => {
   // If Pyodide Worker hasn't loaded, wait a bit and try again.
   if (window.pyodideWorker === undefined) {
@@ -66,6 +84,7 @@ const _addRunButtonToCodeCells = () => {
     }
     const id = _codeCellId(index)
     codeCell.setAttribute('id', id)
+    codeCell.setAttribute('executed', false)
 
     const RunButton = id =>
     `<button id="button-${id}" class="runbtn o-tooltip--left" data-tooltip="Run cell" data-clipboard-target="#${id}">
@@ -74,19 +93,13 @@ const _addRunButtonToCodeCells = () => {
     codeCell.insertAdjacentHTML('afterend', RunButton(id))
     const run_button = document.getElementById(`button-${id}`)
     run_button.onclick = () => {
-      let output = document.getElementById(`output-${id}`)
-      if (output == null) {
-	const output = document.createElement('div');
-	output.setAttribute('id', `output-${id}`)
-	codeCell.parentElement.parentElement.appendChild(output)
-      } else {
-	output.innerHTML = ''
+      for (let i=0; i<=index; i++) {
+	let cell_id = _codeCellId(i)
+	let cell = document.getElementById(cell_id)
+	if (cell.getAttribute('executed') == 'false') {
+	  executeCell(cell_id)
+	}
       }
-      window.pyodideWorker.postMessage({
-	type: 'execute',
-	id: id,
-	code: codeCell.textContent
-      })
     }
   })
 }

@@ -1,5 +1,7 @@
 importScripts("{{ PYODIDE_URL }}");
 
+let EXECUTING = null;
+
 function sendPatch(patch, buffers, cell_id) {
   self.postMessage({
     type: 'patch',
@@ -41,15 +43,39 @@ json.dumps(find_imports("""${msg.code}"""))
 
 function exec_code(msg) {
    return `
+import ast
+import copy
+
 from panel import state, panel
 from panel.io.pyodide import _model_json
+
+def convertExpr2Expression(Expr):
+    Expr.lineno = 0
+    Expr.col_offset = 0
+    result = ast.Expression(Expr.value, lineno=0, col_offset = 0)
+    return result
+
+def exec_with_return(code):
+    code_ast = ast.parse(code)
+
+    init_ast = copy.deepcopy(code_ast)
+    init_ast.body = code_ast.body[:-1]
+
+    last_ast = copy.deepcopy(code_ast)
+    last_ast.body = code_ast.body[-1:]
+
+    exec(compile(init_ast, "<ast>", "exec"), globals())
+    if type(last_ast.body[0]) == ast.Expr:
+        return eval(compile(convertExpr2Expression(last_ast.body[0]), "<ast>", "eval"), globals())
+    else:
+        exec(compile(last_ast, "<ast>", "exec"), globals())
+
 code = """\n${msg.code}"""
-lines = code.splitlines()
-exec('\\n'.join(lines[:-1]))
-out = eval(lines[-1])
-doc, model_json = _model_json(panel(out), 'output-${msg.id}')
-state.cache['${msg.id}'] = doc
-model_json`
+out = exec_with_return(code)
+if out is not None:
+    doc, out = _model_json(panel(out), 'output-${msg.id}')
+    state.cache['${msg.id}'] = doc
+out`
 }
 
 function sync_code(msg) {
@@ -90,6 +116,21 @@ const MESSAGES = {
 self.onmessage = async (event) => {
   const msg = event.data
 
+  if (EXECUTING != null) {
+    self.postMessage({
+      type: 'loading',
+      msg: 'Awaiting previous cells',
+      id: msg.id
+    });
+    await EXECUTING
+  }
+
+  let resolveExecution, rejectExecution;
+  EXECUTING = new Promise(function(resolve, reject){
+    resolveExecution = resolve;
+    rejectExecution = reject;
+  });
+
   // Init pyodide
   if (self.pyodide == null) {
     self.postMessage({
@@ -107,6 +148,7 @@ self.onmessage = async (event) => {
   // Handle message
   if (!MESSAGES.hasOwnProperty(msg.type)) {
     console.warn(`Service worker received unknown message type '${msg.type}'.`)
+    resolveExecution()
     return
   }
 
@@ -133,6 +175,11 @@ self.onmessage = async (event) => {
 	out: out
       });
     }
+    self.postMessage({
+      type: 'idle',
+      id: msg.id
+    });
+    resolveExecution()
   } catch (e) {
     const traceback = `${e}`
     const tblines = traceback.split('\n')
@@ -142,6 +189,6 @@ self.onmessage = async (event) => {
       msg: tblines[tblines.length-2],
       id: msg.id
     });
-    throw(e)
+    resolveExecution()
   }
 }
