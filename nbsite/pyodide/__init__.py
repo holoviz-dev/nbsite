@@ -26,19 +26,15 @@ SERVICE_HANDLER_TEMPLATE = _env.get_template('ServiceHandler.js')
 WEB_MANIFEST_TEMPLATE = _env.get_template('site.webmanifest')
 
 DEFAULT_PYODIDE_CONF = {
-    'PYODIDE_URL': 'https://cdn.jsdelivr.net/pyodide/v0.21.2/full/pyodide.js',
+    'PYODIDE_URL': 'https://cdn.jsdelivr.net/pyodide/v0.21.3/full/pyodide.js',
     'autodetect_deps': True,
     'enable_pwa': True,
-    'requirements': [
-        'panel==0.14.0a11',
-        'pandas',
-        'matplotlib'
-    ],
+    'requirements': ['panel', 'pandas'],
     'scripts': [
         'https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js',
         'https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js',
         'https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.3.min.js',
-        'https://unpkg.com/@holoviz/panel@0.14.0-a.11/dist/panel.min.js'
+        'https://unpkg.com/@holoviz/panel@0.14.0-a.16/dist/panel.min.js'
     ],
     'cache_patterns': [
         'https://cdn.bokeh.org/bokeh/',
@@ -93,7 +89,8 @@ def write_worker(app: Sphinx, exc):
 
     # Render service worker
     service_worker = SERVICE_WORKER_TEMPLATE.render({
-        'name': app.config.html_title,
+        'project': app.config.project,
+        'version': app.config.version,
         'pre_cache': ', '.join([repr(req) for req in pyodide_conf['scripts']]),
         'cache_patterns': ', '.join([repr(req) for req in pyodide_conf['cache_patterns']])
     })
