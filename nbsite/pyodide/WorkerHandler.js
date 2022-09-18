@@ -12,6 +12,7 @@ function send_change(jsdoc, doc_id, event) {
 }
 
 function loadScripts(scripts) {
+  console.log(scripts)
   return scripts.reduce(function(cur, next){ 
     return cur.then($.getScript.bind($, next));
   }, $.when());
@@ -19,30 +20,49 @@ function loadScripts(scripts) {
 
 pyodideWorker.onmessage = async (event) => {
   const button = document.getElementById(`button-${event.data.id}`)
-  if (event.data.type === 'loading') {
-    _ChangeTooltip(button, event.data.msg)
+  const output = document.getElementById(`output-${event.data.id}`)
+  const stdout = document.getElementById(`stdout-${event.data.id}`)
+  const stderr = document.getElementById(`stderr-${event.data.id}`)
+  const msg = event.data;
+  if (msg.type === 'loading') {
+    _ChangeTooltip(button, msg.msg)
     _ChangeIcon(button, iconLoading)
     if ((window.Bokeh === undefined || window.Bokeh.Panel === undefined) && !BOKEH_LOADING) {
       BOKEH_LOADING = true
       loadScripts({{ scripts }})
     }
-  } else if (event.data.type === 'loaded') {
+  } else if (msg.type === 'loaded') {
     _ChangeTooltip(button, 'Executing code')
-  } else if (event.data.type === 'error') {
-    _ChangeTooltip(button, event.data.msg)
+  } else if (msg.type === 'error') {
+    _ChangeTooltip(button, msg.msg)
     _ChangeIcon(button, iconError)
-  } else if (event.data.type == 'idle') {
+  } else if (msg.type === 'idle') {
     _ChangeTooltip(button, 'Executed successfully')
     _ChangeIcon(button, iconLoaded)
-  } else if (event.data.type === 'render') {
-    const [view] = await Bokeh.embed.embed_item(JSON.parse(event.data.out))
+  } else if (msg.type === 'stdout') {
+    const stdout = document.getElementById(`stdout-${msg.id}`)
+    stdout.style.display = 'block';
+    stdout.innerText += msg.content
+  } else if (msg.type === 'stderr') {
+    const stderr = document.getElementById(`stderr-${msg.id}`)
+    stderr.style.display = 'block';
+    stderr.innerText += msg.content
+  } else if (msg.type === 'render') {
+    if (msg.mime === 'application/bokeh') {
+      const [view] = await Bokeh.embed.embed_item(JSON.parse(msg.content))
 
-    // Setup bi-directional syncing
-    pyodideWorker.documents[event.data.id] = jsdoc = view.model.document
-    jsdoc.on_change(send_change.bind(null, jsdoc, event.data.id), false)
-    pyodideWorker.postMessage({'type': 'rendered', id: event.data.id})
-  } else if (event.data.type === 'patch') {
-    pyodideWorker.documents[event.data.id].apply_json_patch(JSON.parse(event.data.patch), event.data.buffers, setter_id='js')
+      // Setup bi-directional syncing
+      pyodideWorker.documents[msg.id] = jsdoc = view.model.document
+      jsdoc.on_change(send_change.bind(null, jsdoc, msg.id), false)
+    } else if (msg.mime === 'text/plain') {
+      output.innerHTML = `<pre>${msg.content}</pre>`;
+      output.setAttribute('class', 'highlight pyodide-output')
+    } else if (msg.mime === 'text/html') {
+      output.innerHTML = msg.content
+    }
+    pyodideWorker.postMessage({type: 'rendered', id: msg.id, mime: msg.mime})
+  } else if (msg.type === 'patch') {
+    pyodideWorker.documents[msg.id].apply_json_patch(JSON.parse(msg.patch), msg.buffers, setter_id='js')
   }
 };
 

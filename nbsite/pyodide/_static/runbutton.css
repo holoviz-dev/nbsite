@@ -79,7 +79,7 @@ div.highlight  {
     }
 }
 
-button.runbtn svg.loading {
+button.runbtn svg.pyodide-loading-icon {
   transform-box: fill-box;
   transform-origin: 50% 50%;
   animation-duration: 3s;
@@ -94,4 +94,18 @@ button.runbtn svg.loading {
   to {
     transform: rotate(360deg);
   }
+}
+
+.pyodide-output {
+    margin: 1em 0;
+}
+
+.pyodide-stderr {
+    background-color: rgba(194, 103, 103, 0.35);
+    border: indianred solid 1px;
+    display: none;
+}
+
+.pyodide-stdout {
+    display: none
 }

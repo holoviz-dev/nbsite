@@ -11,10 +11,27 @@ function sendPatch(patch, buffers, cell_id) {
   })
 }
 
+function sendStdout(cell_id, stdout) {
+  self.postMessage({
+    type: 'stdout',
+    content: stdout,
+    id: cell_id
+  })
+}
+function sendStderr(cell_id, stdout) {
+  self.postMessage({
+    type: 'stderr',
+    content: stdout,
+    id: cell_id
+  })
+}
+
 async function loadApplication(cell_id) {
   console.log("Loading pyodide!");
   self.pyodide = await loadPyodide();
   self.pyodide.globals.set("sendPatch", sendPatch);
+  self.pyodide.globals.set("sendStdout", sendStdout);
+  self.pyodide.globals.set("sendStderr", sendStderr);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
   const packages = [{{ env_spec }}];
@@ -37,80 +54,42 @@ function autodetect_deps_code(msg) {
   return `
 import json
 from panel.io.convert import find_imports
-json.dumps(find_imports("""${msg.code}"""))
-`
+json.dumps(find_imports("""${msg.code}"""))`
 }
 
 function exec_code(msg) {
    return `
-import ast
-import copy
-
-from panel import state, panel
-from panel.io.pyodide import _model_json
-
-def convertExpr2Expression(Expr):
-    Expr.lineno = 0
-    Expr.col_offset = 0
-    result = ast.Expression(Expr.value, lineno=0, col_offset = 0)
-    return result
-
-def exec_with_return(code):
-    code_ast = ast.parse(code)
-
-    init_ast = copy.deepcopy(code_ast)
-    init_ast.body = code_ast.body[:-1]
-
-    last_ast = copy.deepcopy(code_ast)
-    last_ast.body = code_ast.body[-1:]
-
-    exec(compile(init_ast, "<ast>", "exec"), globals())
-    if type(last_ast.body[0]) == ast.Expr:
-        return eval(compile(convertExpr2Expression(last_ast.body[0]), "<ast>", "eval"), globals())
-    else:
-        exec(compile(last_ast, "<ast>", "exec"), globals())
+from functools import partial
+from panel.io.pyodide import pyrender
 
 code = """\n${msg.code}"""
-out = exec_with_return(code)
-if out is not None:
-    doc, out = _model_json(panel(out), 'output-${msg.id}')
-    state.cache['${msg.id}'] = doc
-out`
+stdout_cb = partial(sendStdout, '${msg.id}')
+stderr_cb = partial(sendStderr, '${msg.id}')
+target = 'output-${msg.id}'
+pyrender(code, stdout_cb, stderr_cb, target)`
 }
 
-function sync_code(msg) {
+function onload_code(msg) {
   return `
-    import pyodide
-
-    from bokeh.protocol.messages.patch_doc import process_document_events
+if '${msg.mime}' == 'application/bokeh':
     from panel import state
-
-    def pysync(event):
-        json_patch, buffers = process_document_events([event], use_buffers=True)
-        buffer_map = {}
-        for (ref, buffer) in buffers:
-            buffer_map[ref['id']] = pyodide.to_js(buffer).buffer
-        sendPatch(json_patch, pyodide.ffi.to_js(buffer_map), '${msg.id}')
-
-    doc = state.cache['${msg.id}']
-    doc.on_change(pysync)
-    doc.callbacks.trigger_json_event(
-        {'event_name': 'document_ready', 'event_values': {}
-    })`
+    from panel.io.pyodide import _link_docs_worker
+    doc = state.cache['output-${msg.id}']
+    _link_docs_worker(doc, sendPatch, '${msg.id}')`
 }
 
 function patch_code(msg) {
     return `
-    import json
-    from panel import state
-    doc = state.cache['${msg.id}']
-    doc.apply_json_patch(json.loads('${msg.patch}'))`
+import json
+from panel import state
+doc = state.cache['output-${msg.id}']
+doc.apply_json_patch(json.loads('${msg.patch}'))`
 }
 
 const MESSAGES = {
   patch: patch_code,
   execute: exec_code,
-  rendered: sync_code
+  rendered: onload_code
 }
 
 self.onmessage = async (event) => {
@@ -157,9 +136,9 @@ self.onmessage = async (event) => {
     const deps = await self.pyodide.runPythonAsync(autodetect_deps_code(msg))
     for (const pkg of JSON.parse(deps)) {
       self.postMessage({
-	type: 'loading',
-	msg: `Loading ${pkg}`,
-	id: msg.id
+        type: 'loading',
+        msg: `Loading ${pkg}`,
+        id: msg.id
       });
       await self.pyodide.runPythonAsync(`micropip.install('${pkg}')`)
     }
@@ -167,12 +146,30 @@ self.onmessage = async (event) => {
   {% endif %}
   
   try {
-    const out = await self.pyodide.runPythonAsync(MESSAGES[msg.type](msg))
-    if (out != null) {
+    let out = await self.pyodide.runPythonAsync(MESSAGES[msg.type](msg))
+    if (out == null) {
+      out = new Map()
+    }
+    if (out.has('content')) {
       self.postMessage({
-	type: 'render',
-	id: msg.id,
-	out: out
+        type: 'render',
+        id: msg.id,
+        content: out.get('content'),
+        mime: out.get('mime_type')
+      });
+    }
+    if (out.has('stdout') && out.get('stdout').length) {
+      self.postMessage({
+        type: 'stdout',
+        content: out.get('stdout'),
+        id: msg.id
+      });
+    }
+    if (out.has('stderr') && out.get('stderr').length) {
+      self.postMessage({
+        type: 'stderr',
+        content: out.get('stderr'),
+        id: msg.id
       });
     }
     self.postMessage({
@@ -190,5 +187,6 @@ self.onmessage = async (event) => {
       id: msg.id
     });
     resolveExecution()
+    throw(e)
   }
 }
