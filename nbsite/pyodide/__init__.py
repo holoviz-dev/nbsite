@@ -150,7 +150,6 @@ def setup(app):
 
     app.add_directive('pyodide', PyodideDirective)
 
-
     return {
         'version': '0.5',
         'parallel_read_safe': True,
