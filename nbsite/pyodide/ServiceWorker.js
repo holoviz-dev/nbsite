@@ -20,7 +20,7 @@ self.addEventListener('activate', (event) => {
       if (cacheName.startsWith(appName) && cacheName !== appCache) {
         return caches.delete(cacheName);
       }
-    })x
+    })
   );
   return self.clients.claim();
 });
