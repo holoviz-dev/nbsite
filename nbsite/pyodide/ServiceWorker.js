@@ -15,13 +15,16 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.forEach((cache, cacheName) => {
-      if (cacheName.startsWith(appName) && cacheName !== appCache) {
-        return caches.delete(cacheName);
+  console.log('[Service Worker] Activating');
+  event.waitUntil((async() => {
+    const cacheNames = await caches.keys();
+    for (const cacheName of cacheNames) {
+      if (cacheName.startsWith(appName) && cacheName !== appCacheName) {
+	console.log(`[Service Worker] Delete old cache ${cacheName}`);
+        caches.delete(cacheName);
       }
-    })
-  );
+    }
+  })());
   return self.clients.claim();
 });
 
@@ -33,16 +36,17 @@ self.addEventListener('fetch', (e) => {
       break
     }
   }
-  if (enableCache) {
-    e.respondWith((async () => {
-      const cache = await caches.open(appCacheName);
-      let response = await cache.match(e.request);
-      console.log(`[Service Worker] Fetching resource: ${e.request.url}`);
-      if (response) { return response; }
-      response = await fetch(e.request);
-      console.log(`[Service Worker] Caching new resource: ${e.request.url}`);
-      cache.put(e.request, response.clone());
-      return response;
-    })());
+  if (!enableCache) {
+    return
   }
+  e.respondWith((async () => {
+    const cache = await caches.open(appCacheName);
+    let response = await cache.match(e.request);
+    console.log(`[Service Worker] Fetching resource: ${e.request.url}`);
+    if (response) { return response; }
+    response = await fetch(e.request);
+    console.log(`[Service Worker] Caching new resource: ${e.request.url}`);
+    cache.put(e.request, response.clone());
+    return response;
+  })());
 });

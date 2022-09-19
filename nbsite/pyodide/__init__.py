@@ -7,6 +7,9 @@ from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader
 from sphinx.application import Sphinx
 
+from panel.io.convert import (
+    BOKEH_VERSION, JS_VERSION as PN_JS_VERSION, PY_VERSION as PN_PY_VERSION
+)
 
 HERE = Path(__file__).parent
 
@@ -31,10 +34,10 @@ DEFAULT_PYODIDE_CONF = {
     'enable_pwa': True,
     'requirements': ['panel', 'pandas'],
     'scripts': [
-        'https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js',
-        'https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js',
-        'https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.3.min.js',
-        'https://unpkg.com/@holoviz/panel@0.14.0-a.16/dist/panel.min.js'
+        f'https://cdn.bokeh.org/bokeh/release/bokeh-{BOKEH_VERSION}.min.js',
+        f'https://cdn.bokeh.org/bokeh/release/bokeh-widgets-{BOKEH_VERSION}.min.js',
+        f'https://cdn.bokeh.org/bokeh/release/bokeh-tables-{BOKEH_VERSION}.min.js',
+        f'https://unpkg.com/@holoviz/panel@{PN_JS_VERSION}/dist/panel.min.js'
     ],
     'cache_patterns': [
         'https://cdn.bokeh.org/bokeh/',
