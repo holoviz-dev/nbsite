@@ -173,7 +173,18 @@ class PyodideDirective(Directive):
         if mime_type == 'text/plain':
             output = f'<pre>{output}</pre>'
         elif mime_type == 'application/bokeh':
-            script = f"<script>async function embed () {{ await Bokeh.embed.embed_item({output}) }}; embed();</script>"
+            script = f"""
+            <script>
+              async function embed_bokeh () {{
+                if (window.Bokeh && window.Bokeh.Panel) {{
+                  await Bokeh.embed.embed_item({output}) 
+                }} else {{
+                   setTimeout(embed_bokeh, 200) 
+                }}
+              }};
+              embed_bokeh()
+            </script>
+            """
             output = ""
         else:
             output = f'<div class="pyodide-output-wrapper">{output}</div>'
