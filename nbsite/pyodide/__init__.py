@@ -175,14 +175,14 @@ class PyodideDirective(Directive):
         elif mime_type == 'application/bokeh':
             script = f"""
             <script>
-              async function embed_bokeh () {{
+              async function embed_bokeh_{self._current_count} () {{
                 if (window.Bokeh && window.Bokeh.Panel) {{
                   await Bokeh.embed.embed_item({output}) 
                 }} else {{
-                   setTimeout(embed_bokeh, 200) 
+                   setTimeout(embed_bokeh_{self._current_count}, 200) 
                 }}
               }};
-              embed_bokeh()
+              embed_bokeh_{self._current_count}()
             </script>
             """
             output = ""
