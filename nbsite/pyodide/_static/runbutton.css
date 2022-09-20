@@ -100,6 +100,10 @@ button.runbtn svg.pyodide-loading-icon {
     margin: 1em 0;
 }
 
+.pyodide-output-wrapper {
+    margin-left: 0.5em;
+}
+
 .pyodide-stderr {
     background-color: rgba(194, 103, 103, 0.35);
     border: indianred solid 1px;
@@ -108,4 +112,14 @@ button.runbtn svg.pyodide-loading-icon {
 
 .pyodide-stdout {
     display: none
+}
+
+.pyodide-output.embedded {
+    border-left: 0.5em solid darkgoldenrod;
+    border-radius: 0.4em;
+}
+
+.pyodide-output.live {
+    border-left: 0.5em solid green;
+    border-radius: 0.5em;
 }

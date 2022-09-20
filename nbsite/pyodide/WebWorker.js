@@ -1,6 +1,6 @@
 importScripts("{{ PYODIDE_URL }}");
 
-let EXECUTING = null;
+const QUEUE = [];
 
 function sendPatch(patch, buffers, cell_id) {
   self.postMessage({
@@ -18,10 +18,10 @@ function sendStdout(cell_id, stdout) {
     id: cell_id
   })
 }
-function sendStderr(cell_id, stdout) {
+function sendStderr(cell_id, stderr) {
   self.postMessage({
     type: 'stderr',
-    content: stdout,
+    content: stderr,
     id: cell_id
   })
 }
@@ -36,7 +36,7 @@ async function loadApplication(cell_id) {
   await self.pyodide.loadPackage("micropip");
   const packages = [{{ env_spec }}];
   await self.pyodide.runPythonAsync("{{ setup_code }}")
-  await self.pyodide.runPythonAsync("import micropip")
+  self.pyodide.runPython("import micropip")
   for (const pkg of packages) {
     self.postMessage({
       type: 'loading',
@@ -61,6 +61,7 @@ function exec_code(msg) {
    return `
 from functools import partial
 from panel.io.pyodide import pyrender
+from js import console
 
 code = """\n${msg.code}"""
 stdout_cb = partial(sendStdout, '${msg.id}')
@@ -93,22 +94,24 @@ const MESSAGES = {
 }
 
 self.onmessage = async (event) => {
-  const msg = event.data
+  let resolveExecution, rejectExecution;
+   const executing = new Promise(function(resolve, reject){
+    resolveExecution = resolve;
+    rejectExecution = reject;
+  });
+  
+  const prev_msg = QUEUE[0]
+  const msg = {...event.data, executing}
+  QUEUE.unshift(msg)
 
-  if (EXECUTING != null) {
+  if (prev_msg) {
     self.postMessage({
       type: 'loading',
       msg: 'Awaiting previous cells',
       id: msg.id
     });
-    await EXECUTING
+    await prev_msg.executing
   }
-
-  let resolveExecution, rejectExecution;
-  EXECUTING = new Promise(function(resolve, reject){
-    resolveExecution = resolve;
-    rejectExecution = reject;
-  });
 
   // Init pyodide
   if (self.pyodide == null) {
@@ -133,20 +136,21 @@ self.onmessage = async (event) => {
 
   {% if autodetect_deps %}
   if (msg.type === 'execute') {
-    const deps = await self.pyodide.runPythonAsync(autodetect_deps_code(msg))
+    const deps = self.pyodide.runPython(autodetect_deps_code(msg))
     for (const pkg of JSON.parse(deps)) {
       self.postMessage({
         type: 'loading',
         msg: `Loading ${pkg}`,
         id: msg.id
       });
-      await self.pyodide.runPythonAsync(`micropip.install('${pkg}')`)
+      await self.pyodide.runPythonAsync(`await micropip.install('${pkg}')`)
     }
   }
   {% endif %}
   
   try {
     let out = await self.pyodide.runPythonAsync(MESSAGES[msg.type](msg))
+    resolveExecution()
     if (out == null) {
       out = new Map()
     }
@@ -176,7 +180,6 @@ self.onmessage = async (event) => {
       type: 'idle',
       id: msg.id
     });
-    resolveExecution()
   } catch (e) {
     const traceback = `${e}`
     const tblines = traceback.split('\n')

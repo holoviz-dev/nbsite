@@ -1,7 +1,5 @@
 const pyodideWorker = new Worker(DOCUMENTATION_OPTIONS.URL_ROOT + '_static/PyodideWebWorker.js');
 
-let BOKEH_LOADING = false;
-
 pyodideWorker.documents = {}
 
 function send_change(jsdoc, doc_id, event) {
@@ -27,10 +25,6 @@ pyodideWorker.onmessage = async (event) => {
   if (msg.type === 'loading') {
     _ChangeTooltip(button, msg.msg)
     _ChangeIcon(button, iconLoading)
-    if ((window.Bokeh === undefined || window.Bokeh.Panel === undefined) && !BOKEH_LOADING) {
-      BOKEH_LOADING = true
-      loadScripts({{ scripts }})
-    }
   } else if (msg.type === 'loaded') {
     _ChangeTooltip(button, 'Executing code')
   } else if (msg.type === 'error') {
@@ -48,6 +42,8 @@ pyodideWorker.onmessage = async (event) => {
     stderr.style.display = 'block';
     stderr.innerText += msg.content
   } else if (msg.type === 'render') {
+    output.style.display = 'block';
+    output.setAttribute('class', 'pyodide-output live')
     if (msg.mime === 'application/bokeh') {
       const [view] = await Bokeh.embed.embed_item(JSON.parse(msg.content))
 
@@ -56,9 +52,8 @@ pyodideWorker.onmessage = async (event) => {
       jsdoc.on_change(send_change.bind(null, jsdoc, msg.id), false)
     } else if (msg.mime === 'text/plain') {
       output.innerHTML = `<pre>${msg.content}</pre>`;
-      output.setAttribute('class', 'highlight pyodide-output')
     } else if (msg.mime === 'text/html') {
-      output.innerHTML = msg.content
+      output.innerHTML = `<div class="pyodide-output-wrapper">${msg.content}</div>`
     }
     pyodideWorker.postMessage({type: 'rendered', id: msg.id, mime: msg.mime})
   } else if (msg.type === 'patch') {

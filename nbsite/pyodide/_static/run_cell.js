@@ -39,7 +39,7 @@ const _runWhenDOMLoaded = cb => {
   }
 }
 
-const _codeCellId = index => `codecell${index}`
+const _codeCellId = index => `codecell${index}-py`
 
 // Changes tooltip text for two seconds, then changes it back
 const _ChangeTooltip = (el, newText) => {
@@ -62,26 +62,19 @@ function executeCell(id) {
     stdout.setAttribute('id', `stdout-${id}`)
     stdout.setAttribute('class', 'pyodide-stdout')
     cell.parentElement.parentElement.appendChild(stdout)
-  } else {
-    stdout.innerHTML = ''
   }
   if (stderr == null) {
     stderr = document.createElement('pre');
     stderr.setAttribute('id', `stderr-${id}`)
     stderr.setAttribute('class', 'pyodide-stderr')
     cell.parentElement.parentElement.appendChild(stderr)
-  } else {
-    stderr.innerHTML = ''
   }
   if (output == null) {
     output = document.createElement('div');
     output.setAttribute('id', `output-${id}`)
     output.setAttribute('class', 'pyodide-output')
     cell.parentElement.parentElement.appendChild(output)
-  } else {
-    output.innerHTML = ''
   }
-  
   window.pyodideWorker.postMessage({
     type: 'execute',
     id: id,
@@ -100,14 +93,14 @@ const _addRunButtonToCodeCells = () => {
   }
 
   // Add copybuttons to all of our code cells
-  const RUNBUTTON_SELECTOR = 'div.highlight pre';
+  const RUNBUTTON_SELECTOR = 'div.pyodide div.highlight pre';
   const codeCells = document.querySelectorAll(RUNBUTTON_SELECTOR)
   codeCells.forEach((codeCell, index) => {
-    const cell = codeCell.parentElement.parentElement
-    if (!cell.classList.contains('pyodide')) {
-      return
-    }
     const id = _codeCellId(index)
+    const copybtn = codeCell.parentElement.getElementsByClassName('copybtn')
+    if (copybtn.length) {
+      copybtn[0].setAttribute('data-clipboard-target', `#${id}`)
+    }
     codeCell.setAttribute('id', id)
     codeCell.setAttribute('executed', false)
 
@@ -119,17 +112,32 @@ const _addRunButtonToCodeCells = () => {
     const run_button = document.getElementById(`button-${id}`)
     run_button.addEventListener('click', (e) => {
       if (!ACCEPTED) {
-	_ChangeTooltip(e.currentTarget, 'Executing this cell will download Python runtime (typically 80+ MB). Click again to proceed.')
-	_ChangeIcon(e.currentTarget, iconAlert)
-	ACCEPTED = true
-	return
+        _ChangeTooltip(e.currentTarget, 'Executing this cell will download Python runtime (typically 80+ MB). Click again to proceed.')
+        _ChangeIcon(e.currentTarget, iconAlert)
+        ACCEPTED = true
+        return
       }
       for (let i=0; i<=index; i++) {
-	let cell_id = _codeCellId(i)
-	let cell = document.getElementById(cell_id)
-	if (cell.getAttribute('executed') == 'false' || i == index) {
+        let cell_id = _codeCellId(i)
+        let cell = document.getElementById(cell_id)
+        const output = document.getElementById(`output-${cell_id}`)
+        const stdout = document.getElementById(`stdout-${cell_id}`)
+        const stderr = document.getElementById(`stderr-${cell_id}`)
+        if (cell.getAttribute('executed') == 'false' || i == index) {
+          if (output) {
+            output.innerHTML = '';
+            output.style.display = 'none';
+          }
+          if (stdout) {
+            stdout.innerHTML = '';
+            stdout.style.display = 'none';
+          }
+	  if (stderr) {
+            stderr.innerHTML = '';
+            stderr.style.display = 'none';
+          }
 	  executeCell(cell_id)
-	}
+        }
       }
     })
   })
