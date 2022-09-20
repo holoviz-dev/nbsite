@@ -98,6 +98,7 @@ button.runbtn svg.pyodide-loading-icon {
 
 .pyodide-output {
     margin: 1em 0;
+    overflow-x: auto;
 }
 
 .pyodide-output-wrapper {
