@@ -72,19 +72,33 @@ pyrender(code, stdout_cb, stderr_cb, target)`
 
 function onload_code(msg) {
   return `
+import pyodide
+from panel import state
+from bokeh.protocol.messages.patch_doc import process_document_events
+
 if '${msg.mime}' == 'application/bokeh':
-    from panel import state
-    from panel.io.pyodide import _link_docs_worker
     doc = state.cache['output-${msg.id}']
-    _link_docs_worker(doc, sendPatch, '${msg.id}')`
-}
+    def pysync(event):
+        if event.setter == 'js':
+            return
+        json_patch, buffers = process_document_events([event], use_buffers=True)
+        buffer_map = {}
+        for (ref, buffer) in buffers:
+            buffer_map[ref['id']] = pyodide.to_js(buffer).buffer
+        sendPatch(json_patch, pyodide.ffi.to_js(buffer_map), '${msg.id}')
+
+    doc.on_change(pysync)
+    doc.callbacks.trigger_json_event(
+        {'event_name': 'document_ready', 'event_values': {}}
+    )
+`}
 
 function patch_code(msg) {
     return `
 import json
 from panel import state
 doc = state.cache['output-${msg.id}']
-doc.apply_json_patch(json.loads('${msg.patch}'))`
+doc.apply_json_patch(json.loads('${msg.patch}'), setter='js')`
 }
 
 const MESSAGES = {
@@ -131,6 +145,10 @@ self.onmessage = async (event) => {
   if (!MESSAGES.hasOwnProperty(msg.type)) {
     console.warn(`Service worker received unknown message type '${msg.type}'.`)
     resolveExecution()
+    self.postMessage({
+      type: 'idle',
+      id: msg.id
+    });
     return
   }
 
@@ -178,7 +196,8 @@ self.onmessage = async (event) => {
     }
     self.postMessage({
       type: 'idle',
-      id: msg.id
+      id: msg.id,
+      uuid: msg.uuid
     });
   } catch (e) {
     const traceback = `${e}`

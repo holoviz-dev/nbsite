@@ -43,15 +43,16 @@ DEFAULT_PYODIDE_CONF = {
     'autodetect_deps': True,
     'enable_pwa': True,
     'requirements': ['panel', 'pandas'],
+    'precache': [],
     'scripts': [
         f'https://cdn.bokeh.org/bokeh/release/bokeh-{BOKEH_VERSION}.min.js',
         f'https://cdn.bokeh.org/bokeh/release/bokeh-widgets-{BOKEH_VERSION}.min.js',
         f'https://cdn.bokeh.org/bokeh/release/bokeh-tables-{BOKEH_VERSION}.min.js',
-        f'https://unpkg.com/@holoviz/panel@{PN_JS_VERSION}/dist/panel.min.js'
+        f'https://cdn.holoviz.org/panel/{PN_JS_VERSION}/dist/panel.min.js'
     ],
     'cache_patterns': [
         'https://cdn.bokeh.org/bokeh/',
-        'https://unpkg.com/@holoviz/',
+        'https://cdn.holoviz.org/panel/',
         'https://cdn.jsdelivr.net/pyodide/',
         'https://files.pythonhosted.org/packages/',
         'https://pypi.org/pypi/'
@@ -179,7 +180,7 @@ class PyodideDirective(Directive):
                 if (window.Bokeh && window.Bokeh.Panel) {{
                   await Bokeh.embed.embed_item({output}) 
                 }} else {{
-                   setTimeout(embed_bokeh_{self._current_count}, 200) 
+                   setTimeout(embed_bokeh_{self._current_count}, 200)
                 }}
               }};
               embed_bokeh_{self._current_count}()
@@ -221,7 +222,7 @@ def write_worker(app: Sphinx, exc):
     service_worker = SERVICE_WORKER_TEMPLATE.render({
         'project': app.config.project,
         'version': app.config.version,
-        'pre_cache': ', '.join([repr(req) for req in pyodide_conf['scripts']]),
+        'pre_cache': ', '.join([repr(req) for req in pyodide_conf['precache']]),
         'cache_patterns': ', '.join([repr(req) for req in pyodide_conf['cache_patterns']])
     })
     with open(builddir / 'PyodideServiceWorker.js', 'w') as f:

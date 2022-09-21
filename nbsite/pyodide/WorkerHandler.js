@@ -1,12 +1,36 @@
 const pyodideWorker = new Worker(DOCUMENTATION_OPTIONS.URL_ROOT + '_static/PyodideWebWorker.js');
 
 pyodideWorker.documents = {}
+pyodideWorker.busy = false
+pyodideWorker.queues = new Map()
+
+function uid() {
+  return String(
+    Date.now().toString(32) +
+      Math.random().toString(16)
+  ).replace(/\./g, '')
+}
 
 function send_change(jsdoc, doc_id, event) {
-  if (event.setter_id != null)
+  if (event.setter_id == 'py') {
     return
+  } else if (pyodideWorker.busy && event.model && event.attr) {
+    let events = []
+    if (pyodideWorker.queues.has(doc_id)) {
+      for (const old_event of pyodideWorker.queues.get(doc_id)) {
+        if (!(old_event.model === event.model && old_event.attr === event.attr)) {
+          events.push(old_event)
+        }
+      }
+    }
+    events.push(event)
+    pyodideWorker.queues.set(doc_id, events)
+    return
+  }
   const patch = jsdoc.create_json_patch_string([event])
-  pyodideWorker.postMessage({type: 'patch', patch: patch, id: doc_id})
+  const uuid = uid()
+  pyodideWorker.busy = uuid
+  pyodideWorker.postMessage({type: 'patch', patch: patch, id: doc_id, uuid})
 }
 
 function loadScripts(scripts) {
@@ -22,6 +46,20 @@ pyodideWorker.onmessage = async (event) => {
   const stdout = document.getElementById(`stdout-${event.data.id}`)
   const stderr = document.getElementById(`stderr-${event.data.id}`)
   const msg = event.data;
+
+  if (msg.uuid == pyodideWorker.busy) {
+    if (pyodideWorker.queues.size) {
+      const [msg_id, events] = pyodideWorker.queues.entries().next().value
+      const patch = pyodideWorker.documents[msg_id].create_json_patch_string(events)
+      const uuid = uid()
+      pyodideWorker.busy = uuid
+      pyodideWorker.postMessage({type: 'patch', patch: patch, id: msg_id, uuid})
+      pyodideWorker.queues.delete(msg_id)
+    } else {
+      pyodideWorker.busy = false
+    }
+  }
+
   if (msg.type === 'loading') {
     _ChangeTooltip(button, msg.msg)
     _ChangeIcon(button, iconLoading)
@@ -57,7 +95,7 @@ pyodideWorker.onmessage = async (event) => {
     }
     pyodideWorker.postMessage({type: 'rendered', id: msg.id, mime: msg.mime})
   } else if (msg.type === 'patch') {
-    pyodideWorker.documents[msg.id].apply_json_patch(JSON.parse(msg.patch), msg.buffers, setter_id='js')
+    pyodideWorker.documents[msg.id].apply_json_patch(JSON.parse(msg.patch), msg.buffers, setter_id='py')
   }
 };
 
