@@ -33,13 +33,6 @@ function send_change(jsdoc, doc_id, event) {
   pyodideWorker.postMessage({type: 'patch', patch: patch, id: doc_id, uuid})
 }
 
-function loadScripts(scripts) {
-  console.log(scripts)
-  return scripts.reduce(function(cur, next){ 
-    return cur.then($.getScript.bind($, next));
-  }, $.when());
-}
-
 pyodideWorker.onmessage = async (event) => {
   const button = document.getElementById(`button-${event.data.id}`)
   const output = document.getElementById(`output-${event.data.id}`)

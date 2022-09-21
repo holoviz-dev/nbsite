@@ -15,9 +15,10 @@ from bokeh.document import Document
 from bokeh.embed.util import standalone_docs_json_and_render_items
 from bokeh.model import Model
 from panel.io.convert import (
-    BOKEH_VERSION, JS_VERSION as PN_JS_VERSION, PY_VERSION as PN_PY_VERSION
+    BOKEH_VERSION, PY_VERSION as PN_PY_VERSION
 )
 from panel.io.mime_render import exec_with_return, format_mime
+from panel.io.resources import CDN_DIST
 from panel.pane import panel as as_panel
 from panel.viewable import Viewable, Viewer
 
@@ -48,11 +49,11 @@ DEFAULT_PYODIDE_CONF = {
         f'https://cdn.bokeh.org/bokeh/release/bokeh-{BOKEH_VERSION}.min.js',
         f'https://cdn.bokeh.org/bokeh/release/bokeh-widgets-{BOKEH_VERSION}.min.js',
         f'https://cdn.bokeh.org/bokeh/release/bokeh-tables-{BOKEH_VERSION}.min.js',
-        f'https://cdn.holoviz.org/panel/{PN_JS_VERSION}/dist/panel.min.js'
+        f'{CDN_DIST}panel.min.js'
     ],
     'cache_patterns': [
+        CDN_DIST,
         'https://cdn.bokeh.org/bokeh/',
-        'https://cdn.holoviz.org/panel/',
         'https://cdn.jsdelivr.net/pyodide/',
         'https://files.pythonhosted.org/packages/',
         'https://pypi.org/pypi/'
