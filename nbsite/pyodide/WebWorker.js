@@ -51,19 +51,22 @@ async function loadApplication(cell_id) {
 }
 
 function autodetect_deps_code(msg) {
+  const escaped = msg.code.replace(/"""/g, '\\"\\"\\"');
   return `
 import json
 from panel.io.convert import find_imports
-json.dumps(find_imports("""${msg.code}"""))`
+code = r"""\n${escaped}""".replace(r'\\"\\"\\"', '"""')
+json.dumps(find_imports(code))`
 }
 
 function exec_code(msg) {
-   return `
+  const escaped = msg.code.replace(/"""/g, '\\"\\"\\"');
+  return `
 from functools import partial
 from panel.io.pyodide import pyrender
 from js import console
 
-code = """\n${msg.code}"""
+code = r"""\n${escaped}""".replace(r'\\"\\"\\"', '"""')
 stdout_cb = partial(sendStdout, '${msg.id}')
 stderr_cb = partial(sendStderr, '${msg.id}')
 target = 'output-${msg.id}'
@@ -72,25 +75,11 @@ pyrender(code, stdout_cb, stderr_cb, target)`
 
 function onload_code(msg) {
   return `
-import pyodide
-from panel import state
-from bokeh.protocol.messages.patch_doc import process_document_events
-
 if '${msg.mime}' == 'application/bokeh':
+    from panel.io.pyodide import _link_docs_worker
+    from panel.io.state import state
     doc = state.cache['output-${msg.id}']
-    def pysync(event):
-        if event.setter == 'js':
-            return
-        json_patch, buffers = process_document_events([event], use_buffers=True)
-        buffer_map = {}
-        for (ref, buffer) in buffers:
-            buffer_map[ref['id']] = pyodide.to_js(buffer).buffer
-        sendPatch(json_patch, pyodide.ffi.to_js(buffer_map), '${msg.id}')
-
-    doc.on_change(pysync)
-    doc.callbacks.trigger_json_event(
-        {'event_name': 'document_ready', 'event_values': {}}
-    )
+    _link_docs_worker(doc, sendPatch, '${msg.id}', 'js')
 `}
 
 function patch_code(msg) {
@@ -154,14 +143,24 @@ self.onmessage = async (event) => {
 
   {% if autodetect_deps %}
   if (msg.type === 'execute') {
-    const deps = self.pyodide.runPython(autodetect_deps_code(msg))
+    let deps
+    try {
+      deps = self.pyodide.runPython(autodetect_deps_code(msg))
+    } catch(e) {
+      deps = '[]'
+      console.warn(`Auto-detection of dependencies failed with error: ${e}`)
+    }
     for (const pkg of JSON.parse(deps)) {
       self.postMessage({
         type: 'loading',
         msg: `Loading ${pkg}`,
         id: msg.id
       });
-      await self.pyodide.runPythonAsync(`await micropip.install('${pkg}')`)
+      try {
+	await self.pyodide.runPythonAsync(`await micropip.install('${pkg}')`)
+      } catch(e) {
+	console.log(`Auto-detected dependency ${pkg} could not be installed.`)
+      }
     }
   }
   {% endif %}

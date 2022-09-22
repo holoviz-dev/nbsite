@@ -67,11 +67,11 @@ pyodideWorker.onmessage = async (event) => {
   } else if (msg.type === 'stdout') {
     const stdout = document.getElementById(`stdout-${msg.id}`)
     stdout.style.display = 'block';
-    stdout.innerText += msg.content
+    stdout.innerHTML += msg.content
   } else if (msg.type === 'stderr') {
     const stderr = document.getElementById(`stderr-${msg.id}`)
     stderr.style.display = 'block';
-    stderr.innerText += msg.content
+    stderr.innerHTML += msg.content
   } else if (msg.type === 'render') {
     output.style.display = 'block';
     output.setAttribute('class', 'pyodide-output live')
