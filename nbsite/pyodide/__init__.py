@@ -23,6 +23,7 @@ from panel.io.convert import (
 from panel.io.mime_render import exec_with_return, format_mime
 from panel.io.resources import CDN_DIST
 from panel.pane import panel as as_panel
+from panel.util import is_holoviews
 from panel.viewable import Viewable, Viewer
 
 HERE = Path(__file__).parent
@@ -153,7 +154,7 @@ class PyodideDirective(Directive):
             stdout = io.StringIO()
             stderr = io.StringIO()
             out = exec_with_return(msg['code'], stdout=stdout, stderr=stderr)
-            if isinstance(out, (Model, Viewable, Viewer)):
+            if isinstance(out, (Model, Viewable, Viewer)) or is_holoviews(out):
                 _, content = _model_json(as_panel(out), msg['target'])
                 mime_type = 'application/bokeh'
             elif out is not None:
