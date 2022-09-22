@@ -1,7 +1,10 @@
+import importlib
 import io
 import json
+import re
 import time
 
+from collections import defaultdict
 from html import escape
 from multiprocessing import Process
 from multiprocessing.connection import Client, Listener
@@ -17,6 +20,7 @@ from sphinx.application import Sphinx
 from bokeh.document import Document
 from bokeh.embed.util import standalone_docs_json_and_render_items
 from bokeh.model import Model
+from panel.config import panel_extension
 from panel.io.convert import (
     BOKEH_VERSION, PY_VERSION as PN_PY_VERSION
 )
@@ -64,6 +68,29 @@ DEFAULT_PYODIDE_CONF = {
     ],
     'setup_code': ""
 }
+
+EXTRA_RESOURCES = defaultdict(lambda: {'js': [], 'css': []})
+
+def extract_extensions(code: str) -> List[str]:
+    """
+    Extracts JS and CSS dependencies of Panel extensions from code snippets
+    containing pn.extension calls.
+    """
+    ext_args = re.findall(r'pn.extension\((.*)\)', code)
+    if not ext_args:
+        return [], []
+    extensions = re.findall(r"(?<!=)\s*['\"](.*?)['\"]", ext_args[0])
+    prev_models = dict(Model.model_class_reverse_map)
+    for ext in extensions:
+        if ext not in panel_extension._imports:
+            continue
+        importlib.import_module(panel_extension._imports[ext])
+    js, css = [], []
+    for name, model in Model.model_class_reverse_map.items():
+        if name not in prev_models:
+            js += model.__javascript__
+            css += model.__css__
+    return js, css
 
 def _model_json(model: Model, target: str) -> Tuple[Document, str]:
     """
@@ -153,7 +180,9 @@ class PyodideDirective(Directive):
                 continue
             stdout = io.StringIO()
             stderr = io.StringIO()
-            out = exec_with_return(msg['code'], stdout=stdout, stderr=stderr)
+            code = msg['code']
+            js, css = extract_extensions(code)
+            out = exec_with_return(code, stdout=stdout, stderr=stderr)
             if isinstance(out, (Model, Viewable, Viewer)) or is_holoviews(out):
                 _, content = _model_json(as_panel(out), msg['target'])
                 mime_type = 'application/bokeh'
@@ -161,7 +190,7 @@ class PyodideDirective(Directive):
                 content, mime_type = format_mime(out)
             else:
                 content, mime_type = None, None
-            client.send((content, mime_type, stdout.getvalue(), stderr.getvalue()))
+            client.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, css))
         client.close()
 
     @classmethod
@@ -219,7 +248,9 @@ class PyodideDirective(Directive):
 
         # Send execution request to client and wait for result
         self._client.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
-        output, mime_type, stdout, stderr = self._conn.recv()
+        output, mime_type, stdout, stderr, js, css = self._conn.recv()
+        EXTRA_RESOURCES[current_source]['js'] += js
+        EXTRA_RESOURCES[current_source]['css'] += css
 
         stdout_style = 'style="display: block;"' if stdout else ''
         stdout_html = f'<pre id="stdout-{cellid}" class="pyodide-stdout" {stdout_style}>{escape(stdout)}</pre>'
@@ -333,6 +364,17 @@ def html_page_context(
             <link rel="manifest" href="{relpath}site.webmanifest"/>
             """
 
+    # Add additional resources extracted from pn.extension calls
+    sourcename = context['sourcename'].replace('.txt', '')
+    extra_resources = [
+        (r['js'], r['css']) for filename, r in EXTRA_RESOURCES.items()
+        if filename.endswith(sourcename)
+    ]
+    if extra_resources:
+        extra_js, extra_css = extra_resources[0]
+        context["script_files"] += extra_js
+        context["css_files"] += extra_css
+
     # Remove Scripts and CSS from page if no pyodide cells are found.
     if any(
         'pyodide' in cb.attributes.get('classes', [])
@@ -345,6 +387,7 @@ def html_page_context(
         app.config.nbsite_pyodide_conf['scripts'] +
         ['_static/run_cell.js', '_static/WorkerHandler.js', '_static/ServiceHandler.js']
     )
+
     context["script_files"] = [
         ii for ii in context["script_files"]
         if ii not in pyodide_scripts
@@ -355,6 +398,7 @@ def html_page_context(
         ii for ii in context["css_files"]
         if ii not in ['_static/runbutton.css']
     ]
+
 
 def setup(app):
     """Setup sphinx-gallery sphinx extension"""
