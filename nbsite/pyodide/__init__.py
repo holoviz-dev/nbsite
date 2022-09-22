@@ -1,7 +1,10 @@
 import io
 import json
+import time
 
 from html import escape
+from multiprocessing import Process
+from multiprocessing.connection import Client, Listener
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
@@ -120,25 +123,88 @@ class PyodideDirective(Directive):
     _current_source = None
     _current_context = {}
     _current_count = 0
+    _current_process = None
+    _client = None
+    _listener = None
+    _conn = None
+    _send_address = ('localhost', 6001)
+    _rcv_address = ('localhost', 6002)
+    _password = b'pyodide'
 
-    def _exec_and_render(self, code, target):
-        stdout = io.StringIO()
-        stderr = io.StringIO()
-        out = exec_with_return(code, stdout=stdout, stderr=stderr)
-        if isinstance(out, (Model, Viewable, Viewer)):
-            _, content = _model_json(as_panel(out), target)
-            mime_type = 'application/bokeh'
-        elif out is not None:
-            content, mime_type = format_mime(out)
-        else:
-            content, mime_type = None, None
-        return content, mime_type, stdout.getvalue(), stderr.getvalue()
+
+    @classmethod
+    def _execution_process(cls):
+        """
+        Process execution loop to run in separate process that is used
+        to evaluate code.
+        """
+        listener = Listener(cls._send_address, authkey=cls._password)
+        conn = listener.accept()
+        while True:
+            msg = conn.recv()
+            if msg['type'] == 'close':
+                conn.close()
+                break
+            elif msg['type'] == 'open':
+                client = Client(cls._rcv_address, authkey=cls._password)
+                continue
+            elif msg['type'] != 'execute':
+                continue
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            out = exec_with_return(msg['code'], stdout=stdout, stderr=stderr)
+            if isinstance(out, (Model, Viewable, Viewer)):
+                _, content = _model_json(as_panel(out), msg['target'])
+                mime_type = 'application/bokeh'
+            elif out is not None:
+                content, mime_type = format_mime(out)
+            else:
+                content, mime_type = None, None
+            client.send((content, mime_type, stdout.getvalue(), stderr.getvalue()))
+        client.close()
+
+    @classmethod
+    def terminate(cls, *args):
+        """
+        Terminates a running process.
+        """
+        if not cls._current_process:
+            return
+
+        PyodideDirective._listener = None
+        PyodideDirective._conn = None
+        cls._current_process.terminate()
+
+    @classmethod
+    def _launch_process(cls, timeout=5):
+        """
+        Launches a process to execute code in.
+        """
+        cls.terminate()
+        cls._current_process = Process(target=cls._execution_process)
+        cls._current_process.start()
+        start_time = time.monotonic()
+        while time.monotonic() < (start_time+5):
+            time.sleep(1)
+            try:
+                cls._client = Client(cls._send_address, authkey=cls._password)
+                break
+            except Exception:
+                pass
+        cls._listener = Listener(cls._rcv_address, authkey=cls._password)
+        cls._client.send({'type': 'open'})
+        cls._conn = cls._listener.accept()
 
     def run(self):
+        current_source = self.state_machine.get_source()
+        if self._current_source != current_source:
+            PyodideDirective._current_count = 0
+            PyodideDirective._current_source = current_source
+            self._launch_process()
+
         classes = 'pyodide'
         if 'class' in self.options:
             classes += f" {self.options['class']}"
-
         self.options['class'] = [classes]
         self.options['id'] = cellid = f'codecell{self._current_count}-py'
         roles.set_classes(self.options)
@@ -146,18 +212,13 @@ class PyodideDirective(Directive):
         doctree_node = nodes.literal_block(code, code, **self.options)
         doctree_node['language'] = 'python'
 
+        PyodideDirective._current_count += 1
         if self.options.get('skip-embed'):
             return [doctree_node]
 
-        current_source = self.state_machine.get_source()
-
-        if self._current_source != current_source:
-            PyodideDirective._current_context = {}
-            PyodideDirective._current_count = 0
-            PyodideDirective._current_source = current_source
-        PyodideDirective._current_count += 1
-
-        output, mime_type, stdout, stderr = self._exec_and_render(code, f'output-{cellid}')
+        # Send execution request to client and wait for result
+        self._client.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
+        output, mime_type, stdout, stderr = self._conn.recv()
 
         stdout_style = 'style="display: block;"' if stdout else ''
         stdout_html = f'<pre id="stdout-{cellid}" class="pyodide-stdout" {stdout_style}>{escape(stdout)}</pre>'
@@ -179,7 +240,7 @@ class PyodideDirective(Directive):
             <script>
               async function embed_bokeh_{self._current_count} () {{
                 if (window.Bokeh && window.Bokeh.Panel) {{
-                  await Bokeh.embed.embed_item({output}) 
+                  await Bokeh.embed.embed_item({output})
                 }} else {{
                    setTimeout(embed_bokeh_{self._current_count}, 200)
                 }}
@@ -301,6 +362,7 @@ def setup(app):
     app.connect('builder-inited', init_conf)
     app.connect('build-finished', write_worker)
     app.connect('html-page-context', html_page_context)
+    app.connect('build-finished', PyodideDirective.terminate)
 
     app.add_directive('pyodide', PyodideDirective)
 
