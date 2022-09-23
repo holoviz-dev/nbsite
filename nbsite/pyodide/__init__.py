@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 from docutils import nodes
-from docutils.parsers.rst import directives, Directive, roles
+from docutils.parsers.rst import Directive, roles
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader
 from sphinx.application import Sphinx
@@ -155,8 +155,8 @@ class PyodideDirective(Directive):
     _client = None
     _listener = None
     _conn = None
-    _send_address = ('localhost', 6001)
-    _rcv_address = ('localhost', 6002)
+    _send_address = ('localhost', 33355)
+    _rcv_address = ('localhost', 33356)
     _password = b'pyodide'
 
 
@@ -192,6 +192,7 @@ class PyodideDirective(Directive):
                 content, mime_type = None, None
             client.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, css))
         client.close()
+        listener.close()
 
     @classmethod
     def terminate(cls, *args):
@@ -200,9 +201,10 @@ class PyodideDirective(Directive):
         """
         if not cls._current_process:
             return
-
-        PyodideDirective._listener = None
-        PyodideDirective._conn = None
+        cls._client.close()
+        cls._listener.close()
+        cls._listener = None
+        cls._conn = None
         cls._current_process.terminate()
 
     @classmethod
