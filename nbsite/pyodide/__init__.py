@@ -6,8 +6,7 @@ import time
 
 from collections import defaultdict
 from html import escape
-from multiprocessing import Process
-from multiprocessing.connection import Client, Listener
+from multiprocessing import Pipe, Process
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
@@ -161,28 +160,25 @@ class PyodideDirective(Directive):
 
 
     @classmethod
-    def _execution_process(cls):
+    def _execution_process(cls, pipe):
         """
         Process execution loop to run in separate process that is used
         to evaluate code.
         """
-        listener = Listener(cls._send_address, authkey=cls._password)
-        conn = listener.accept()
         while True:
-            msg = conn.recv()
+            msg = pipe.recv()
             if msg['type'] == 'close':
-                conn.close()
                 break
-            elif msg['type'] == 'open':
-                client = Client(cls._rcv_address, authkey=cls._password)
-                continue
             elif msg['type'] != 'execute':
                 continue
             stdout = io.StringIO()
             stderr = io.StringIO()
             code = msg['code']
             js, css = extract_extensions(code)
-            out = exec_with_return(code, stdout=stdout, stderr=stderr)
+            try:
+                out = exec_with_return(code, stdout=stdout, stderr=stderr)
+            except Exception as e:
+                out = None
             if isinstance(out, (Model, Viewable, Viewer)) or is_holoviews(out):
                 _, content = _model_json(as_panel(out), msg['target'])
                 mime_type = 'application/bokeh'
@@ -190,9 +186,8 @@ class PyodideDirective(Directive):
                 content, mime_type = format_mime(out)
             else:
                 content, mime_type = None, None
-            client.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, css))
-        client.close()
-        listener.close()
+            pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, css))
+        pipe.close()
 
     @classmethod
     def terminate(cls, *args):
@@ -201,11 +196,9 @@ class PyodideDirective(Directive):
         """
         if not cls._current_process:
             return
-        cls._client.close()
-        cls._listener.close()
-        cls._listener = None
-        cls._conn = None
-        cls._current_process.terminate()
+        cls._conn.send({'type': 'close'})
+        cls._current_process.join()
+        cls._current_process = None
 
     @classmethod
     def _launch_process(cls, timeout=5):
@@ -213,19 +206,9 @@ class PyodideDirective(Directive):
         Launches a process to execute code in.
         """
         cls.terminate()
-        cls._current_process = Process(target=cls._execution_process)
+        cls._conn, child_conn = Pipe()
+        cls._current_process = Process(target=cls._execution_process, args=(child_conn,))
         cls._current_process.start()
-        start_time = time.monotonic()
-        while time.monotonic() < (start_time+5):
-            time.sleep(1)
-            try:
-                cls._client = Client(cls._send_address, authkey=cls._password)
-                break
-            except Exception:
-                pass
-        cls._listener = Listener(cls._rcv_address, authkey=cls._password)
-        cls._client.send({'type': 'open'})
-        cls._conn = cls._listener.accept()
 
     def run(self):
         current_source = self.state_machine.get_source()
@@ -249,7 +232,7 @@ class PyodideDirective(Directive):
             return [doctree_node]
 
         # Send execution request to client and wait for result
-        self._client.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
+        self._conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
         output, mime_type, stdout, stderr, js, css = self._conn.recv()
         EXTRA_RESOURCES[current_source]['js'] += js
         EXTRA_RESOURCES[current_source]['css'] += css
