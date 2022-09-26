@@ -370,7 +370,7 @@ def html_page_context(
     # Remove JS files
     pyodide_scripts = (
         app.config.nbsite_pyodide_conf['scripts'] +
-        ['_static/run_cell.js', '_static/WorkerHandler.js', '_static/ServiceHandler.js']
+        ['_static/run_cell.js', '_static/WorkerHandler.js']
     )
 
     context["script_files"] = [
