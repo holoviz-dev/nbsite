@@ -54,7 +54,7 @@ function autodetect_deps_code(msg) {
   const escaped = msg.code.replace(/"""/g, '\\"\\"\\"');
   return `
 import json
-from panel.io.convert import find_imports
+from panel.io.mime_render import find_imports
 code = r"""\n${escaped}""".replace(r'\\"\\"\\"', '"""')
 json.dumps(find_imports(code))`
 }
