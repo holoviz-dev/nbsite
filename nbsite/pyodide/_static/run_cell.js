@@ -83,6 +83,10 @@ function executeCell(id) {
   cell.setAttribute('executed', true)
 }
 
+const _query_params = new Proxy(new URLSearchParams(window.location.search), {
+  get: (searchParams, prop) => searchParams.get(prop),
+});
+
 let ACCEPTED = false;
 
 const _addRunButtonToCodeCells = () => {
@@ -112,14 +116,18 @@ const _addRunButtonToCodeCells = () => {
     const run_button = document.getElementById(`button-${id}`)
     run_button.addEventListener('click', (e) => {
       if (!ACCEPTED) {
-        _ChangeTooltip(e.currentTarget, 'Executing this cell will download Python runtime (typically 80+ MB). Click again to proceed.')
+        _ChangeTooltip(e.currentTarget, 'Executing this cell will download a Python runtime (typically 40+ MB). Click again to proceed.')
         _ChangeIcon(e.currentTarget, iconAlert)
         ACCEPTED = true
         return
       }
-      for (let i=0; i<=index; i++) {
+      let i = 0;
+      while (true) {
         let cell_id = _codeCellId(i)
         let cell = document.getElementById(cell_id)
+	if (cell == null) {
+	  break
+	}
         const output = document.getElementById(`output-${cell_id}`)
         const stdout = document.getElementById(`stdout-${cell_id}`)
         const stderr = document.getElementById(`stderr-${cell_id}`)
@@ -138,9 +146,16 @@ const _addRunButtonToCodeCells = () => {
           }
 	  executeCell(cell_id)
         }
+	i++;
       }
     })
   })
+  if (_query_params.autorun) {
+    const id = _codeCellId(0)
+    const run_button = document.getElementById(`button-${id}`)
+    run_button.click()
+    run_button.click()
+  }
 }
 
 _runWhenDOMLoaded(_addRunButtonToCodeCells)
