@@ -1,95 +1,95 @@
-# name: packages
-# on:
-#   push:
-#     tags:
-#     - 'v[0-9]+.[0-9]+.[0-9]+'
-#     - 'v[0-9]+.[0-9]+.[0-9]+a[0-9]+'
-#     - 'v[0-9]+.[0-9]+.[0-9]+b[0-9]+'
-#     - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
-#   # Dry-run only
-#   workflow_dispatch:
-#     inputs:
-#       target:
-#         description: Build target
-#         type: choice
-#         options:
-#         - dryrun
-#         required: true
-#         default: dryrun
-#   schedule:
-#     - cron: '0 20 * * SUN'
+name: packages
+on:
+  push:
+    tags:
+    - 'v[0-9]+.[0-9]+.[0-9]+'
+    - 'v[0-9]+.[0-9]+.[0-9]+a[0-9]+'
+    - 'v[0-9]+.[0-9]+.[0-9]+b[0-9]+'
+    - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
+  # Dry-run only
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Build target
+        type: choice
+        options:
+        - dryrun
+        required: true
+        default: dryrun
+  schedule:
+    - cron: '0 20 * * SUN'
 
-# jobs:
-#   conda_build:
-#     name: Build Conda Packages
-#     runs-on: 'ubuntu-latest'
-#     defaults:
-#       run:
-#         shell: bash -l {0}
-#     env:
-#       CHANS_DEV: "-c pyviz/label/dev -c defaults -c conda-forge"
-#       PKG_TEST_PYTHON: "--test-python=py37"
-#       PYTHON_VERSION: "3.7"
-#       CHANS: "-c pyviz"
-#       CONDA_UPLOAD_TOKEN: ${{ secrets.CONDA_UPLOAD_TOKEN }}
-#     steps:
-#       - uses: actions/checkout@v3
-#       - name: Fetch unshallow
-#         run: git fetch --prune --tags --unshallow -f
-#       - uses: conda-incubator/setup-miniconda@v2
-#         with:
-#           miniconda-version: "latest"
-#           python-version: 3.8
-#       - name: Set output
-#         id: vars
-#         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-#       - name: conda setup
-#         run: |
-#           conda config --set always_yes True
-#           conda install -c pyviz "pyctdev>=0.5"
-#           doit ecosystem=conda ecosystem_setup
-#       - name: conda build
-#         run: |
-#           doit ecosystem=conda package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=unit
-#       - name: conda dev upload
-#         if: (github.event_name == 'push' && (contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc')))
-#         run: |
-#           doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev
-#       - name: conda main upload
-#         if: (github.event_name == 'push' && !(contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc')))
-#         run: |
-#           doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev --label=main
-#   pip_build:
-#     name: Build PyPI Packages
-#     runs-on: 'ubuntu-latest'
-#     defaults:
-#       run:
-#         shell: bash -l {0}
-#     env:
-#       PKG_TEST_PYTHON: "--test-python=py37"
-#     steps:
-#       - uses: actions/checkout@v3
-#       - name: Fetch unshallow
-#         run: git fetch --prune --tags --unshallow -f
-#       - uses: actions/setup-python@v4
-#         with:
-#           python-version: "3.7"
-#       - name: env setup
-#         # toml is installed since a version of doit was raising an error while trying
-#         # to parse pyproject.toml, looking for potential doit settings.
-#         #  https://github.com/pydoit/doit/issues/410
-#         # Can be probably removed when doit > 0.34.0 is released
-#         run: |
-#           pip install pyctdev
-#           pip install toml
-#           doit ecosystem_setup
-#       - name: pip build
-#         run: |
-#           doit package_build $PKG_TEST_PYTHON --test-group=installed --sdist-install-build-deps
-#       - name: Publish package to PyPI
-#         if: github.event_name == 'push'
-#         uses: pypa/gh-action-pypi-publish@master
-#         with:
-#           user: ${{ secrets.PPU }}
-#           password: ${{ secrets.PPP }}
-#           packages_dir: dist/
+jobs:
+  conda_build:
+    name: Build Conda Packages
+    runs-on: 'ubuntu-latest'
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      CHANS_DEV: "-c pyviz/label/dev -c defaults -c conda-forge"
+      PKG_TEST_PYTHON: "--test-python=py37"
+      PYTHON_VERSION: "3.7"
+      CHANS: "-c pyviz"
+      CONDA_UPLOAD_TOKEN: ${{ secrets.CONDA_UPLOAD_TOKEN }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Fetch unshallow
+        run: git fetch --prune --tags --unshallow -f
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-version: "latest"
+          python-version: 3.8
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: conda setup
+        run: |
+          conda config --set always_yes True
+          conda install -c pyviz "pyctdev>=0.5"
+          doit ecosystem=conda ecosystem_setup
+      - name: conda build
+        run: |
+          doit ecosystem=conda package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=unit
+      - name: conda dev upload
+        if: (github.event_name == 'push' && (contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc')))
+        run: |
+          doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev
+      - name: conda main upload
+        if: (github.event_name == 'push' && !(contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc')))
+        run: |
+          doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev --label=main
+  pip_build:
+    name: Build PyPI Packages
+    runs-on: 'ubuntu-latest'
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      PKG_TEST_PYTHON: "--test-python=py37"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Fetch unshallow
+        run: git fetch --prune --tags --unshallow -f
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.7"
+      - name: env setup
+        # toml is installed since a version of doit was raising an error while trying
+        # to parse pyproject.toml, looking for potential doit settings.
+        #  https://github.com/pydoit/doit/issues/410
+        # Can be probably removed when doit > 0.34.0 is released
+        run: |
+          pip install pyctdev
+          pip install toml
+          doit ecosystem_setup
+      - name: pip build
+        run: |
+          doit package_build $PKG_TEST_PYTHON --test-group=installed --sdist-install-build-deps
+      - name: Publish package to PyPI
+        if: github.event_name == 'push'
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: ${{ secrets.PPU }}
+          password: ${{ secrets.PPP }}
+          packages_dir: dist/
