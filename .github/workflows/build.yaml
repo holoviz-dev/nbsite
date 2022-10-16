@@ -33,7 +33,7 @@ jobs:
       CHANS: "-c pyviz"
       CONDA_UPLOAD_TOKEN: ${{ secrets.CONDA_UPLOAD_TOKEN }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Fetch unshallow
         run: git fetch --prune --tags --unshallow -f
       - uses: conda-incubator/setup-miniconda@v2
@@ -68,7 +68,7 @@ jobs:
     env:
       PKG_TEST_PYTHON: "--test-python=py37"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Fetch unshallow
         run: git fetch --prune --tags --unshallow -f
       - uses: actions/setup-python@v2
