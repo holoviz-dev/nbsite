@@ -24,7 +24,7 @@ from panel.io.convert import (
     BOKEH_VERSION, PY_VERSION as PN_PY_VERSION
 )
 from panel.io.mime_render import exec_with_return, format_mime
-from panel.io.resources import CDN_DIST
+from panel.io.resources import CDN_DIST, set_resource_mode
 from panel.pane import panel as as_panel
 from panel.util import is_holoviews
 from panel.viewable import Viewable, Viewer
@@ -65,7 +65,8 @@ DEFAULT_PYODIDE_CONF = {
         'https://files.pythonhosted.org/packages/',
         'https://pypi.org/pypi/'
     ],
-    'setup_code': ""
+    'setup_code': "",
+    'warn_message': "Executing this cell will download Python runtime (typically 40+ MB)."
 }
 
 EXTRA_RESOURCES = defaultdict(lambda: {'js': [], 'css': []})
@@ -85,10 +86,11 @@ def extract_extensions(code: str) -> List[str]:
             continue
         importlib.import_module(panel_extension._imports[ext])
     js, css = [], []
-    for name, model in Model.model_class_reverse_map.items():
-        if name not in prev_models:
-            js += model.__javascript__
-            css += model.__css__
+    with set_resource_mode('cdn'):
+        for name, model in Model.model_class_reverse_map.items():
+            if name not in prev_models:
+                js += model.__javascript__
+                css += model.__css__
     return js, css
 
 def _model_json(model: Model, target: str) -> Tuple[Document, str]:
@@ -175,17 +177,18 @@ class PyodideDirective(Directive):
             stderr = io.StringIO()
             code = msg['code']
             js, css = extract_extensions(code)
-            try:
-                out = exec_with_return(code, stdout=stdout, stderr=stderr)
-            except Exception as e:
-                out = None
-            if isinstance(out, (Model, Viewable, Viewer)) or is_holoviews(out):
-                _, content = _model_json(as_panel(out), msg['target'])
-                mime_type = 'application/bokeh'
-            elif out is not None:
-                content, mime_type = format_mime(out)
-            else:
-                content, mime_type = None, None
+            with set_resource_mode('cdn'):
+                try:
+                    out = exec_with_return(code, stdout=stdout, stderr=stderr)
+                except Exception as e:
+                    out = None
+                if isinstance(out, (Model, Viewable, Viewer)) or is_holoviews(out):
+                    _, content = _model_json(as_panel(out), msg['target'])
+                    mime_type = 'application/bokeh'
+                elif out is not None:
+                    content, mime_type = format_mime(out)
+                else:
+                    content, mime_type = None, None
             pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, css))
         pipe.close()
 
