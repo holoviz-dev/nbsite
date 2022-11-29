@@ -8,25 +8,36 @@
 | --- | --- |
 | Build Status | [![Build Status](https://github.com/pyviz-dev/nbsite/workflows/tests/badge.svg)](https://github.com/pyviz-dev/nbsite/actions?query=workflow%3Atests)
 | Coverage | [![codecov](https://codecov.io/gh/pyviz-dev/nbsite/branch/master/graph/badge.svg)](https://codecov.io/gh/pyviz-dev/nbsite) |
-| Latest dev release | [![Github tag](https://img.shields.io/github/tag/pyviz-dev/nbsite.svg?label=tag&colorB=11ccbb)](https://github.com/pyviz-dev/nbsite/tags) |
+| Latest dev release | [![Github tag](https://img.shields.io/github/tag/pyviz-dev/nbsite.svg?label=tag&colorB=11ccbb)](https://github.com/pyviz-dev/nbsite/tags) [![dev-site](https://img.shields.io/website-up-down-green-red/https/pyviz-dev.github.io/nbsite-dev.svg?label=dev%20website)](https://pyviz-dev.github.io/nbsite-dev/)|
 | Latest release | [![Github release](https://img.shields.io/github/release/pyviz-dev/nbsite.svg?label=tag&colorB=11ccbb)](https://github.com/pyviz-dev/nbsite/releases) [![PyPI version](https://img.shields.io/pypi/v/nbsite.svg?colorB=cc77dd)](https://pypi.python.org/pypi/nbsite) [![nbsite version](https://img.shields.io/conda/v/pyviz/nbsite.svg?colorB=4488ff&style=flat)](https://anaconda.org/pyviz/nbsite) [![conda-forge version](https://img.shields.io/conda/v/conda-forge/nbsite.svg?label=conda%7Cconda-forge&colorB=4488ff)](https://anaconda.org/conda-forge/nbsite) [![defaults version](https://img.shields.io/conda/v/anaconda/nbsite.svg?label=conda%7Cdefaults&style=flat&colorB=4488ff)](https://anaconda.org/anaconda/nbsite) |
 | Docs | [![gh-pages](https://img.shields.io/github/last-commit/pyviz/nbsite/gh-pages.svg)](https://github.com/pyviz/nbsite/tree/gh-pages) [![site](https://img.shields.io/website-up-down-green-red/https/nbsite.pyviz.org.svg)](https://nbsite.pyviz.org) |
 
-## What is it?
+---
+
+**DISCLAIMER**
+
+NBSite is a tool supporting the developers of the [HoloViz](https://holoviz/org) project. As such it is tailored to their use case, workflow, and **breaking changes may occur at any time**. We suggest that before using NBSite you investigate alternatives such as [MyST-NB](https://myst-nb.readthedocs.io) or [nbsphinx](https://nbsphinx.readthedocs.io/). If you select NBSite anyway, we recommend that you pin its version.
+
+---
 
 NBSite lets you build a website from a set of notebooks plus a minimal
-amount of config. Sites built with nbsite include
-[holoviz.org](https://holoviz.org/),
-[datashader.org](https://datashader.org/), and [hvplot.holoviz.org](https://hvplot.holoviz.org/).
+amount of config. The idea behind NBSite is that notebooks can simultaneously be documentation (things you want to tell people about), examples (a starting point for people to run and use themselves), and test cases (see nbsmoke).
 
-The idea behind nbsite is that notebooks can simultaneously be
-documentation (things you want to tell people about), examples (a
-starting point for people to run and use themselves), and test cases.
+## Sites built with NBSite
 
-This project is currently an early work in progress. See the
-documentation at [nbsite.holoviz.org](https://nbsite.holoviz.org/) for
-more information.
+Non exhaustive list of sites built with NBSite (as of November 2022):
 
+- [Panel](https://panel.holoviz.org/)
+- [hvPlot](https://hvplot.holoviz.org/)
+- [HoloViews](https://holoviews.org/)
+- [GeoViews](https://geoviews.org/)
+- [Datashader](https://datashader.org/)
+- [Lumen](https://lumen.holoviz.org/)
+- [Colorcet](https://colorcet.holoviz.org/)
+- [Param](https://param.holoviz.org/)
+- [HoloViz.org](https://holoviz.org/)
+- [examples.pyviz.org](https://examples.pyviz.org/)
+- [PyViz.org](https://pyviz.org/)
 
 ## About HoloViz
 
