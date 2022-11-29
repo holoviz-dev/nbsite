@@ -71,10 +71,10 @@ jobs:
         with:
           miniconda-version: "latest"
       - name: set up env
-        # Python version is defined in the environment.yml file
+        # Python version is defined in the environment.yaml file
         run: |
           cd site
-          conda env create -f environment.yml
+          conda env create -f environment.yaml
       - name: build docs
         run: |
           conda activate nbsite-docs
