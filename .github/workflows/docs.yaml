@@ -33,16 +33,18 @@ jobs:
         run: git fetch --prune --tags --unshallow -f
       - uses: conda-incubator/setup-miniconda@v2
         with:
-          activate-environment: nbsite-docs
-          # Python version is defined in the environment.yml file
-          environment-file: ./site/environment.yaml
           miniconda-version: "latest"
-          auto-activate-base: false
       - name: Set output
         id: vars
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+      - name: set up env
+        # Python version is defined in the environment.yaml file
+        run: |
+          cd site
+          conda env create -f environment.yaml
       - name: build docs
         run: |
+          conda activate nbsite-docs
           cd site
           python build_and_clean.py
       - name: check no leftover
