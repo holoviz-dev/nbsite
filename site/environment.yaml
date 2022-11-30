@@ -8,4 +8,4 @@ dependencies:
   - python=3.8
   - pip:
     - -e ..
-    - ./dummy_package
+    - - ./dummy_package
