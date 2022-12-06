@@ -27,14 +27,14 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os, string, glob, copy, re, sys, shutil
+import io, json, os, string, glob, copy, re, sys, shutil
 
 import nbformat
 
 from docutils.parsers.rst import directives, Directive
 from docutils.statemachine import string2lines
 from docutils.utils import new_document
-from myst_nb.parser import nb_to_tokens, nb_output_to_disc, tokens_to_docutils
+from myst_nb.sphinx_ import Parser
 
 from nbconvert import NotebookExporter, PythonExporter
 from nbconvert.preprocessors import (
@@ -63,6 +63,7 @@ Python-backed interactivity.
 class ExecutePreprocessor1000(ExecutePreprocessor):
     """Sigh"""
     _ipython_startup = None
+
     @property
     def kc(self):
         return self._kc
@@ -72,9 +73,9 @@ class ExecutePreprocessor1000(ExecutePreprocessor):
         del self._kc
 
     @kc.setter
-    def kc(self,v):
-        self._kc=v
-        if self._ipython_startup is not None:
+    def kc(self, v):
+        self._kc = v
+        if v is not None and self._ipython_startup is not None:
             msg_id = self._kc.execute( # noqa: a mess
                 self._ipython_startup,silent=False,store_history=False,allow_stdin=False,stop_on_error=True)
 
@@ -302,13 +303,12 @@ def render_notebook(nb_path, document, preprocessors=[]):
     for preprocessor in preprocessors:
         ntbk, _ = preprocessor(ntbk, {})
 
-    md_parser, env, tokens = nb_to_tokens(
-        ntbk,
-        env.myst_config,
-        env.config["nb_render_plugin"],
-    )
+    sio = io.StringIO(json.dumps(ntbk))
 
-    # Delete rst temporarily to ensure 
+    parser = Parser()
+    parser.env = env
+
+    # Delete rst temporarily to ensure it does not get parsed
     rst_path = nb_path[:-5]+'rst'
     if os.path.isfile(rst_path):
         with open(rst_path) as f:
@@ -316,14 +316,12 @@ def render_notebook(nb_path, document, preprocessors=[]):
         os.remove(rst_path)
     else:
         rst_text = None
-
-    nb_output_to_disc(ntbk, doc)
+    
+    parser.parse(sio.read(), document)
 
     if rst_text is not None:
         with open(rst_path, 'w') as f:
             f.write(rst_text)
-
-    tokens_to_docutils(md_parser, env, tokens, doc)
 
     return doc.children[1:]
 
@@ -421,12 +419,7 @@ class NotebookDirective(Directive):
         return f'\n.. raw:: html\n\n    {scroller}'
 
     def run(self):
-        # check if raw html is supported
-        if not self.state.document.settings.raw_enabled:
-            raise self.warning('"%s" directive disabled.' % self.name)
-
         # Process paths and directories
-        #project = self.arguments[0].lower()
         rst_file = os.path.abspath(self.state.document.current_source)
         rst_dir = os.path.dirname(rst_file)
         nb_abs_path = os.path.abspath(os.path.join(rst_dir, self.arguments[1]))
