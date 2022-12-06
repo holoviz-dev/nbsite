@@ -306,6 +306,9 @@ def render_notebook(nb_path, document, preprocessors=[]):
     sio = io.StringIO(json.dumps(ntbk))
 
     parser = Parser()
+    if hasattr(env, 'mystnb_config'):
+        old_exec_mode = env.mystnb_config.execution_mode
+        env.mystnb_config.execution_mode = 'off'
     parser.env = env
 
     # Delete rst temporarily to ensure it does not get parsed
@@ -322,6 +325,10 @@ def render_notebook(nb_path, document, preprocessors=[]):
     if rst_text is not None:
         with open(rst_path, 'w') as f:
             f.write(rst_text)
+
+    # Restore execution mode
+    if hasattr(env, 'mystnb_config'):
+        env.mystnb_config.execution_mode = old_exec_mode
 
     return doc.children[1:]
 
