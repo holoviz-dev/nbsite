@@ -2,7 +2,6 @@ import importlib
 import io
 import json
 import re
-import time
 
 from collections import defaultdict
 from html import escape
@@ -20,9 +19,7 @@ from bokeh.document import Document
 from bokeh.embed.util import standalone_docs_json_and_render_items
 from bokeh.model import Model
 from panel.config import panel_extension
-from panel.io.convert import (
-    BOKEH_VERSION, PY_VERSION as PN_PY_VERSION
-)
+from panel.io.convert import BOKEH_VERSION
 from panel.io.mime_render import exec_with_return, format_mime
 from panel.io.resources import CDN_DIST, set_resource_mode
 from panel.pane import panel as as_panel
@@ -180,7 +177,7 @@ class PyodideDirective(Directive):
             with set_resource_mode('cdn'):
                 try:
                     out = exec_with_return(code, stdout=stdout, stderr=stderr)
-                except Exception as e:
+                except Exception:
                     out = None
                 if isinstance(out, (Model, Viewable, Viewer)) or is_holoviews(out):
                     _, content = _model_json(as_panel(out), msg['target'])
