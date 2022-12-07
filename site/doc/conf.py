@@ -19,6 +19,9 @@ extensions += [
     'nbsite.gallery',
     # Activate the docstring extension for Numpy: https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
     'sphinx.ext.napoleon',
+    # Activate the cell copy button extension
+    'sphinx_copybutton',
+    # 'IPython.sphinxext.ipython_console_highlighting'
 ]
 
 # Configure sphinx.ext.napoleon

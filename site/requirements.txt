@@ -1,0 +1,7 @@
+bokeh<3
+hvplot
+pydata-sphinx-theme<0.10
+sphinx_copybutton
+matplotlib
+-e ..
+-e ./dummy_package
