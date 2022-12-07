@@ -11,10 +11,12 @@ Building this site should be really fast, around a minute or less.
 
 The commands are to be executed from this folder.
 
-Install the dependencies with conda:
+Install the dependencies with pip:
 
 ```
-conda env create -f environment.yaml
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 A simple script has been implemented to build the site, it

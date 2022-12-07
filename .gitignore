@@ -22,3 +22,5 @@ pip-wheel-metadata
 # nbsite
 # this dir contains the whole website and should not be checked in on master
 site/builtdocs/
+
+site/.venv/

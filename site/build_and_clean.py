@@ -23,20 +23,23 @@ def remove_mess():
     # Basically remove all the rst and ipynb files from the galleries
     # in the doc folder.
     conf_module = importfile('doc/conf.py')
-    galleries = conf_module.nbsite_gallery_conf['galleries']
-    for gallery in galleries:
-        gallery_dir = cur_dir / doc_dir/ gallery
-        (gallery_dir / 'index.rst').unlink(missing_ok=True)
-        for section in gallery_dir.iterdir():
-            for f in section.glob('*.rst'):
-                f.unlink(missing_ok=True)
-            for f in section.glob('*.ipynb'):
-                f.unlink(missing_ok=True)
+    if hasattr(conf_module, 'nbsite_gallery_conf'):
+        galleries = conf_module.nbsite_gallery_conf['galleries']
+        for gallery in galleries:
+            gallery_dir = cur_dir / doc_dir/ gallery
+            (gallery_dir / 'index.rst').unlink(missing_ok=True)
+            for section in gallery_dir.iterdir():
+                for f in section.glob('*.rst'):
+                    f.unlink(missing_ok=True)
+                for f in section.glob('*.ipynb'):
+                    f.unlink(missing_ok=True)
 
     # Remove the rst and ipynb files from the doc notebook
     nb_dir = cur_dir / doc_dir / notebook_dir
     for f in nb_dir.glob('*.rst'):
-            f.unlink(missing_ok=True)
+        if f == nb_dir / 'example2.rst':
+            continue
+        f.unlink(missing_ok=True)
     for f in nb_dir.glob('*.ipynb'):
         f.unlink(missing_ok=True)
 
@@ -51,9 +54,9 @@ cmd_gen_rst = f'nbsite generate-rst --project-name showcase --doc {doc_dir} --ex
 cmd_build = f'nbsite build --what html --doc {doc_dir} --examples {examples_dir} --output {out_dir}'
 
 print('\n> Generate RST...\n')
-subprocess.run(cmd_gen_rst.split(' '))
+subprocess.run(cmd_gen_rst.split(' '), check=True)
 print('\n> Build...\n')
-subprocess.run(cmd_build.split(' '))
+subprocess.run(cmd_build.split(' '), check=True)
 
 print('\n> Clean up...')
 remove_mess()

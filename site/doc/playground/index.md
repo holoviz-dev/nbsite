@@ -16,7 +16,6 @@ RST <rst/index>
 NotebookDirective <notebook_directive/index>
 Text Notebook <mystmdnb/index>
 MyST Notebook <mystnb/index>
-Mix <mix/index>
 Pyodide <pyodide/index>
 Gallery <example_gallery/index>
 API <api/index>
