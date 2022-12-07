@@ -37,7 +37,9 @@ def remove_mess():
     # Remove the rst and ipynb files from the doc notebook
     nb_dir = cur_dir / doc_dir / notebook_dir
     for f in nb_dir.glob('*.rst'):
-            f.unlink(missing_ok=True)
+        if f == nb_dir / 'example2.rst':
+            continue
+        f.unlink(missing_ok=True)
     for f in nb_dir.glob('*.ipynb'):
         f.unlink(missing_ok=True)
 

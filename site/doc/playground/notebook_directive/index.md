@@ -9,6 +9,7 @@ Using the `NotebookDirective` provided by NBSite.
 
 Intro <self>
 Example <example>
+Example2 <example2>
 HoloViz <holoviz>
 Pre-executed <preexecuted>
 ```
