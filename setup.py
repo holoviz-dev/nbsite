@@ -58,7 +58,7 @@ setup_args = dict(
         'pyviz_comms',
         'ipykernel',
         'nbformat',
-        'nbconvert <6.0',
+        'nbconvert',
         'jupyter_client <6.2',
         'myst-nb >=0.14',
         'sphinx-design',
