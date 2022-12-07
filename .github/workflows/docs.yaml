@@ -46,6 +46,7 @@ jobs:
       - name: build docs
         run: |
           cd site
+          source .venv/bin/activate
           python build_and_clean.py
       - name: check no leftover
         run: git diff --quiet || exit 1
