@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import io, json, os, string, glob, copy, re, sys, shutil
 
+from collections import OrderedDict
 from contextlib import contextmanager
 
 import nbformat
@@ -295,6 +296,10 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
 
 @contextmanager
 def disable_execution(env):
+    # Just to make sure that the notebook, which should already be executed
+    # by ExecutePreprocessor1000 isn't re-executed again. It should not
+    # happen by default if myst-nb's execution_mode isn't touched as not
+    # reexecuting notebooks fully executed is its default behavior.
     if hasattr(env, 'mystnb_config'):
         old_exec_mode = env.mystnb_config.execution_mode
         env.mystnb_config.execution_mode = 'off'
@@ -304,6 +309,23 @@ def disable_execution(env):
         # Restore execution mode
         if hasattr(env, 'mystnb_config'):
             env.mystnb_config.execution_mode = old_exec_mode
+
+@contextmanager
+def patch_project_source_suffix(env):
+    # Ugly patch required as myst-nb obtains a reader that
+    # is infered by sphinx from the document, sphinx literally
+    # loops through a glob() result looking for files in a particular
+    # order, starting from .rst. As the NotebookDirective is embedded
+    # in a .rst, it finds that file instead of the Notebook to be parsed.
+    # Overriding this dict temporarily seems to do the trick.
+    old_source_suffix = env.project.source_suffix
+    env.project.source_suffix = OrderedDict([('.ipynb', 'myst-nb')])
+    try:
+        yield
+    finally:
+        # Restore project source_suffix
+        env.project.source_suffix = old_source_suffix
+
 
 
 def render_notebook(nb_path, document, preprocessors=[]):
@@ -322,7 +344,7 @@ def render_notebook(nb_path, document, preprocessors=[]):
     parser = Parser()
     parser.env = env
 
-    with disable_execution(env):
+    with disable_execution(env), patch_project_source_suffix(env):
         parser.parse(sio.read(), document)
 
     return doc.children[1:]
