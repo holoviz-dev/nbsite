@@ -27,14 +27,17 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os, string, glob, copy, re, sys, shutil
+import io, json, os, string, glob, copy, re, sys, shutil
+
+from collections import OrderedDict
+from contextlib import contextmanager
 
 import nbformat
 
 from docutils.parsers.rst import directives, Directive
 from docutils.statemachine import string2lines
 from docutils.utils import new_document
-from myst_nb.parser import nb_to_tokens, nb_output_to_disc, tokens_to_docutils
+from myst_nb.sphinx_ import Parser
 
 from nbconvert import NotebookExporter, PythonExporter
 from nbconvert.preprocessors import (
@@ -63,6 +66,7 @@ Python-backed interactivity.
 class ExecutePreprocessor1000(ExecutePreprocessor):
     """Sigh"""
     _ipython_startup = None
+
     @property
     def kc(self):
         return self._kc
@@ -72,9 +76,9 @@ class ExecutePreprocessor1000(ExecutePreprocessor):
         del self._kc
 
     @kc.setter
-    def kc(self,v):
-        self._kc=v
-        if self._ipython_startup is not None:
+    def kc(self, v):
+        self._kc = v
+        if v is not None and self._ipython_startup is not None:
             msg_id = self._kc.execute( # noqa: a mess
                 self._ipython_startup,silent=False,store_history=False,allow_stdin=False,stop_on_error=True)
 
@@ -290,42 +294,60 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
             dest_path=os.path.abspath(dest_path)))
 
 
+@contextmanager
+def disable_execution(env):
+    # Just to make sure that the notebook, which should already be executed
+    # by ExecutePreprocessor1000 isn't re-executed again. It should not
+    # happen by default if myst-nb's execution_mode isn't touched as not
+    # reexecuting notebooks fully executed is its default behavior.
+    if hasattr(env, 'mystnb_config'):
+        old_exec_mode = env.mystnb_config.execution_mode
+        env.mystnb_config.execution_mode = 'off'
+    try:
+        yield
+    finally:
+        # Restore execution mode
+        if hasattr(env, 'mystnb_config'):
+            env.mystnb_config.execution_mode = old_exec_mode
+
+@contextmanager
+def patch_project_source_suffix(env):
+    # Ugly patch required as myst-nb obtains a reader that
+    # is infered by sphinx from the document, sphinx literally
+    # loops through a glob() result looking for files in a particular
+    # order, starting from .rst. As the NotebookDirective is embedded
+    # in a .rst, it finds that file instead of the Notebook to be parsed.
+    # Overriding this dict temporarily seems to do the trick.
+    old_source_suffix = env.project.source_suffix
+    env.project.source_suffix = OrderedDict([('.ipynb', 'myst-nb')])
+    try:
+        yield
+    finally:
+        # Restore project source_suffix
+        env.project.source_suffix = old_source_suffix
+
+
+
 def render_notebook(nb_path, document, preprocessors=[]):
     env = document.settings.env
     doc = new_document(nb_path, document.settings)
 
+    # Load notebook and run preprocessors
     with open(nb_path, encoding='utf-8') as f:
         text = f.read()
 
     ntbk = nbformat.reads(text, as_version=NOTEBOOK_VERSION)
-
     for preprocessor in preprocessors:
         ntbk, _ = preprocessor(ntbk, {})
+    sio = io.StringIO(json.dumps(ntbk))
 
-    md_parser, env, tokens = nb_to_tokens(
-        ntbk,
-        env.myst_config,
-        env.config["nb_render_plugin"],
-    )
+    parser = Parser()
+    parser.env = env
 
-    # Delete rst temporarily to ensure 
-    rst_path = nb_path[:-5]+'rst'
-    if os.path.isfile(rst_path):
-        with open(rst_path) as f:
-            rst_text = f.read()
-        os.remove(rst_path)
-    else:
-        rst_text = None
+    with disable_execution(env), patch_project_source_suffix(env):
+        parser.parse(sio.read(), doc)
 
-    nb_output_to_disc(ntbk, doc)
-
-    if rst_text is not None:
-        with open(rst_path, 'w') as f:
-            f.write(rst_text)
-
-    tokens_to_docutils(md_parser, env, tokens, doc)
-
-    return doc.children[1:]
+    return doc.children
 
 
 class NotebookDirective(Directive):
@@ -421,12 +443,7 @@ class NotebookDirective(Directive):
         return f'\n.. raw:: html\n\n    {scroller}'
 
     def run(self):
-        # check if raw html is supported
-        if not self.state.document.settings.raw_enabled:
-            raise self.warning('"%s" directive disabled.' % self.name)
-
         # Process paths and directories
-        #project = self.arguments[0].lower()
         rst_file = os.path.abspath(self.state.document.current_source)
         rst_dir = os.path.dirname(rst_file)
         nb_abs_path = os.path.abspath(os.path.join(rst_dir, self.arguments[1]))
