@@ -67,18 +67,19 @@ jobs:
       - uses: actions/checkout@v3
       - name: Fetch unshallow
         run: git fetch --prune --tags --unshallow -f
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: actions/setup-python@v4
         with:
-          miniconda-version: "latest"
+          python-version: '3.8' 
       - name: set up env
-        # Python version is defined in the environment.yaml file
         run: |
           cd site
-          conda env create -f environment.yaml
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
       - name: build docs
         run: |
-          conda activate nbsite-docs
           cd site
+          source .venv/bin/activate
           python build_and_clean.py
       - name: check no leftover
         run: git diff --quiet || exit 1
