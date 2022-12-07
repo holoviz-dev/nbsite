@@ -65,7 +65,7 @@ setup_args = dict(
         'notebook',
         'sphinx',
         'beautifulsoup4',
-        'jinja2 >=3.0',
+        'jinja2 <3.1',
         'pillow',
         'pydata-sphinx-theme',
         'myst-parser',
