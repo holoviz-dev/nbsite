@@ -345,9 +345,9 @@ def render_notebook(nb_path, document, preprocessors=[]):
     parser.env = env
 
     with disable_execution(env), patch_project_source_suffix(env):
-        parser.parse(sio.read(), document)
+        parser.parse(sio.read(), doc)
 
-    return doc.children[1:]
+    return doc.children
 
 
 class NotebookDirective(Directive):
