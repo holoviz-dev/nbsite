@@ -59,7 +59,7 @@ setup_args = dict(
         'ipykernel',
         'nbformat',
         'nbconvert',
-        'jupyter_client <6.2',
+        'jupyter_client',
         'myst-nb >=0.14',
         'sphinx-design',
         'notebook',
