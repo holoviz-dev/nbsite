@@ -1,7 +1,8 @@
-import os
 import json
+import shutil
+
 import pytest
-import pyct.cmd
+
 from nbsite.cmd import generate_rst, build
 
 # Note: a lot of this setup is copied from the new (2018-11-01) test in
@@ -192,16 +193,8 @@ def tmp_module(tmp_path):
     (project / "examples" / "data" / "data_1.csv").write_text(DATA_FILE_1_CONTENT)
     return project
 
-@pytest.fixture(autouse=True)
-def monkeypatch_find_examples(monkeypatch, tmp_module):
-    """Monkeypatching find examples to use a tmp examples.
-    """
-    def _find_examples(name):
-        return os.path.join(str(tmp_module), "examples")
-    monkeypatch.setattr(pyct.cmd, '_find_examples', _find_examples)
-
 @pytest.fixture(scope='function')
-def tmp_project(tmp_path):
+def tmp_project(tmp_path, tmp_module):
     """
     This sets up a temporary directory structure meant to mimic the project.
 
@@ -211,8 +204,7 @@ def tmp_project(tmp_path):
     """
     project = tmp_path / "test_project"
     project.mkdir()
-    path = str(project / "examples")
-    pyct.cmd.examples(name="nbsite", path=path)
+    shutil.copytree(tmp_module, project, dirs_exist_ok=True)
     return project
 
 @pytest.fixture(scope='function')

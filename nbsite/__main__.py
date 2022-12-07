@@ -57,14 +57,6 @@ def main(args=None):
     build_parser.add_argument('--inspect-links',action='store_true',help='whether to not to print all links')
     _set_defaults(build_parser,build)
 
-    # add commands from pyct, for examples
-    try:
-        import pyct.cmd
-        pyct.cmd.add_commands(subparsers,'nbsite',cmds=None,args=args)
-        # pyct.cmd.add_version(parser, 'nbsite') #  once pyct.cmd 0.5.0 lands
-    except ImportError:
-        pass
-
     args = parser.parse_args()
     return args.func(args) if hasattr(args,'func') else parser.error("must supply command to run")
 

@@ -2,8 +2,6 @@ include LICENSE.txt
 include README.md
 include nbsite/.version
 include nbsite/pyodide/site.webmanifest
-graft examples
-graft nbsite/examples
 graft nbsite/_shared_static
 graft nbsite/_shared_templates
 graft nbsite/templates
