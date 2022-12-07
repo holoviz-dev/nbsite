@@ -29,6 +29,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import io, json, os, string, glob, copy, re, sys, shutil
 
+from contextlib import contextmanager
+
 import nbformat
 
 from docutils.parsers.rst import directives, Directive
@@ -291,44 +293,37 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
             dest_path=os.path.abspath(dest_path)))
 
 
+@contextmanager
+def disable_execution(env):
+    if hasattr(env, 'mystnb_config'):
+        old_exec_mode = env.mystnb_config.execution_mode
+        env.mystnb_config.execution_mode = 'off'
+    try:
+        yield
+    finally:
+        # Restore execution mode
+        if hasattr(env, 'mystnb_config'):
+            env.mystnb_config.execution_mode = old_exec_mode
+
+
 def render_notebook(nb_path, document, preprocessors=[]):
     env = document.settings.env
     doc = new_document(nb_path, document.settings)
 
+    # Load notebook and run preprocessors
     with open(nb_path, encoding='utf-8') as f:
         text = f.read()
 
     ntbk = nbformat.reads(text, as_version=NOTEBOOK_VERSION)
-
     for preprocessor in preprocessors:
         ntbk, _ = preprocessor(ntbk, {})
-
     sio = io.StringIO(json.dumps(ntbk))
 
     parser = Parser()
-    if hasattr(env, 'mystnb_config'):
-        old_exec_mode = env.mystnb_config.execution_mode
-        env.mystnb_config.execution_mode = 'off'
     parser.env = env
 
-    # Delete rst temporarily to ensure it does not get parsed
-    rst_path = nb_path[:-5]+'rst'
-    if os.path.isfile(rst_path):
-        with open(rst_path) as f:
-            rst_text = f.read()
-        os.remove(rst_path)
-    else:
-        rst_text = None
-    
-    parser.parse(sio.read(), document)
-
-    if rst_text is not None:
-        with open(rst_path, 'w') as f:
-            f.write(rst_text)
-
-    # Restore execution mode
-    if hasattr(env, 'mystnb_config'):
-        env.mystnb_config.execution_mode = old_exec_mode
+    with disable_execution(env):
+        parser.parse(sio.read(), document)
 
     return doc.children[1:]
 
