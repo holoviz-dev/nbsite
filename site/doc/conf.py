@@ -21,7 +21,8 @@ extensions += [
     'sphinx.ext.napoleon',
     # Activate the cell copy button extension
     'sphinx_copybutton',
-    # 'IPython.sphinxext.ipython_console_highlighting'
+    # See https://github.com/ipython/ipython/issues/13845
+    'IPython.sphinxext.ipython_console_highlighting'
 ]
 
 # Configure sphinx.ext.napoleon
