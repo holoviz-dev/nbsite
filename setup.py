@@ -4,7 +4,6 @@
 import glob
 from setuptools import setup, find_packages
 
-import pyct.build
 
 NAME = 'nbsite'
 DESCRIPTION = 'Build a tested, sphinx-based website from notebooks.'
@@ -35,7 +34,6 @@ def get_setup_version(root, reponame):
 
 setup_args = dict(
     name=NAME,
-    # version=pyct.build.get_setup_version(__file__, NAME),
     version=get_setup_version(__file__, NAME),
     description=DESCRIPTION,
     long_description=open("README.md").read(),
@@ -54,7 +52,6 @@ setup_args = dict(
     python_requires='>=3',
     install_requires=[
         'param >=1.7.0',
-        'pyct >=0.4.4',
         'pyviz_comms',
         'ipykernel',
         'nbformat',
@@ -81,24 +78,11 @@ setup_args = dict(
         'tests':[
             'flake8',
             'pytest >=3.9.1',
-            'pyct[cmd]',
             'importlib-metadata <5.0', # Avoid errors to removal of EntryPoint shims https://importlib-metadata.readthedocs.io/en/latest/history.html#v5-0-0
-        ],
-        'examples':[
-            'pyct[cmd] >=0.4.5',
-            'sphinx_holoviz_theme',
-            'holoviews',
-            'bokeh',
-            'matplotlib',
-            'xarray',
-            'pandas',
-            'numpy',
-            # 'plotly'  # gallery demo
         ],
         'build': [
             "setuptools",
             "param >=1.6.1",
-            "pyct >=0.4.4",
         ]
     },
     include_package_data=True,
@@ -121,17 +105,4 @@ setup_args = dict(
 )
 
 if __name__=="__main__":
-    # TODO: hope to eliminate the examples handling from here too
-    # (i.e. all lines except setup()), moving it to pyct.build.setup
-
-    import os, sys, shutil
-
-    example_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                NAME,'examples')
-    if 'develop' not in sys.argv:
-        pyct.build.examples(example_path, __file__, force=True)
-
     setup(**setup_args)
-
-    if os.path.isdir(example_path):
-        shutil.rmtree(example_path)

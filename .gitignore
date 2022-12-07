@@ -24,3 +24,5 @@ pip-wheel-metadata
 site/builtdocs/
 
 site/.venv/
+
+build/

@@ -49,7 +49,7 @@ jobs:
           python -m pip install pyctdev
           doit ecosystem_setup
       - name: doit develop_install
-        run: doit develop_install -o examples -o tests
+        run: doit develop_install -o tests
       - name: env_capture
         run: doit env_capture
       - name: tests
