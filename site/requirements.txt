@@ -3,5 +3,6 @@ hvplot
 pydata-sphinx-theme<0.10
 sphinx_copybutton
 matplotlib
+plotly
 -e ..
 -e ./dummy_package
