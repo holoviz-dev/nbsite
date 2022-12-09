@@ -55,6 +55,7 @@ DEFAULT_PYODIDE_CONF = {
         f'https://cdn.bokeh.org/bokeh/release/bokeh-tables-{BOKEH_VERSION}.min.js',
         f'{CDN_DIST}panel.min.js'
     ],
+    'extra_css': [],
     'cache_patterns': [
         CDN_DIST,
         'https://cdn.bokeh.org/bokeh/',
@@ -357,8 +358,11 @@ def html_page_context(
     ]
     if extra_resources:
         extra_js, extra_css = extra_resources[0]
-        context["script_files"] += extra_js
-        context["css_files"] += extra_css
+    else:
+        extra_js, extra_css = [], []
+    extra_css += app.config.nbsite_pyodide_conf.get('extra_css', [])
+    context["script_files"] += extra_js
+    context["css_files"] += extra_css
 
     # Remove Scripts and CSS from page if no pyodide cells are found.
     if any(
