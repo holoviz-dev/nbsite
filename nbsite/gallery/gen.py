@@ -179,7 +179,7 @@ DEFAULT_GALLERY_CONF = {
     'thumbnail_size': (400, 280),
     'within_subsection_order': lambda key: key,
     'nblink': 'both',  # use this to control the position of the nblink
-    'github_ref': 'master',  # branch or tag
+    'github_ref': 'main',  # branch or tag
 }
 
 

@@ -20,7 +20,7 @@ pip-wheel-metadata
 */.version
 
 # nbsite
-# this dir contains the whole website and should not be checked in on master
+# this dir contains the whole website and should not be checked in on main
 site/builtdocs/
 
 site/.venv/

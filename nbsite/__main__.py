@@ -31,7 +31,7 @@ def main(args=None):
     generaterst_parser.add_argument('--host',type=str,help='host to use when generating notebook links',default='GitHub')
     generaterst_parser.add_argument('--org',type=str,help='github organization',default='')
     generaterst_parser.add_argument('--repo',type=str,help='name of repo',default='')
-    generaterst_parser.add_argument('--branch',type=str,help='branch to point to in notebook links',default='master')
+    generaterst_parser.add_argument('--branch',type=str,help='branch to point to in notebook links',default='main')
     generaterst_parser.add_argument('--offset',type=int,help='number of cells to delete from top of notebooks',default=0)
     generaterst_parser.add_argument('--nblink',type=str,help='where to place notebook links',choices=['bottom', 'top', 'both', 'none'], default='bottom')
     generaterst_parser.add_argument('--binder',type=str,help='where to place binder link',choices=['bottom', 'top', 'both', 'none'], default='none')
@@ -46,7 +46,7 @@ def main(args=None):
     build_parser.add_argument('--org',type=str,help='github organization',default='')
     build_parser.add_argument('--host',type=str,help='host to use when generating notebook links',default='GitHub')
     build_parser.add_argument('--repo',type=str,help='name of repo',default='')
-    build_parser.add_argument('--branch',type=str,help='branch to point to in notebook links',default='master')
+    build_parser.add_argument('--branch',type=str,help='branch to point to in notebook links',default='main')
     build_parser.add_argument('--binder',type=str,help='where to place binder link',choices=['bottom', 'top', 'both', 'none'], default='none')
 
     build_parser.add_argument('--output',type=str,help='where to place output',default="builtdocs")

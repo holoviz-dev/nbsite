@@ -54,7 +54,7 @@ def build(what='html',
           project_name='',
           host='GitHub',
           repo='',
-          branch='master',
+          branch='main',
           org='',
           binder='none',
           examples='examples',
@@ -135,7 +135,7 @@ def generate_rst(
         host='GitHub',
         org='',                 # if not supplied, will default to project_name, or repo
         repo='',                # if not supplied, will default to project_name
-        branch='master',
+        branch='main',
         offset=0,
         overwrite=False,
         nblink='bottom',
