@@ -88,7 +88,7 @@ jobs:
           doit package_build $PKG_TEST_PYTHON --test-group=installed --sdist-install-build-deps
       - name: Publish package to PyPI
         if: github.event_name == 'push'
-        uses: pypa/gh-action-pypi-publish@master
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: ${{ secrets.PPU }}
           password: ${{ secrets.PPP }}

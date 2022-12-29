@@ -291,7 +291,7 @@ def test_generate_rst_with_nblink_as_none(tmp_project):
                 '    :offset: 0']
     project = tmp_project
     generate_rst("test_project", project_root=str(project), nblink='none',
-                 host='GitHub', org='pyviz', repo='nbsite', branch='master')
+                 host='GitHub', org='holoviz', repo='nbsite', branch='main')
     rstpath = (project / "doc" / "First_Notebook.rst")
     assert rstpath.is_file()
     with open(rstpath, 'r') as f:
@@ -304,14 +304,14 @@ def test_generate_rst_with_nblink_top(tmp_project):
                 'First Notebook',
                 '**************',
                 '',
-                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/1_First_Notebook.ipynb>`_',
+                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/holoviz/nbsite/main/examples/1_First_Notebook.ipynb>`_',
                 '', '', '-------', '',
                 '.. notebook:: test_project ../examples/1_First_Notebook.ipynb',
                 '    :offset: 0']
 
     project = tmp_project
     generate_rst("test_project", project_root=str(project), nblink='top',
-                 host='GitHub', org='pyviz', repo='nbsite', branch='master')
+                 host='GitHub', org='holoviz', repo='nbsite', branch='main')
     rstpath = (project / "doc" / "First_Notebook.rst")
     assert rstpath.is_file()
     with open(rstpath, 'r') as f:
@@ -324,16 +324,16 @@ def test_generate_rst_with_nblink_both(tmp_project):
                 'First Notebook',
                 '**************',
                 '',
-                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/1_First_Notebook.ipynb>`_',
+                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/holoviz/nbsite/main/examples/1_First_Notebook.ipynb>`_',
                 '', '', '-------', '',
                 '.. notebook:: test_project ../examples/1_First_Notebook.ipynb',
                 '    :offset: 0',
                 '', '', '-------', '',
-                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/1_First_Notebook.ipynb>`_']
+                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/holoviz/nbsite/main/examples/1_First_Notebook.ipynb>`_']
 
     project = tmp_project
     generate_rst("test_project", project_root=str(project), nblink='both',
-                 host='GitHub', org='pyviz', repo='nbsite', branch='master')
+                 host='GitHub', org='holoviz', repo='nbsite', branch='main')
     rstpath = (project / "doc" / "First_Notebook.rst")
     assert rstpath.is_file()
     with open(rstpath, 'r') as f:
@@ -349,11 +349,11 @@ def test_generate_rst_with_nblink_bottom(tmp_project):
                 '.. notebook:: test_project ../examples/1_First_Notebook.ipynb',
                 '    :offset: 0',
                 '', '', '-------', '',
-                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/1_First_Notebook.ipynb>`_']
+                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/holoviz/nbsite/main/examples/1_First_Notebook.ipynb>`_']
 
     project = tmp_project
     generate_rst("test_project", project_root=str(project), nblink='bottom',
-                 host='GitHub', org='pyviz', repo='nbsite', branch='master')
+                 host='GitHub', org='holoviz', repo='nbsite', branch='main')
     rstpath = (project / "doc" / "First_Notebook.rst")
     assert rstpath.is_file()
     with open(rstpath, 'r') as f:
@@ -368,11 +368,11 @@ def test_generate_rst_with_no_nblink_set_defaults_to_bottom(tmp_project):
                 '.. notebook:: test_project ../examples/1_First_Notebook.ipynb',
                 '    :offset: 0',
                 '', '', '-------', '',
-                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/pyviz/nbsite/master/examples/1_First_Notebook.ipynb>`_']
+                '`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/holoviz/nbsite/main/examples/1_First_Notebook.ipynb>`_']
 
     project = tmp_project
     generate_rst("test_project", project_root=str(project),
-                 host='GitHub', org='pyviz', repo='nbsite', branch='master')
+                 host='GitHub', org='holoviz', repo='nbsite', branch='main')
     rstpath = (project / "doc" / "First_Notebook.rst")
     assert rstpath.is_file()
     with open(rstpath, 'r') as f:
@@ -395,7 +395,7 @@ def test_build(tmp_project_with_docs_skeleton):
 def test_build_with_nblink_at_top_succeeds(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton
     generate_rst("test_project", project_root=str(project), nblink='top',
-                 host='GitHub', org='pyviz', repo='nbsite', branch='master')
+                 host='GitHub', org='holoviz', repo='nbsite', branch='main')
     rstpath = (project / "doc" / "First_Notebook.rst")
     assert rstpath.is_file()
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')

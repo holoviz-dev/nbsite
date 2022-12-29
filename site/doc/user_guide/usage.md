@@ -82,5 +82,5 @@ To use the holoviz theme: pip/conda install sphinx_holoviz_theme and set `html_t
 In conf.py, you can set options to control notebook execution: 
 
 * `nbbuild_cell_timeout`: timeout per cell (seconds), e.g. `100`
-* `nbbuild_ipython_startup`: code (as string) to execute before running the first cell of each notebook. Defaults to [nbsite's ipython startup code](https://github.com/holoviz-dev/nbsite/blob/master/nbsite/ipystartup.py). E.g. `"module.special_swith=False"`. 
+* `nbbuild_ipython_startup`: code (as string) to execute before running the first cell of each notebook. Defaults to [nbsite's ipython startup code](https://github.com/holoviz-dev/nbsite/blob/main/nbsite/ipystartup.py). E.g. `"module.special_swith=False"`. 
 * `nbbuild_patterns_to_take_along`: list of glob patterns to match files that should be copied alongside a notebook. E.g. holoviews is configured to save data in external json files to improve page loading times, so this defaults to `["*.json"]`.

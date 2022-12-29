@@ -414,7 +414,7 @@ class NotebookDirective(Directive):
         project_name = os.environ.get('PROJECT_NAME','')
         project_root = os.environ.get('PROJECT_ROOT','')
         host = os.environ.get('HOST','GitHub')
-        branch = os.environ.get('BRANCH','master')
+        branch = os.environ.get('BRANCH','main')
         repo = os.environ.get('REPO','')
         org = os.environ.get('ORG','')
         doc = os.environ.get('DOC','doc')
