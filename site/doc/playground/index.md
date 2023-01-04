@@ -18,5 +18,6 @@ Text Notebook <mystmdnb/index>
 MyST Notebook <mystnb/index>
 Pyodide <pyodide/index>
 Gallery <example_gallery/index>
+Inline Gallery <inline_gallery/index>
 API <api/index>
 ```
