@@ -83,9 +83,7 @@ def task_build_site():
 
 def task_all_build():
     return {
-        'actions': [
-            'open builtdocs/index.html',
-        ],
+        'actions': None,
         'task_dep': [
             'generate_rst',
             'build_site'
