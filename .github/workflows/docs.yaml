@@ -50,9 +50,7 @@ jobs:
         run: |
           cd site
           source .venv/bin/activate
-          python build_and_clean.py
-      - name: check no leftover
-        run: git diff --quiet || exit 1
+          doit all_build
       - name: Deploy dev
         if: |
           (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'dev') ||

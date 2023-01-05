@@ -80,9 +80,7 @@ jobs:
         run: |
           cd site
           source .venv/bin/activate
-          python build_and_clean.py
-      - name: check no leftover
-        run: git diff --quiet || exit 1
+          doit all_build
       - name: Deploy dev
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -90,3 +88,9 @@ jobs:
           external_repository: pyviz-dev/nbsite-dev
           publish_dir: ./site/builtdocs
           force_orphan: true
+      - name: clean up
+        run: |
+          source .venv/bin/activate
+          doit clean --clean-dep all_build
+      - name: check no leftover
+        run: git diff --quiet || exit 1
