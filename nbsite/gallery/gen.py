@@ -122,6 +122,20 @@ THUMBNAIL_TEMPLATE = """
             :alt: {label}
 """
 
+INLINE_THUMBNAIL_TEMPLATE = """
+    .. grid-item-card:: :doc:`{title} <{section_path}/{fname}>`
+        :shadow: md
+
+        .. image:: /{thumbnail}
+            :alt: {title}
+            :target: {section_path}/{fname}.html
+        ^^^
+        {description}
+        +++
+{labels}
+
+"""
+
 IFRAME_TEMPLATE = """
 
 .. raw:: html
@@ -182,6 +196,31 @@ DEFAULT_GALLERY_CONF = {
     'github_ref': 'main',  # branch or tag
 }
 
+DEFAULT_GALLERY_INLINED_CONF = {
+    'default_extensions': ['*.ipynb'],
+    'examples_dir': os.path.join('..', 'examples'),
+    'labels_dir': 'labels',
+    'alternative_toctree': [],
+    'host': 'assets',  # set this to assets to have download happen from assets
+    'download_as': 'project',  # set this to 'project' to use project archives as download
+    'github_org': None,
+    'github_project': None,
+    'github_ref': 'main',  # branch or tag
+    'nblink': 'both',  # use this to control the position of the nblink
+    'intro': 'Sample intro',
+    'title': 'A sample gallery title',
+    'path': 'path_to_gallery',
+    'sections': [
+        {
+            'path': 'path_to_section',
+            'title': 'Sample Title',
+            'description': 'A sample section description',
+            'labels': [],
+            'skip': [],
+            'deployment_urls': []
+        }
+    ],
+}
 
 def get_deployed_url(deployment_urls, basename):
     for deployment_url in deployment_urls:
@@ -203,10 +242,9 @@ def get_deployed_url(deployment_urls, basename):
                 return deployment_url
     return None
 
-def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
+def generate_file_rst(gallery_conf, src_dir, dest_dir, page, section, backend,
                       img_extension, skip, deployment_urls):
-    gallery_conf = app.config.nbsite_gallery_conf
-    content = gallery_conf['galleries'][page]
+
     host = gallery_conf['host']
     download_as = gallery_conf['download_as']
     ref = gallery_conf['github_ref']
@@ -214,9 +252,13 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
     org = gallery_conf['github_org']
     proj = gallery_conf['github_project']
     examples_dir = gallery_conf['examples_dir']
-    skip_execute = gallery_conf['skip_execute']
-    endpoint = gallery_conf['deployment_url']
-    iframe_spinner = gallery_conf['iframe_spinner']
+    skip_execute = gallery_conf.get('skip_execute', [])
+    endpoint = gallery_conf.get('deployment_url', None)
+    iframe_spinner = gallery_conf.get('iframe_spinner', '')
+    if 'galleries' in gallery_conf:
+        content = gallery_conf['galleries'][page]
+    else:
+        content = gallery_conf
     extensions = content.get('extensions', gallery_conf['default_extensions'])
 
     components = [examples_dir.split(os.path.sep)[-1], page]
@@ -343,6 +385,24 @@ def resize_pad(im_pth, desired_size=500):
     new_im.save(im_pth)
 
 
+def sort_index_first(files):
+    """
+    Sort the files, putting 'index.ipynb' first.
+    """
+    files = files.copy()
+    index_idx = None
+
+    for i, file in enumerate(files):
+        if os.path.basename(file) == 'index.ipynb':
+            index_idx = i
+
+    assert index_idx is not None, f'index.ipynb not found in {files}'
+
+    sorted_files = [files.pop(index_idx)]
+    sorted_files.extend(sorted(files))
+    return sorted_files
+
+
 def generate_gallery(app, page):
     """
     Generates a gallery for all example directories specified in
@@ -399,6 +459,7 @@ def generate_gallery(app, page):
                                                   label=backend.capitalize()))
         gallery_rst += BUTTON_GROUP_TEMPLATE.format(buttons=''.join(buttons), backends=backends)
 
+    section_backends = []
     for section in sections:
         if isinstance(section, dict):
             section_backends = section.get('backends', backends)
@@ -580,7 +641,7 @@ def generate_gallery(app, page):
                     )
 
                 gallery_rst += this_entry
-            generate_file_rst(app, path, dest_dir, page, section,
+            generate_file_rst(app.config.nbsite_gallery_conf, path, dest_dir, page, section,
                               backend, thumb_extension, skip, deployment_urls)
 
     if backends or section_backends:
@@ -589,11 +650,187 @@ def generate_gallery(app, page):
         f.write(gallery_rst)
 
 
+def generate_inlined_gallery(app):
+    """
+    Adapted from generate_gallery, tailored for the HoloViz examples site.
+    """
+
+    # Get config
+    gallery_conf = app.config.nbsite_gallery_inlined_conf
+    extensions = gallery_conf['default_extensions']
+    alternative_toctree = gallery_conf['alternative_toctree']
+
+    gallery_path = gallery_conf['path']
+
+    # Get directories
+    doc_dir = app.builder.srcdir
+    examples_dir = os.path.join(doc_dir, gallery_conf['examples_dir'])
+    if not '_static' in app.config.html_static_path:
+        raise FileNotFoundError(
+            'Inlined galelry expects `html_static_path` to contain a "doc/_static/" '
+            'folder, in which the labels will be looked up.'
+        )
+    static_dir = '_static'
+    labels_dir = gallery_conf['labels_dir']
+    labels_path = os.path.join(static_dir, labels_dir)
+
+    sections = gallery_conf['sections']
+    if not sections:
+        raise ValueError('sections must be defined.')
+    if sections and not all(isinstance(section, dict) for section in sections):
+        raise TypeError('a sections must be defined as a dictionary.')
+
+    # Main level display info
+    title = gallery_conf['title']
+    intro = gallery_conf['intro']
+
+    # Start to write gallery index.rst
+
+    # Page header
+    gallery_rst = title + '\n' + '_'*len(title) + '\n'
+    # Page intro
+    if intro:
+        gallery_rst += '\n' + intro + '\n'
+    # Sphinx-design grid
+    gallery_rst += '\n.. grid:: 2 2 4 4\n    :gutter: 3\n    :margin: 0\n'
+
+    toctree_entries = []
+
+    for section in sections:
+        section_path = section['path']
+        if not 'path' in section or not section['path']:
+            raise ValueError('Missing or empty path value in section definition')
+        section_title = section.get('title', section['path'])
+        description = section.get('description', None)
+        labels = section.get('labels', [])
+        skip = section.get('skip', [])
+        deployment_urls = section.get('deployment_urls', [])
+
+        path_components = [gallery_path]
+        path_components.append(section_path)
+
+        path = os.path.join(examples_dir, *path_components)
+        dest_dir = os.path.join(doc_dir, *path_components)
+        try:
+            os.makedirs(dest_dir)
+        except:
+            pass
+
+        # Collect examples
+        files = []
+        for extension in extensions:
+            files += glob.glob(os.path.join(path, extension))
+        if skip:
+            files = [f for f in files if os.path.basename(f) not in skip]
+        
+        if not files:
+            raise ValueError(f'No files found in section {section_path}')
+        
+        if len(files) > 1:
+            if not any(os.path.basename(file) == 'index.ipynb' for file in files):
+                logger.warning(
+                    '%s has multiple files but no "index.ipynb", skipping it entirely',
+                    section_title,
+                )
+                continue
+            files = sort_index_first(files)
+
+        logger.info("\n\nGenerating %d %s %s examples\n"
+                    "__________________________________________________"
+                    % (len(files), section_title, title))
+
+        basenames = []
+        for f in files:
+
+            # Generate the notebook rst
+            generate_file_rst(
+                gallery_conf=app.config.nbsite_gallery_inlined_conf,
+                src_dir=path,
+                dest_dir=dest_dir,
+                page=gallery_path,
+                section=section_path,
+                backend=None,
+                img_extension='png',
+                skip=skip,
+                deployment_urls=deployment_urls,
+            )
+
+            extension = f.split('.')[-1]
+            basename = os.path.basename(f)[:-(len(extension)+1)]
+            basenames.append(basename)
+
+            # Generate a card only for the index
+            if len(files) > 1 and basename != 'index':
+                continue
+
+            thumb_dir = os.path.join(dest_dir, 'thumbnails')
+            if not os.path.isdir(thumb_dir):
+                os.makedirs(thumb_dir)
+            thumb_path = os.path.join(thumb_dir, '%s.png' % basename)
+
+            # Try existing file
+            if not os.path.isfile(thumb_path):
+                raise FileNotFoundError(f'Notebook {f} has no thumbnail.')
+
+            labels_str = ''
+            for label in labels:
+                label_svg = os.path.join(labels_path, f'{label}.svg')
+                if not os.path.exists(os.path.join(doc_dir, label_svg)):
+                    raise FileNotFoundError(
+                        f'Label {label!r} must have an SVG file in {labels_path}'
+                    )
+                # Prepend / to make it an "absolute" path from the root folder.
+                label_svg = '/' + label_svg
+                labels_str += ' ' * 8 + f'.. image:: {label_svg}\n'
+
+            # Generate the card rst
+            this_entry = INLINE_THUMBNAIL_TEMPLATE.format(
+                title=section_title, section_path=section_path, fname=basename,
+                description=description, thumbnail=thumb_path,
+                labels=labels_str,
+            )
+            gallery_rst += this_entry
+
+        if not alternative_toctree and len(files) > 1:
+            # Append a toctree to the section index.rst file
+            rst_path = os.path.join(dest_dir, 'index.rst')
+            assert os.path.isfile(rst_path), f'index.rst file not found at {rst_path}'
+
+            with open(rst_path, 'a') as rst_file:
+                rst_file.write('\n\n.. toctree::\n   :hidden:\n\n')
+                for basename_ in basenames:
+                    target = 'self' if basename_ == 'index' else basename_
+                    rst_file.write(f'   {target}\n')
+
+        # Gallery toctree: just put the index file or the only notebook available.
+        target = 'index' if 'index' in basenames else basenames[0]
+        toctree_entries.append(f'{section_title} <{section_path}/{target}>')
+
+    # Add gallery toctree
+    if not alternative_toctree:
+        assert toctree_entries, 'Empty toctree entries.'
+        toctree_rst = f'.. toctree::\n   :hidden:\n\n'
+        for toctree_entry in toctree_entries:
+            toctree_entry = 'self' if toctree_entry == 'index' else toctree_entry
+            toctree_rst += f'   {toctree_entry}\n'
+    else:
+        toctree_rst = f'.. toctree::\n   :hidden:\n\n'
+        for toctree_entry in alternative_toctree:
+            toctree_rst += f'   {toctree_entry}\n'
+
+    gallery_rst += toctree_rst
+
+    with open(os.path.join(doc_dir, gallery_path, 'index.rst'), 'w') as f:
+        f.write(gallery_rst)
+
+
 def generate_gallery_rst(app):
     """Generate the Main examples gallery reStructuredText
     Start the sphinx-gallery configuration and recursively scan the examples
     directories in order to populate the examples gallery
     """
+    if DEFAULT_GALLERY_CONF == app.config.nbsite_gallery_conf:
+        return
     logger.info('generating gallery...', color='white')
     gallery_conf = dict(DEFAULT_GALLERY_CONF, **app.config.nbsite_gallery_conf)
 
@@ -602,3 +839,17 @@ def generate_gallery_rst(app):
 
     for gallery in sorted(gallery_conf['galleries']):
         generate_gallery(app, gallery)
+
+
+def generate_gallery_inlined_rst(app):
+    """
+    Adapted from generate_gallery_rst to build the HoloViz examples site.
+    """
+    if DEFAULT_GALLERY_INLINED_CONF == app.config.nbsite_gallery_inlined_conf:
+        return
+    logger.info('generating inlined gallery...', color='white')
+    gallery_conf = dict(DEFAULT_GALLERY_INLINED_CONF, **app.config.nbsite_gallery_inlined_conf)
+
+    # this assures I can call the config in other places
+    app.config.nbsite_gallery_inlined_conf = gallery_conf
+    generate_inlined_gallery(app)

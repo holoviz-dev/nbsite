@@ -53,6 +53,15 @@ def task_build_site():
                         f.unlink(missing_ok=True)
                     for f in section.glob('*.ipynb'):
                         f.unlink(missing_ok=True)
+        if hasattr(conf_module, 'nbsite_gallery_inlined_conf'):
+            gallery = conf_module.nbsite_gallery_inlined_conf['path']
+            gallery_dir = Path('doc') / gallery
+            (gallery_dir / 'index.rst').unlink(missing_ok=True)
+            for section in gallery_dir.iterdir():
+                for f in section.glob('*.rst'):
+                    f.unlink(missing_ok=True)
+                for f in section.glob('*.ipynb'):
+                    f.unlink(missing_ok=True)
 
         # Remove the rst and ipynb files from the doc notebook
         nb_dir = Path('doc') / 'playground' / 'notebook_directive'

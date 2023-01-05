@@ -45,6 +45,28 @@ nbsite_gallery_conf = {
     },
 }
 
+nbsite_gallery_inlined_conf = {
+    'github_org': 'pyviz-dev',
+    'github_project': 'nbsite',
+    'title': 'Inline Gallery',
+    'intro': 'This is an inlined gallery.',
+    'path': 'playground/inline_gallery',
+    'sections': [
+        {
+            'path': 'example1',
+            'title': 'Example 1',
+            'description': 'Description 1',
+            'labels': ['holoviews'],
+        },
+        {
+            'path': 'example2',
+            'title': 'Example 2',
+            'description': 'Description 2',
+            'labels': ['hvplot', 'panel', 'geoviews'],
+        },
+    ],
+}
+
 # Configure the theme
 html_theme_options = {
     "github_url": "https://github.com/pyviz-dev/nbsite",
