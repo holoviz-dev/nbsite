@@ -87,8 +87,10 @@ def extract_extensions(code: str) -> List[str]:
     with set_resource_mode('cdn'):
         for name, model in Model.model_class_reverse_map.items():
             if name not in prev_models:
-                js += model.__javascript__
-                css += model.__css__
+                if hasattr(model, '__javascript__'):
+                    js += model.__javascript__
+                if hasattr(model, '__css__'):
+                    css += model.__css__
     return js, css
 
 def _model_json(model: Model, target: str) -> Tuple[Document, str]:
