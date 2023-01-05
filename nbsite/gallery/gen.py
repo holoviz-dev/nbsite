@@ -809,12 +809,12 @@ def generate_inlined_gallery(app):
     # Add gallery toctree
     if not alternative_toctree:
         assert toctree_entries, 'Empty toctree entries.'
-        toctree_rst = f'.. toctree::\n   :hidden:\n\n'
+        toctree_rst = '.. toctree::\n   :hidden:\n\n'
         for toctree_entry in toctree_entries:
             toctree_entry = 'self' if toctree_entry == 'index' else toctree_entry
             toctree_rst += f'   {toctree_entry}\n'
     else:
-        toctree_rst = f'.. toctree::\n   :hidden:\n\n'
+        toctree_rst = '.. toctree::\n   :hidden:\n\n'
         for toctree_entry in alternative_toctree:
             toctree_rst += f'   {toctree_entry}\n'
 
