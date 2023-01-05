@@ -90,6 +90,7 @@ jobs:
           force_orphan: true
       - name: clean up
         run: |
+          cd site
           source .venv/bin/activate
           doit clean --clean-dep all_build
       - name: check no leftover
