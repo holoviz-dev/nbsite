@@ -61,7 +61,7 @@ nbsite_gallery_inlined_conf = {
         {
             'path': 'example2',
             'title': 'Example 2',
-            'description': 'Description 2',
+            'description': 'Description 2\nwith multiple lines\nand another one.',
             'labels': ['hvplot', 'panel', 'geoviews'],
         },
     ],

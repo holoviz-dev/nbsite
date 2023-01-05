@@ -783,6 +783,9 @@ def generate_inlined_gallery(app):
                 label_svg = '/' + label_svg
                 labels_str += ' ' * 8 + f'.. image:: {label_svg}\n'
 
+            # Description with new lines break the grid
+            description = ' '.join(description.splitlines())
+
             # Generate the card rst
             this_entry = INLINE_THUMBNAIL_TEMPLATE.format(
                 title=section_title, section_path=section_path, fname=basename,
