@@ -129,6 +129,7 @@ INLINE_THUMBNAIL_TEMPLATE = """
         .. image:: /{thumbnail}
             :alt: {title}
             :target: {section_path}/{fname}.html
+            :class: nbsite-gallery-inlined-img
         ^^^
         {description}
         +++
