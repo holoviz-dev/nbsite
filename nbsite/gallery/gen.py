@@ -113,7 +113,7 @@ guide and for more detailed documentation our `User Guide
 
 THUMBNAIL_TEMPLATE = """
     .. grid-item-card:: {label}
-        :link: {section}/{fname}
+        :link: {link}
         :link-type: doc
         :class-card: {backend_prefix}example
         :shadow: md
@@ -319,12 +319,20 @@ def _thumbnail_div(thumb_path, section, backend, fname, normalize=True, title=No
     # Inside rst files forward slash defines paths
     thumb_path = thumb_path.replace(os.sep, "/")
 
-    if backend:
-        section = f'{section}/{backend}'
+    if section and backend:
+        section_path = f'{section}/{backend}'
+    elif section and not backend:
+        section_path = section
+    elif not section and backend:
+        section_path = backend
+    else:
+        section_path = ''
+
+    link = f'{section_path}/{fname}'
 
     return THUMBNAIL_TEMPLATE.format(
-        backend_prefix=backend+'-', section=section, thumbnail=thumb_path,
-        label=label, fname=fname
+        backend_prefix=backend+'-', thumbnail=thumb_path,
+        label=label, link=link,
     )
 
 
@@ -421,7 +429,7 @@ def generate_gallery(app, page):
             deployment_urls = []
 
         if not heading:
-            gallery_rst += '\n\n.. raw:: html\n\n    <div class="section sphx-glr-section" id="section"></div><br>\n\n'
+            pass
         elif inline:
             gallery_rst += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n   :maxdepth: 2\n\n   {section}/*'
         else:
@@ -561,13 +569,23 @@ def generate_gallery(app, page):
                         label = _normalize_label(basename)
                     else:
                         label = basename
-                    if backend:
+
+                    if section and backend:
                         section_path = f'{section}/{backend}'
-                    else:
+                    elif section and not backend:
                         section_path = section
+                    elif not section and backend:
+                        section_path = backend
+                    else:
+                        section_path = ''
+
+                    if section_path:
+                        link = f'{section_path}/{basename}'
+                    else:
+                        link = basename
                     this_entry = THUMBNAIL_TEMPLATE.format(
-                        backend_prefix=backend+'-', section=section_path, thumbnail=logo_path,
-                        fname=basename, label=label
+                        backend_prefix=backend+'-', thumbnail=logo_path,
+                        label=label, link=link,
                     )
                 else:
                     logger.info('%s %s thumbnail' % (verb, basename))
