@@ -78,10 +78,11 @@ def component_links(text, path):
     return text
 
 
-def cleanup_links(path, inspect_links=False):
+def cleanup_links(root, file_path, inspect_links=False):
     """
     Use inspect_links to get a list of all the external links in the site
     """
+    path = os.path.join(root, file_path)
     with open(path) as f:
         text = f.read()
 
@@ -118,10 +119,20 @@ def cleanup_links(path, inspect_links=False):
             try_path = os.path.join(os.path.dirname(path), src)
             if not os.path.exists(try_path):
                 also_tried = os.path.join('..', src)
+
+                # Assets in /assets/dirname/assets/, specific to examples.pyviz.org
+                also_tried2 = os.path.join('..', '..', 'assets', os.path.basename(root), src)
+                # Saw it was needed for a notebook referencing an asset with Markdown (e.g. ![alt](./assets/file.png))
+                also_tried3 = os.path.join('..', '..', 'assets', src)
+
                 if os.path.exists(os.path.join(os.path.dirname(path), also_tried)):
                     img['src'] = also_tried
+                elif os.path.exists(os.path.join(os.path.dirname(path), also_tried2)):
+                    img['src'] = also_tried2
+                elif os.path.exists(os.path.join(os.path.dirname(path), also_tried3)):
+                    img['src'] = also_tried3
                 else:
-                    warnings.warn('Found reference to missing image {} in: {}. Also tried: {}'.format(src, path, also_tried))
+                    warnings.warn('Found reference to missing image {} in: {}. Also tried: {} and {} and {}'.format(src, path, also_tried, also_tried2, also_tried3))
     with open(path, 'w') as f:
         f.write(str(soup))
 
@@ -136,4 +147,4 @@ if __name__ == '__main__':
     for root, dirs, files in os.walk(args.build_dir):
         for file_path in files:
             if file_path.endswith(".html"):
-                soup = cleanup_links(os.path.join(root, file_path), args.inspect_links)
+                soup = cleanup_links(root, file_path, args.inspect_links)
