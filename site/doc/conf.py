@@ -45,6 +45,13 @@ nbsite_gallery_conf = {
     },
 }
 
+prolog = """
+.. note::
+   
+   This is a prolog.
+
+"""
+
 nbsite_gallery_inlined_conf = {
     'github_org': 'pyviz-dev',
     'github_project': 'nbsite',
@@ -57,12 +64,14 @@ nbsite_gallery_inlined_conf = {
             'title': 'Example 1',
             'description': 'Description 1',
             'labels': ['holoviews'],
+            'prolog': prolog,
         },
         {
             'path': 'example2',
             'title': 'Example 2',
             'description': 'Description 2\nwith multiple lines\nand another one.',
             'labels': ['hvplot', 'panel', 'geoviews'],
+            'prolog': prolog,
         },
     ],
 }
