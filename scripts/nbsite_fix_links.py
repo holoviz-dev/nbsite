@@ -121,9 +121,9 @@ def cleanup_links(root, file_path, inspect_links=False):
                 also_tried = os.path.join('..', src)
 
                 # Assets in /assets/dirname/assets/, specific to examples.pyviz.org
-                also_tried2 = os.path.join('..', '..', 'assets', os.path.basename(root), src)
+                also_tried2 = os.path.join( '..', 'assets', os.path.basename(root), src)
                 # Saw it was needed for a notebook referencing an asset with Markdown (e.g. ![alt](./assets/file.png))
-                also_tried3 = os.path.join('..', '..', 'assets', src)
+                also_tried3 = os.path.join('..', 'assets', src)
 
                 if os.path.exists(os.path.join(os.path.dirname(path), also_tried)):
                     img['src'] = also_tried
