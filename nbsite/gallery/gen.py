@@ -371,6 +371,11 @@ def generate_inlined_file_rst(
 
         with open(rst_path, 'w') as rst_file:
             if prolog:
+                # Used by examples.pyviz.org to link to the viewed notebook
+                if '/notebooks/{template_notebook_filename}' in prolog:
+                    prolog = prolog.format(
+                        template_notebook_filename=basename,
+                    )
                 rst_file.write(prolog)
 
             rst_file.write(".. notebook:: %s %s" % (proj, rel_path))
