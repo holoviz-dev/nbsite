@@ -43,6 +43,12 @@ SERVICE_WORKER_TEMPLATE = _env.get_template('ServiceWorker.js')
 SERVICE_HANDLER_TEMPLATE = _env.get_template('ServiceHandler.js')
 WEB_MANIFEST_TEMPLATE = _env.get_template('site.webmanifest')
 
+bokeh_version = Version(BOKEH_VERSION)
+if bokeh_version.is_devrelease or bokeh_version.is_prerelease:
+    bk_prefix = 'dev'
+else:
+    bk_prefix = 'release'
+
 DEFAULT_PYODIDE_CONF = {
     'PYODIDE_URL': 'https://cdn.jsdelivr.net/pyodide/v0.21.3/full/pyodide.js',
     'autodetect_deps': True,
@@ -50,9 +56,9 @@ DEFAULT_PYODIDE_CONF = {
     'requirements': ['panel', 'pandas'],
     'precache': [],
     'scripts': [
-        f'https://cdn.bokeh.org/bokeh/release/bokeh-{BOKEH_VERSION}.min.js',
-        f'https://cdn.bokeh.org/bokeh/release/bokeh-widgets-{BOKEH_VERSION}.min.js',
-        f'https://cdn.bokeh.org/bokeh/release/bokeh-tables-{BOKEH_VERSION}.min.js',
+        f'https://cdn.bokeh.org/bokeh/{bk_prefix}/bokeh-{BOKEH_VERSION}.min.js',
+        f'https://cdn.bokeh.org/bokeh/{bk_prefix}/bokeh-widgets-{BOKEH_VERSION}.min.js',
+        f'https://cdn.bokeh.org/bokeh/{bk_prefix}/bokeh-tables-{BOKEH_VERSION}.min.js',
         f'{CDN_DIST}panel.min.js'
     ],
     'extra_css': [],
@@ -157,7 +163,6 @@ class PyodideDirective(Directive):
     _send_address = ('localhost', 33355)
     _rcv_address = ('localhost', 33356)
     _password = b'pyodide'
-
 
     @classmethod
     def _execution_process(cls, pipe):
