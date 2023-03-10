@@ -13,6 +13,7 @@ from docutils import nodes
 from docutils.parsers.rst import Directive, roles
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader
+from packaging.version import Version
 from sphinx.application import Sphinx
 
 from bokeh.document import Document
