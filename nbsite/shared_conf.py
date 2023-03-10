@@ -112,3 +112,6 @@ copyright_fmt = "{start_year}-{current_year} Holoviz contributors"
 
 # Format of the last updated date in the footer.
 html_last_updated_fmt = '%Y-%m-%d'
+
+
+suppress_warnings = ["myst.header", "ref.myst", "mystnb.unknown_mime_type"]
