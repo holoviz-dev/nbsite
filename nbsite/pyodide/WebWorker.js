@@ -50,44 +50,41 @@ async function loadApplication(cell_id) {
   console.log("Packages loaded!");
 }
 
-function autodetect_deps_code(msg) {
-  const escaped = msg.code.replace(/"""/g, '\\"\\"\\"');
-  return `
+const autodetect_deps_code = `
 import json
 from panel.io.mime_render import find_imports
-code = r"""\n${escaped}""".replace(r'\\"\\"\\"', '"""')
-json.dumps(find_imports(code))`
-}
+json.dumps(find_imports(msg.to_py()['code']))`
 
-function exec_code(msg) {
-  const escaped = msg.code.replace(/"""/g, '\\"\\"\\"');
-  return `
+
+const exec_code = `
 from functools import partial
 from panel.io.pyodide import pyrender
 from js import console
 
-code = r"""\n${escaped}""".replace(r'\\"\\"\\"', '"""')
-stdout_cb = partial(sendStdout, '${msg.id}')
-stderr_cb = partial(sendStderr, '${msg.id}')
-target = 'output-${msg.id}'
+msg = msg.to_py()
+code = msg['code']
+stdout_cb = partial(sendStdout, msg['id'])
+stderr_cb = partial(sendStderr, msg['id'])
+target = f'output-{msg['id']}'
 pyrender(code, stdout_cb, stderr_cb, target)`
-}
 
-function onload_code(msg) {
-  return `
-if '${msg.mime}' == 'application/bokeh':
+
+const onload_code = `
+msg = msg.to_py()
+if msg['mime'] == 'application/bokeh':
     from panel.io.pyodide import _link_docs_worker
     from panel.io.state import state
-    doc = state.cache['output-${msg.id}']
-    _link_docs_worker(doc, sendPatch, '${msg.id}', 'js')
-`}
+    doc = state.cache[f'output-{msg['id']}']
+    _link_docs_worker(doc, sendPatch, msg['id'], 'js')
+`
 
-function patch_code(msg) {
-    return `
+const patch_code = `
 import json
 from panel import state
-doc = state.cache['output-${msg.id}']
-doc.apply_json_patch(json.loads('${msg.patch}'), setter='js')`
+
+msg = msg.to_py()
+doc = state.cache[f'output-{msg['id']}']
+doc.apply_json_patch(msg['patch'], setter='js')`
 }
 
 const MESSAGES = {
@@ -166,7 +163,8 @@ self.onmessage = async (event) => {
   {% endif %}
   
   try {
-    let out = await self.pyodide.runPythonAsync(MESSAGES[msg.type](msg))
+    self.pyodide.globals.set('msg', msg)
+    let out = await self.pyodide.runPythonAsync(MESSAGES[msg.type])
     resolveExecution()
     if (out == null) {
       out = new Map()

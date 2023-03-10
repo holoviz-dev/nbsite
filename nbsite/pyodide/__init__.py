@@ -50,7 +50,7 @@ else:
     bk_prefix = 'release'
 
 DEFAULT_PYODIDE_CONF = {
-    'PYODIDE_URL': 'https://cdn.jsdelivr.net/pyodide/v0.21.3/full/pyodide.js',
+    'PYODIDE_URL': 'https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js',
     'autodetect_deps': True,
     'enable_pwa': True,
     'requirements': ['panel', 'pandas'],

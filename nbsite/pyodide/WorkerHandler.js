@@ -88,7 +88,7 @@ pyodideWorker.onmessage = async (event) => {
     }
     pyodideWorker.postMessage({type: 'rendered', id: msg.id, mime: msg.mime})
   } else if (msg.type === 'patch') {
-    pyodideWorker.documents[msg.id].apply_json_patch(JSON.parse(msg.patch), msg.buffers, setter_id='py')
+    pyodideWorker.documents[msg.id].apply_json_patch(msg.patch, msg.buffers, setter_id='py')
   }
 };
 
