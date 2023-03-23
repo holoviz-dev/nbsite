@@ -527,13 +527,20 @@ def generate_gallery(app, page):
 
                 # Try download
                 if download and retcode:
-                    thumb_req = requests.get(thumb_url, verify=False)
+                    try:
+                        thumb_req = requests.get(thumb_url)
+                    except Exception:
+                        thumb_req = requests.get(thumb_url, verify=False)
+
                     verb = 'Successfully downloaded'
                     if thumb_req.status_code == 200:
                         verb = 'Successfully downloaded'
                         retcode = 0
                     else:
-                        thumb_req = requests.get(thumb_url[:-4]+'.gif', verify=False)
+                        try:
+                            thumb_req = requests.get(thumb_url[:-4]+'.gif')
+                        except Exception:
+                            thumb_req = requests.get(thumb_url[:-4]+'.gif', verify=False)
                         if thumb_req.status_code == 200:
                             thumb_extension = 'gif'
                             thumb_path = thumb_path[:-4]+'.gif'
