@@ -3,7 +3,7 @@
     margin-right: .5em;
 }
 
-p.caption {
+p.caption:not([role="heading"]) {
     text-align: center !important;
     font-weight: bold;
 }
