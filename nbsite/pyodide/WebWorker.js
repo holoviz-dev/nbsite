@@ -85,7 +85,6 @@ from panel import state
 msg = msg.to_py()
 doc = state.cache[f'output-{msg['id']}']
 doc.apply_json_patch(msg['patch'], setter='js')`
-}
 
 const MESSAGES = {
   patch: patch_code,
