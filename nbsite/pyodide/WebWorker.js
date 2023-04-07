@@ -65,7 +65,7 @@ msg = msg.to_py()
 code = msg['code']
 stdout_cb = partial(sendStdout, msg['id'])
 stderr_cb = partial(sendStderr, msg['id'])
-target = f'output-{msg['id']}'
+target = f"output-{msg['id']}"
 pyrender(code, stdout_cb, stderr_cb, target)`
 
 
