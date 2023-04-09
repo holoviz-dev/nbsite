@@ -55,7 +55,6 @@ import json
 from panel.io.mime_render import find_imports
 json.dumps(find_imports(msg.to_py()['code']))`
 
-
 const exec_code = `
 from functools import partial
 from panel.io.pyodide import pyrender
@@ -67,7 +66,6 @@ stdout_cb = partial(sendStdout, msg['id'])
 stderr_cb = partial(sendStderr, msg['id'])
 target = f"output-{msg['id']}"
 pyrender(code, stdout_cb, stderr_cb, target)`
-
 
 const onload_code = `
 msg = msg.to_py()
@@ -140,7 +138,8 @@ self.onmessage = async (event) => {
   if (msg.type === 'execute') {
     let deps
     try {
-      deps = self.pyodide.runPython(autodetect_deps_code(msg))
+      self.pyodide.globals.set('msg', msg)
+      deps = self.pyodide.runPython(autodetect_deps_code)
     } catch(e) {
       deps = '[]'
       console.warn(`Auto-detection of dependencies failed with error: ${e}`)
