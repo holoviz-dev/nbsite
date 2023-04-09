@@ -65,7 +65,7 @@ msg = msg.to_py()
 code = msg['code']
 stdout_cb = partial(sendStdout, msg['id'])
 stderr_cb = partial(sendStderr, msg['id'])
-target = f'output-{msg['id']}'
+target = f"output-{msg['id']}"
 pyrender(code, stdout_cb, stderr_cb, target)`
 
 
@@ -74,18 +74,16 @@ msg = msg.to_py()
 if msg['mime'] == 'application/bokeh':
     from panel.io.pyodide import _link_docs_worker
     from panel.io.state import state
-    doc = state.cache[f'output-{msg['id']}']
-    _link_docs_worker(doc, sendPatch, msg['id'], 'js')
-`
+    doc = state.cache[f"output-{msg['id']}"]
+    _link_docs_worker(doc, sendPatch, msg['id'], 'js')`
 
 const patch_code = `
 import json
 from panel import state
 
 msg = msg.to_py()
-doc = state.cache[f'output-{msg['id']}']
+doc = state.cache[f"output-{msg['id']}"]
 doc.apply_json_patch(msg['patch'], setter='js')`
-}
 
 const MESSAGES = {
   patch: patch_code,
@@ -99,7 +97,7 @@ self.onmessage = async (event) => {
     resolveExecution = resolve;
     rejectExecution = reject;
   });
-  
+
   const prev_msg = QUEUE[0]
   const msg = {...event.data, executing}
   QUEUE.unshift(msg)
@@ -161,7 +159,7 @@ self.onmessage = async (event) => {
     }
   }
   {% endif %}
-  
+
   try {
     self.pyodide.globals.set('msg', msg)
     let out = await self.pyodide.runPythonAsync(MESSAGES[msg.type])
