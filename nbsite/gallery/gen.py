@@ -300,9 +300,9 @@ def generate_section_index(section, items, dest_dir, rel='..'):
     """
     # Reference to section header
     section_ref = section.lower().replace(' ', '-')
-    index_page = REDIRECT.format(rel=rel, section=section)
+    index_page = REDIRECT.format(rel=rel, section=section_ref)
     index_page += '\n' + section + '\n' + '_'*len(section) + '\n'
-    index_page += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   '
+    index_page += '\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   '
     index_page += '\n   '.join(items)
     with open(os.path.join(dest_dir, 'index.rst'), 'w') as f:
         f.write(index_page)
@@ -428,7 +428,7 @@ def generate_gallery(app, page):
                                                   label=backend.capitalize()))
         gallery_rst += BUTTON_GROUP_TEMPLATE.format(buttons=''.join(buttons), backends=backends)
 
-    toc = f'\n\n.. toctree::\n   :glob:\n   :hidden:\n\n'
+    toc = '\n\n.. toctree::\n   :glob:\n   :hidden:\n\n'
     for section in sections:
         if isinstance(section, dict):
             section_backends = section.get('backends', backends)
