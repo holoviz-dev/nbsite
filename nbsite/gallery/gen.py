@@ -1,10 +1,9 @@
-import os
 import glob
 import logging
+import os
 
 import requests
 import sphinx.util
-
 from PIL import Image
 
 try:
@@ -12,7 +11,7 @@ try:
 except:
     bs4 = None
 
-from .thumbnailer import notebook_thumbnail, execute
+from .thumbnailer import execute, notebook_thumbnail
 
 logger = sphinx.util.logging.getLogger('nbsite-gallery')
 logging.getLogger(requests.packages.urllib3.__package__).setLevel(logging.ERROR)
@@ -286,6 +285,26 @@ def generate_file_rst(app, src_dir, dest_dir, page, section, backend,
                 add_nblink(rst_file, host, deployed_file, download_as,
                            org, proj, ref, components, basename, ftype, section)
 
+
+REDIRECT = """.. raw:: html
+
+    <head>
+        <meta http-equiv='refresh' content='0; URL=/index.html#{section}'>
+    </head>
+"""
+
+def generate_section_index(section, items, dest_dir, rel='..'):
+    """
+    Builds index pages for each section which redirect to the main
+    gallery index.
+    """
+    index_page = REDIRECT.format(rel=refl, section=section)
+    index_page += '\n' + heading + '\n' + '_'*len(heading) + '\n'
+    index_page += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   '
+    index_page += '\n   '.join(items)
+    with open(os.path.join(dest_dir, 'index.rst'), 'w') as f:
+        f.write(index_page)
+
 def add_nblink(rst_file, host, deployed_file, download_as,
                org, proj, ref, components, basename, ftype, section):
     if deployed_file:
@@ -407,6 +426,7 @@ def generate_gallery(app, page):
                                                   label=backend.capitalize()))
         gallery_rst += BUTTON_GROUP_TEMPLATE.format(buttons=''.join(buttons), backends=backends)
 
+    toc = f'\n\n.. toctree::\n   :glob:\n   :hidden:\n\n'
     for section in sections:
         if isinstance(section, dict):
             section_backends = section.get('backends', backends)
@@ -428,18 +448,18 @@ def generate_gallery(app, page):
             labels = []
             deployment_urls = []
 
-        if not heading:
-            pass
-        elif inline:
-            gallery_rst += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n   :maxdepth: 2\n\n   {section}/*'
-        else:
-            underline = '-'*len(heading)
-            gallery_rst += f'\n\n{heading}\n{underline}\n\n'
-
+        # Add section toctree
         if section:
-            gallery_rst += f'.. toctree::\n   :glob:\n   :hidden:\n\n   {heading}\n   {section}/*\n\n'
+            toc += f'   {section}/index\n'
         else:
             gallery_rst += f'.. toctree::\n   :glob:\n   :hidden:\n\n   {heading}\n   *\n\n'
+
+        # Reference to section header
+        section_ref = heading.lower().replace(' ', '-')
+
+        if heading:
+            underline = '-'*len(heading)
+            gallery_rst += f'\n\n{heading}\n{underline}\n\n'
 
         if labels:
             gallery_rst += '\n\n.. raw:: html\n\n'
@@ -461,15 +481,21 @@ def generate_gallery(app, page):
         gallery_rst += '.. grid:: 2 2 4 5\n    :gutter: 3\n    :margin: 0\n'
 
         thumb_extension = 'png'
-        for backend in (section_backends or ('',)):
-            path_components = [page]
-            if section:
-                path_components.append(section)
-            if backend:
-                path_components.append(backend)
 
-            path = os.path.join(examples_dir, *path_components)
-            dest_dir = os.path.join(doc_dir, *path_components)
+        path_components = [page]
+        if section:
+            path_components.append(section)
+        dest_path = os.path.join(doc_dir, *path_components)
+        section_path = os.path.join(examples_dir, *path_components)
+        if section and section_backends:
+            generate_section_index(section_ref, section_backends, dest_path)
+        for backend in (section_backends or ('',)):
+            path = section_path
+            dest_dir = dest_path
+            if backend:
+                path = os.path.join(path, backend)
+                dest_dir = os.path.join(dest_path, backend)
+
             try:
                 os.makedirs(dest_dir)
             except:
@@ -495,6 +521,14 @@ def generate_gallery(app, page):
                 logger.info("\n\nGenerating %d %s %s examples%s\n"
                             "__________________________________________________"
                             % (len(files), heading, title, backend_str))
+                if section:
+                    section_items = [
+                        os.path.basename(f).split('.')[0] for f in sorted(files)
+                    ]
+                    generate_section_index(
+                        section_ref, section_items, dest_dir,
+                        rel='../..' if backend else '..'
+                    )
 
             for f in sorted(files, key=subsection_order):
                 extension = f.split('.')[-1]
@@ -600,6 +634,7 @@ def generate_gallery(app, page):
                 gallery_rst += this_entry
             generate_file_rst(app, path, dest_dir, page, section,
                               backend, thumb_extension, skip, deployment_urls)
+    gallery_rst += toc
 
     if backends or section_backends:
         gallery_rst += HIDE_JS.format(backends=repr(backends[1:]))
