@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import glob
-from setuptools import setup, find_packages
 
+from setuptools import find_packages, setup
 
 NAME = 'nbsite'
 DESCRIPTION = 'Build a tested, sphinx-based website from notebooks.'
@@ -17,8 +17,8 @@ def get_setup_version(root, reponame):
     >>> from pyct.build import get_setup_version
     >>> version = get_setup_version(__file__, reponame)  # noqa
     """
-    import os
     import json
+    import os
 
     filepath = os.path.abspath(os.path.dirname(root))
     version_file_path = os.path.join(filepath, reponame, '.version')
@@ -64,7 +64,7 @@ setup_args = dict(
         'beautifulsoup4',
         'jinja2',
         'pillow',
-        'pydata-sphinx-theme',
+        'pydata-sphinx-theme ==0.13.3',
         'myst-parser',
     ],
     extras_require= {
