@@ -74,9 +74,8 @@ msg = msg.to_py()
 if msg['mime'] == 'application/bokeh':
     from panel.io.pyodide import _link_docs_worker
     from panel.io.state import state
-    doc = state.cache[f'output-{msg['id']}']
-    _link_docs_worker(doc, sendPatch, msg['id'], 'js')
-`
+    doc = state.cache[f"output-{msg['id']}"]
+    _link_docs_worker(doc, sendPatch, msg['id'], 'js')`
 
 const patch_code = `
 import json
@@ -98,7 +97,7 @@ self.onmessage = async (event) => {
     resolveExecution = resolve;
     rejectExecution = reject;
   });
-  
+
   const prev_msg = QUEUE[0]
   const msg = {...event.data, executing}
   QUEUE.unshift(msg)
@@ -160,7 +159,7 @@ self.onmessage = async (event) => {
     }
   }
   {% endif %}
-  
+
   try {
     self.pyodide.globals.set('msg', msg)
     let out = await self.pyodide.runPythonAsync(MESSAGES[msg.type])

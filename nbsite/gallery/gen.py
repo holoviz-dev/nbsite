@@ -298,8 +298,10 @@ def generate_section_index(section, items, dest_dir, rel='..'):
     Builds index pages for each section which redirect to the main
     gallery index.
     """
-    index_page = REDIRECT.format(rel=refl, section=section)
-    index_page += '\n' + heading + '\n' + '_'*len(heading) + '\n'
+    # Reference to section header
+    section_ref = section.lower().replace(' ', '-')
+    index_page = REDIRECT.format(rel=rel, section=section)
+    index_page += '\n' + section + '\n' + '_'*len(section) + '\n'
     index_page += f'\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   '
     index_page += '\n   '.join(items)
     with open(os.path.join(dest_dir, 'index.rst'), 'w') as f:
@@ -454,9 +456,6 @@ def generate_gallery(app, page):
         else:
             gallery_rst += f'.. toctree::\n   :glob:\n   :hidden:\n\n   {heading}\n   *\n\n'
 
-        # Reference to section header
-        section_ref = heading.lower().replace(' ', '-')
-
         if heading:
             underline = '-'*len(heading)
             gallery_rst += f'\n\n{heading}\n{underline}\n\n'
@@ -488,7 +487,7 @@ def generate_gallery(app, page):
         dest_path = os.path.join(doc_dir, *path_components)
         section_path = os.path.join(examples_dir, *path_components)
         if section and section_backends:
-            generate_section_index(section_ref, section_backends, dest_path)
+            generate_section_index(heading, section_backends, dest_path)
         for backend in (section_backends or ('',)):
             path = section_path
             dest_dir = dest_path
@@ -526,7 +525,7 @@ def generate_gallery(app, page):
                         os.path.basename(f).split('.')[0] for f in sorted(files)
                     ]
                     generate_section_index(
-                        section_ref, section_items, dest_dir,
+                        heading, section_items, dest_dir,
                         rel='../..' if backend else '..'
                     )
 
