@@ -27,7 +27,7 @@ function send_change(jsdoc, doc_id, event) {
     pyodideWorker.queues.set(doc_id, events)
     return
   }
-  const patch = jsdoc.create_json_patch_string([event])
+  const patch = jsdoc.create_json_patch([event])
   const uuid = uid()
   pyodideWorker.busy = uuid
   pyodideWorker.postMessage({type: 'patch', patch: patch, id: doc_id, uuid})
@@ -43,7 +43,7 @@ pyodideWorker.onmessage = async (event) => {
   if (msg.uuid == pyodideWorker.busy) {
     if (pyodideWorker.queues.size) {
       const [msg_id, events] = pyodideWorker.queues.entries().next().value
-      const patch = pyodideWorker.documents[msg_id].create_json_patch_string(events)
+      const patch = pyodideWorker.documents[msg_id].create_json_patch(events)
       const uuid = uid()
       pyodideWorker.busy = uuid
       pyodideWorker.postMessage({type: 'patch', patch: patch, id: msg_id, uuid})

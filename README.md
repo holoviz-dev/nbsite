@@ -1,4 +1,4 @@
-<img src="doc/_static/nbsite-logo.png" height=150><br>
+<img src="https://github.com/pyviz-dev/nbsite/raw/main/site/doc/_static/nbsite-logo.png" height=150><br>
 
 -----------------
 

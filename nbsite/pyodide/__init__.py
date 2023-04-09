@@ -13,6 +13,7 @@ from docutils import nodes
 from docutils.parsers.rst import Directive, roles
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader
+from packaging.version import Version
 from sphinx.application import Sphinx
 
 from bokeh.document import Document
@@ -157,12 +158,7 @@ class PyodideDirective(Directive):
     _current_context = {}
     _current_count = 0
     _current_process = None
-    _client = None
-    _listener = None
     _conn = None
-    _send_address = ('localhost', 33355)
-    _rcv_address = ('localhost', 33356)
-    _password = b'pyodide'
 
     @classmethod
     def _execution_process(cls, pipe):
