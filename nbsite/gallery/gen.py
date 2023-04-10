@@ -425,7 +425,7 @@ def generate_item_rst(
 
 def get_deployed_examples(endpoint):
     # Try to fetch all deployed examples
-    if not bs4 and endpoint is None:
+    if not bs4 or endpoint is None:
         return []
     r = requests.get(endpoint, verify=False)
     if r.status_code != 200:
