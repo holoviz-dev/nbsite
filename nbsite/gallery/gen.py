@@ -466,7 +466,10 @@ def generate_file_rst(
         basename = os.path.basename(filename)
         name = basename[:-(len(extension)+1)]
         deployed = name in deployed_examples
-        deployed_file = get_deployed_url(deployment_urls, basename)
+        try:
+            deployed_file = get_deployed_url(deployment_urls, basename)
+        except Exception:
+            deployed_file = None
 
         # Generate document
         gen = generate_pyodide_markdown if as_pyodide else generate_item_rst
