@@ -1,4 +1,5 @@
 import glob
+import json
 import logging
 import os
 
@@ -8,7 +9,7 @@ from PIL import Image
 
 try:
     import bs4
-except:
+except ImportError:
     bs4 = None
 
 from .thumbnailer import execute, notebook_thumbnail
@@ -177,12 +178,11 @@ DEFAULT_GALLERY_CONF = {
     'skip_execute': [],
     'thumbnail_url': THUMBNAIL_URL,
     'thumbnail_size': (400, 280),
-    'within_subsection_order': lambda key: key,
+    'within_subsection_order': None,
     'nblink': 'both',  # use this to control the position of the nblink
     'github_ref': 'main',  # branch or tag
     'jupyterlite_url': None
 }
-
 
 def get_deployed_url(deployment_urls, basename):
     for deployment_url in deployment_urls:
@@ -201,8 +201,52 @@ def get_deployed_url(deployment_urls, basename):
     for deployment_url in deployment_urls:
         r = requests.get(deployment_url, verify=False)
         if r.status_code == 200:
-                return deployment_url
+            return deployment_url
     return None
+
+def get_nblink_md(
+    host, deployed_file, jupyterlite_url, download_as,
+    org, proj, ref, components, basename, ftype, section
+):
+    text = ''
+    if deployed_file:
+        text += f'[View a running version of this notebook]({deployed_file}) | '
+    if jupyterlite_url:
+        text += f'[Open this notebook in Jupyterlite]({jupyterlite_url}) | '
+    path = '/'.join(components)
+    if host == 'GitHub' and org and proj:
+        text += (
+            f'[Download this {ftype} from GitHub (right-click to download).]'
+            f'(https://raw.githubusercontent.com/{org}/{proj}/{ref}/{path}/{basename})'
+        )
+    elif host == 'assets':
+        if download_as == 'project':
+            text += f'[Download this project.](</assets/{section}.zip>)'
+        else:
+            text += f'[Download this {ftype}](</assets/{path}/{basename})'
+    return text
+
+def get_nblink_rst(
+    host, deployed_file, jupyterlite_url, download_as,
+    org, proj, ref, components, basename, ftype, section
+):
+    text = ''
+    if deployed_file:
+        text += f'`View a running version of this notebook <{deployed_file}>`_ | '
+    if jupyterlite_url:
+        text += f'``Open this notebook in Jupyterlite <{jupyterlite_url}>`_ | '
+    path = '/'.join(components)
+    if host == 'GitHub' and org and proj:
+        text += (
+            f'`Download this {ftype} from GitHub (right-click to download).'
+            f' <https://raw.githubusercontent.com/{org}/{proj}/{ref}/{path}/{basename}>`_'
+        )
+    elif host == 'assets':
+        if download_as == 'project':
+            text += f'`Download this project. </assets/{section}.zip>`_'
+        else:
+            text += f'`Download this {ftype}. </assets/{path}/{basename}>`_'
+    return text
 
 def convert_notebook_to_md(filename, directive='{pyodide}'):
     with open(filename, encoding='utf-8') as nb:
@@ -224,7 +268,10 @@ def convert_notebook_to_md(filename, directive='{pyodide}'):
             md += '\n```'
     return md
 
-def generate_pyodide_markdown(app, filename, src_dir, dest_dir, deployed_examples, skip):
+def generate_pyodide_markdown(
+    app, page, section, backend, filename, src_dir, dest_dir,
+    img_extension, deployed_file, deployed, skip
+):
     """
     Generates a Markdown file that renders the notebook cells using
     the pyodide directive.
@@ -232,7 +279,6 @@ def generate_pyodide_markdown(app, filename, src_dir, dest_dir, deployed_example
     # Set up paths
     extension = filename.split('.')[-1]
     basename = os.path.basename(filename)
-    rel_path = os.path.relpath(os.path.join(src_dir, basename), dest_dir)
     md_path = os.path.join(dest_dir, basename[:-len(extension)].replace(' ', '_') + 'md')
     name = basename[:-(len(extension)+1)]
     title = ' '.join([n[0].capitalize()+n[1:] for n in name.replace('_', ' ').split(' ')])
@@ -240,6 +286,7 @@ def generate_pyodide_markdown(app, filename, src_dir, dest_dir, deployed_example
 
     # Unpack config
     gallery_conf = app.config.nbsite_gallery_conf
+    examples_dir = gallery_conf['examples_dir']
     content = gallery_conf['galleries'][page]
 
     # Download link options
@@ -250,21 +297,58 @@ def generate_pyodide_markdown(app, filename, src_dir, dest_dir, deployed_example
     ref = gallery_conf['github_ref']
     org = gallery_conf['github_org']
     proj = gallery_conf['github_project']
+    jupyterlite_url = gallery_conf['jupyterlite_url']
+
+    # Deployed app options
+    endpoint = content.get('deployment_url', gallery_conf['deployment_url'])
+    iframe_spinner = gallery_conf['iframe_spinner']
 
     skip_execute = gallery_conf['skip_execute']
     directive = 'python' if skip_execute else '{pyodide}'
 
+    if nblink:
+        components = [examples_dir.split(os.path.sep)[-1], page]
+        if section:
+            components.append(section)
+        if backend:
+            components.append(backend)
+        if jupyterlite_url:
+            backend_slug = '/{backend}' if backend else ''
+            lite_path = f'{jupyterlite_url}?path=/{page}/{section}{backend_slug}/{basename}'
+        else:
+            lite_path = None
+        nblink_text = get_nblink_md(
+            host, deployed_file, lite_path, download_as,
+            org, proj, ref, components, basename, ftype, section
+        )
+
     # Generate RST
     with open(md_path, 'w') as md_file:
         md_file.write(f'# {title}\n\n')
+
+        if nblink in ['top', 'both']:
+            md_file.write(f'{nblink_text}\n\n---\n')
+
         if ftype == 'notebook':
             nb_md = convert_notebook_to_md(filename, directive)
             md_file.write(nb_md)
         else:
             with open(filename, encoding='utf-8') as script:
                 md_file.write(f'```{directive}\n{script.read()}```')
+        if deployed:
+            md_file.write(
+                IFRAME_TEMPLATE.format(
+                    background=iframe_spinner, url=endpoint+name
+                )
+            )
 
-def generate_item_rst(app, filename, src_dir, dest_dir, deployed_examples, skip):
+        if nblink in ['bottom', 'both']:
+            md_file.write(f'\n\n---\n{nblink_text}')
+
+def generate_item_rst(
+    app, page, section, backend, filename, src_dir, dest_dir,
+    img_extension, deployed_file, deployed, skip
+):
     """
     Generates an RST file that includes a notebook directive to run
     the example.
@@ -272,14 +356,15 @@ def generate_item_rst(app, filename, src_dir, dest_dir, deployed_examples, skip)
     # Set up paths
     extension = filename.split('.')[-1]
     basename = os.path.basename(filename)
+    name = basename[:-(len(extension)+1)]
     rel_path = os.path.relpath(os.path.join(src_dir, basename), dest_dir)
     rst_path = os.path.join(dest_dir, basename[:-len(extension)].replace(' ', '_') + 'rst')
-    name = basename[:-(len(extension)+1)]
     title = ' '.join([n[0].capitalize()+n[1:] for n in name.replace('_', ' ').split(' ')])
     ftype = 'notebook' if extension == 'ipynb' else 'script'
 
     # Unpack config
     gallery_conf = app.config.nbsite_gallery_conf
+    examples_dir = gallery_conf['examples_dir']
     content = gallery_conf['galleries'][page]
     skip_execute = gallery_conf['skip_execute']
 
@@ -290,12 +375,11 @@ def generate_item_rst(app, filename, src_dir, dest_dir, deployed_examples, skip)
     ref = gallery_conf['github_ref']
     org = gallery_conf['github_org']
     proj = gallery_conf['github_project']
+    jupyterlite_url = gallery_conf['jupyterlite_url']
 
     # Deployed app options
-    endpoint = gallery_conf['deployment_url']
+    endpoint = content.get('deployment_url', gallery_conf['deployment_url'])
     iframe_spinner = gallery_conf['iframe_spinner']
-    deployed = name in deployed_examples
-    deployed_file = get_deployed_url(deployment_urls, basename)
 
     # Do not write existing (unless auto-generated)
     if os.path.isfile(rst_path):
@@ -303,17 +387,24 @@ def generate_item_rst(app, filename, src_dir, dest_dir, deployed_examples, skip)
             if not 'Originally generated by nbsite' in existing.read():
                 return
 
+    if nblink:
+        components = [examples_dir.split(os.path.sep)[-1], page]
+        if section:
+            components.append(section)
+        if backend:
+            components.append(backend)
+        nblink_text = get_nblink_rst(
+            host, deployed_file, jupyterlite_url, download_as,
+            org, proj, ref, components, basename, ftype, section
+        )
+
     # Generate RST
     with open(rst_path, 'w') as rst_file:
         rst_file.write(title+'\n')
         rst_file.write('='*len(title)+'\n\n')
 
         if nblink in ['top', 'both']:
-            add_nblink(
-                rst_file, host, deployed_file, download_as,
-                org, proj, ref, components, basename, ftype, section
-            )
-            rst_file.write('\n\n-------\n\n')
+            rst_file.write(f'{nblink_text}\n\n-------\n\n')
 
         if ftype == 'notebook':
             rst_file.write(".. notebook:: %s %s" % (proj, rel_path))
@@ -330,13 +421,9 @@ def generate_item_rst(app, filename, src_dir, dest_dir, deployed_examples, skip)
             rst_file.write(f'.. figure:: {url}\n\n')
 
         if nblink in ['bottom', 'both']:
-            rst_file.write('\n\n-------\n\n')
-            add_nblink(
-                rst_file, host, deployed_file, download_as,
-                org, proj, ref, components, basename, ftype, section
-            )
+            rst_file.write(f'\n\n-------\n\n{nblink_text}')
 
-def deployed_examples(endpoint):
+def get_deployed_examples(endpoint):
     # Try to fetch all deployed examples
     if not bs4 and endpoint is None:
         return []
@@ -349,7 +436,7 @@ def deployed_examples(endpoint):
         deployed_examples = [
             l.text for l in soup.find('div', {"class": "list-group"}).find_all('h4')
         ]
-    except:
+    except Exception:
         deployed_examples = [
             l.get('id')[1:] for l in soup.find('ul', {"class": "cards-grid"}).find_all('a', {"class": "card-link"})
         ]
@@ -361,27 +448,30 @@ def generate_file_rst(
     app, src_dir, dest_dir, page, section, backend, img_extension, skip, deployment_urls
 ):
     gallery_conf = app.config.nbsite_gallery_conf
-    examples_dir = gallery_conf['examples_dir']
+    content = gallery_conf['galleries'][page]
+    endpoint = content.get('deployment_url', gallery_conf.get('deployment_url', None))
     extensions = content.get('extensions', gallery_conf['default_extensions'])
-    endpoint = gallery_conf['deployment_url']
-    as_pyodide = gallery_conf['as_pyodide']
+    as_pyodide = content.get('as_pyodide', gallery_conf.get('as_pyodide', False))
 
-    components = [examples_dir.split(os.path.sep)[-1], page]
-    if section:
-        components.append(section)
-    if backend:
-        components.append(backend)
+    deployed_examples = get_deployed_examples(endpoint)
 
     files = []
     for extension in extensions:
         files += glob.glob(os.path.join(src_dir, extension))
 
-
-    for f in files:
-        if isinstance(skip, list) and os.path.basename(f) in skip:
+    for filename in files:
+        if isinstance(skip, list) and os.path.basename(filename) in skip:
             continue
+        extension = filename.split('.')[-1]
+        basename = os.path.basename(filename)
+        name = basename[:-(len(extension)+1)]
+        deployed = name in deployed_examples
+        deployed_file = get_deployed_url(deployment_urls, basename)
+
+        # Generate document
         gen = generate_pyodide_markdown if as_pyodide else generate_item_rst
-        gen(app, filename, src_dir, dest_dir, deployed_examples, skip)
+        gen(app, page, section, backend, filename, src_dir, dest_dir,
+            img_extension, deployed_file, deployed, skip)
 
 
 REDIRECT = """.. raw:: html
@@ -404,26 +494,6 @@ def generate_section_index(section, items, dest_dir, rel='..'):
     index_page += '\n   '.join(items)
     with open(os.path.join(dest_dir, 'index.rst'), 'w') as f:
         f.write(index_page)
-
-def add_nblink(
-    rst_file, host, deployed_file, download_as, org, proj, ref, components,
-    basename, ftype, section
-):
-    if deployed_file:
-        rst_file.write(f'`View a running version of this notebook. <{deployed_file}>`_ |')
-    path = '/'.join(components)
-    if host == 'GitHub' and org and proj:
-        rst_file.write(
-            f'`Download this {ftype} from GitHub (right-click to download).'
-            f' <https://raw.githubusercontent.com/{org}/{proj}/{ref}/{path}/{basename}>`_'
-        )
-    elif host == 'assets':
-        if download_as == 'project':
-            rst_file.write(f'`Download this project. </assets/{section}.zip>`_')
-        else:
-            rst_file.write(
-                '`Download this {ftype}. </assets/{path}/{basename}>`_'
-            )
 
 def _normalize_label(string):
     return ' '.join([s[0].upper()+s[1:] for s in string.split('_')])
@@ -515,6 +585,9 @@ def generate_gallery(app, page):
     only_use_existing = gallery_conf['only_use_existing']
     inline = gallery_conf['inline']
 
+    if sort_fn is None:
+        sort_fn = lambda key: titles.get(key, key)
+
     # Write gallery index
     title = content['title']
     gallery_rst = title + '\n' + '_'*len(title) + '\n'
@@ -597,7 +670,7 @@ def generate_gallery(app, page):
 
             try:
                 os.makedirs(dest_dir)
-            except:
+            except Exception:
                 pass
 
             # Collect examples
