@@ -2,23 +2,21 @@ import importlib
 import io
 import json
 import re
-
+import warnings
 from collections import defaultdict
 from html import escape
 from multiprocessing import Pipe, Process
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+from bokeh.document import Document
+from bokeh.embed.util import standalone_docs_json_and_render_items
+from bokeh.model import Model
 from docutils import nodes
 from docutils.parsers.rst import Directive, roles
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader
 from packaging.version import Version
-from sphinx.application import Sphinx
-
-from bokeh.document import Document
-from bokeh.embed.util import standalone_docs_json_and_render_items
-from bokeh.model import Model
 from panel.config import panel_extension
 from panel.io.convert import BOKEH_VERSION
 from panel.io.mime_render import exec_with_return, format_mime
@@ -26,6 +24,7 @@ from panel.io.resources import CDN_DIST, set_resource_mode
 from panel.pane import panel as as_panel
 from panel.util import is_holoviews
 from panel.viewable import Viewable, Viewer
+from sphinx.application import Sphinx
 
 HERE = Path(__file__).parent
 
@@ -185,7 +184,10 @@ class PyodideDirective(Directive):
                     _, content = _model_json(as_panel(out), msg['target'])
                     mime_type = 'application/bokeh'
                 elif out is not None:
-                    content, mime_type = format_mime(out)
+                    try:
+                        content, mime_type = format_mime(out)
+                    except Exception:
+                        warnings.warn(f'Could not render {out!r} generated from executed code directive: {code}')
                 else:
                     content, mime_type = None, None
             pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, css))
@@ -214,7 +216,7 @@ class PyodideDirective(Directive):
 
     def run(self):
         current_source = self.state_machine.get_source()
-        if self._current_source != current_source:
+        if self._current_source != current_source or self._current_process is None:
             PyodideDirective._current_count = 0
             PyodideDirective._current_source = current_source
             self._launch_process()
@@ -235,7 +237,12 @@ class PyodideDirective(Directive):
 
         # Send execution request to client and wait for result
         self._conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
-        output, mime_type, stdout, stderr, js, css = self._conn.recv()
+        if self._conn.poll(60):
+            output, mime_type, stdout, stderr, js, css = self._conn.recv()
+        else:
+            self._current_process.terminate()
+            PyodideDirective._current_process = None
+            return [doctree_node]
         EXTRA_RESOURCES[current_source]['js'] += js
         EXTRA_RESOURCES[current_source]['css'] += css
 

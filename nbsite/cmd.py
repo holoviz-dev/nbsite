@@ -1,10 +1,10 @@
-import os
 import glob
+import os
 import re
-import sys
 import subprocess
-from os.path import dirname
+import sys
 from collections import ChainMap
+from os.path import dirname
 
 from .util import copy_files
 
@@ -142,6 +142,7 @@ def generate_rst(
         skip='',
         keep_numbers=False,
         binder='none',
+        disable_interactivity_warning=False
 ):
     """Auto-generates notebook-including rsts from notebooks in examples.
 
@@ -252,6 +253,8 @@ def generate_rst(
 
             rst_file.write(".. notebook:: %s %s" % (project_name,os.path.relpath(paths['examples'],start=dirname(rst))+'/'+relpath+"\n"))
             rst_file.write("    :offset: %s\n" % offset)
+            if disable_interactivity_warning:
+                rst_file.write("    :disable_interactivity_warning:\n")
 
             if pretitle=='index':
                 rst_file.write("%s\n"%_toctree(dirname(filename), paths['examples'], keep_numbers))

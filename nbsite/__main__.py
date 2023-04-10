@@ -1,7 +1,8 @@
 import argparse
 import inspect
 
-from .cmd import init, generate_rst, build
+from .cmd import build, generate_rst, init
+
 
 def _add_common_args(parser,*names):
     common = {
@@ -37,6 +38,7 @@ def main(args=None):
     generaterst_parser.add_argument('--binder',type=str,help='where to place binder link',choices=['bottom', 'top', 'both', 'none'], default='none')
     generaterst_parser.add_argument('--skip',type=str,help='notebooks to skip running; comma separated case insensitive re to match',default='')
     generaterst_parser.add_argument('--keep-numbers',action='store_true',help='whether to keep the leading numbers of notebook URLs and titles')
+    generaterst_parser.add_argument('--disable-interactivity-warning',action='store_true',help='whether to disable interactivity warnings')
     _set_defaults(generaterst_parser,generate_rst)
 
     build_parser = subparsers.add_parser("build", help=inspect.getdoc(build))
