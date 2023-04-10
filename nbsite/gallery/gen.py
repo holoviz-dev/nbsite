@@ -477,7 +477,7 @@ def generate_file_rst(
 REDIRECT = """.. raw:: html
 
     <head>
-        <meta http-equiv='refresh' content='0; URL=/index.html#{section}'>
+        <meta http-equiv='refresh' content='0; URL={rel}/index.html#{section}'>
     </head>
 """
 
