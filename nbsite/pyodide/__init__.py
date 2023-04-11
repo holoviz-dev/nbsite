@@ -218,6 +218,11 @@ class PyodideDirective(Directive):
         cls._current_process = Process(target=cls._execution_process, args=(child_conn,))
         cls._current_process.start()
 
+    @classmethod
+    def _kill(cls):
+        cls._current_process.terminate()
+        cls._current_process = None
+
     def run(self):
         current_source = self.state_machine.get_source()
         if self._current_source != current_source or self._current_process is None:
@@ -242,10 +247,13 @@ class PyodideDirective(Directive):
         # Send execution request to client and wait for result
         self._conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
         if self._conn.poll(60):
-            output, mime_type, stdout, stderr, js, css = self._conn.recv()
+            try:
+                output, mime_type, stdout, stderr, js, css = self._conn.recv()
+            except Exception:
+                self._kill()
+                return [doctree_node]
         else:
-            self._current_process.terminate()
-            PyodideDirective._current_process = None
+            self._kill()
             return [doctree_node]
         EXTRA_RESOURCES[current_source]['js'] += js
         EXTRA_RESOURCES[current_source]['css'] += css
