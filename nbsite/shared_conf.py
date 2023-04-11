@@ -114,4 +114,9 @@ copyright_fmt = "{start_year}-{current_year} Holoviz contributors"
 html_last_updated_fmt = '%Y-%m-%d'
 
 
-suppress_warnings = ["myst.header", "ref.myst", "mystnb.unknown_mime_type"]
+suppress_warnings = [
+    # Ignore: (WARNING/2) Document headings start at H2, not H1
+    "myst.header",
+    # Ignores: skipping unknown output mime type: application/vnd.holoviews_exec.v0+json
+    "mystnb.unknown_mime_type"
+]
