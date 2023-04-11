@@ -234,7 +234,7 @@ def get_nblink_rst(
     if deployed_file:
         text += f'`View a running version of this notebook <{deployed_file}>`_ | '
     if jupyterlite_url:
-        text += f'``Open this notebook in Jupyterlite <{jupyterlite_url}>`_ | '
+        text += f'`Open this notebook in Jupyterlite <{jupyterlite_url}>`_ | '
     path = '/'.join(components)
     if host == 'GitHub' and org and proj:
         text += (
