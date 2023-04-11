@@ -200,9 +200,13 @@ class PyodideDirective(Directive):
         """
         if not cls._current_process:
             return
-        cls._conn.send({'type': 'close'})
-        cls._current_process.join()
-        cls._current_process = None
+        try:
+            cls._conn.send({'type': 'close'})
+            cls._current_process.join()
+        except Exception:
+            cls._current_process.terminate()
+        finally:
+            cls._current_process = None
 
     @classmethod
     def _launch_process(cls, timeout=5):
