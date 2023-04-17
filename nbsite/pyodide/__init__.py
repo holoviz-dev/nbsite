@@ -43,6 +43,13 @@ SERVICE_WORKER_TEMPLATE = _env.get_template('ServiceWorker.js')
 SERVICE_HANDLER_TEMPLATE = _env.get_template('ServiceHandler.js')
 WEB_MANIFEST_TEMPLATE = _env.get_template('site.webmanifest')
 
+JS_MODULE_EXPORT = """
+<script type="module">
+  import {name} from "{file}";
+  window.{name} = {name}
+</script>
+"""
+
 bokeh_version = Version(BOKEH_VERSION)
 if bokeh_version.is_devrelease or bokeh_version.is_prerelease:
     bk_prefix = 'dev'
@@ -73,7 +80,7 @@ DEFAULT_PYODIDE_CONF = {
     'warn_message': "Executing this cell will download Python runtime (typically 40+ MB)."
 }
 
-EXTRA_RESOURCES = defaultdict(lambda: {'js': [], 'css': []})
+EXTRA_RESOURCES = defaultdict(lambda: {'js': [], 'css': [], 'js_modules': {}})
 
 def extract_extensions(code: str) -> List[str]:
     """
@@ -82,14 +89,14 @@ def extract_extensions(code: str) -> List[str]:
     """
     ext_args = re.findall(r'pn.extension\((.*)\)', code)
     if not ext_args:
-        return [], []
+        return [], {}, []
     extensions = re.findall(r"(?<!=)\s*['\"](.*?)['\"]", ext_args[0])
     prev_models = dict(Model.model_class_reverse_map)
     for ext in extensions:
         if ext not in panel_extension._imports:
             continue
         importlib.import_module(panel_extension._imports[ext])
-    js, css = [], []
+    js, js_modules, css = [], {}, []
     with set_resource_mode('cdn'):
         for name, model in Model.model_class_reverse_map.items():
             if name not in prev_models:
@@ -97,7 +104,12 @@ def extract_extensions(code: str) -> List[str]:
                     js += model.__javascript__
                 if hasattr(model, '__css__'):
                     css += model.__css__
-    return js, css
+                if hasattr(model, '__javascript_module_exports__'):
+                    js_modules.update(
+                        dict(zip(model.__javascript_module_exports__,
+                                 model.__javascript_modules__))
+                    )
+    return js, js_modules, css
 
 def _model_json(model: Model, target: str) -> Tuple[Document, str]:
     """
@@ -174,7 +186,7 @@ class PyodideDirective(Directive):
             stdout = io.StringIO()
             stderr = io.StringIO()
             code = msg['code']
-            js, css = extract_extensions(code)
+            js, js_modules, css = extract_extensions(code)
             with set_resource_mode('cdn'):
                 try:
                     out = exec_with_return(code, stdout=stdout, stderr=stderr)
@@ -190,7 +202,7 @@ class PyodideDirective(Directive):
                         warnings.warn(f'Could not render {out!r} generated from executed code directive: {code}')
                 else:
                     content, mime_type = None, None
-            pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, css))
+            pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_modules, css))
         pipe.close()
 
     @classmethod
@@ -248,7 +260,7 @@ class PyodideDirective(Directive):
         self._conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
         if self._conn.poll(60):
             try:
-                output, mime_type, stdout, stderr, js, css = self._conn.recv()
+                output, mime_type, stdout, stderr, js, js_modules, css = self._conn.recv()
             except Exception:
                 self._kill()
                 return [doctree_node]
@@ -256,6 +268,7 @@ class PyodideDirective(Directive):
             self._kill()
             return [doctree_node]
         EXTRA_RESOURCES[current_source]['js'] += js
+        EXTRA_RESOURCES[current_source]['js_modules'].update(js_modules)
         EXTRA_RESOURCES[current_source]['css'] += css
 
         stdout_style = 'style="display: block;"' if stdout else ''
@@ -270,6 +283,11 @@ class PyodideDirective(Directive):
         if output is None:
             return rendered_nodes
 
+        # Ensure we wait for all JS module exports to be initialized
+        exports = ' && '.join(f'window.{export}' for export in EXTRA_RESOURCES[current_source]['js_modules'])
+        if exports:
+            exports = f' && {exports}'
+
         script = ""
         if mime_type == 'text/plain':
             output = f'<pre>{output}</pre>'
@@ -277,7 +295,7 @@ class PyodideDirective(Directive):
             script = f"""
             <script>
               async function embed_bokeh_{self._current_count} () {{
-                if (window.Bokeh && window.Bokeh.Panel) {{
+                if (window.Bokeh && window.Bokeh.Panel{exports}) {{
                   await Bokeh.embed.embed_item({output})
                 }} else {{
                    setTimeout(embed_bokeh_{self._current_count}, 200)
@@ -373,16 +391,22 @@ def html_page_context(
     # Add additional resources extracted from pn.extension calls
     sourcename = context['sourcename'].replace('.txt', '')
     extra_resources = [
-        (r['js'], r['css']) for filename, r in EXTRA_RESOURCES.items()
+        (r['js'], r['js_modules'], r['css']) for filename, r in EXTRA_RESOURCES.items()
         if filename.endswith(sourcename)
     ]
     if extra_resources:
-        extra_js, extra_css = extra_resources[0]
+        extra_js, js_modules, extra_css = extra_resources[0]
     else:
-        extra_js, extra_css = [], []
+        extra_js, js_modules, extra_css = [], {}, []
     extra_css += app.config.nbsite_pyodide_conf.get('extra_css', [])
     context["script_files"] += extra_js
     context["css_files"] += extra_css
+
+    module_tags = ""
+    for export, module in js_modules.items():
+        module_tags += JS_MODULE_EXPORT.format(name=export, file=module)
+    if module_tags:
+        context["body"] = f'{module_tags}{context["body"]}'
 
     # Remove Scripts and CSS from page if no pyodide cells are found.
     if any(
