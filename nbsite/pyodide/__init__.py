@@ -89,28 +89,18 @@ def extract_extensions(code: str) -> List[str]:
     Extracts JS and CSS dependencies of Panel extensions from code snippets
     containing pn.extension calls.
     """
-    ext_args = re.findall(r'pn.extension\((.*)\)', code)
-    if not ext_args:
-        return [], {}, []
-    extensions = re.findall(r"(?<!=)\s*['\"](.*?)['\"]", ext_args[0])
-    prev_models = dict(Model.model_class_reverse_map)
-    for ext in extensions:
-        if ext not in panel_extension._imports:
-            continue
-        importlib.import_module(panel_extension._imports[ext])
     js, js_modules, css = [], {}, []
     with set_resource_mode('cdn'):
         for name, model in Model.model_class_reverse_map.items():
-            if name not in prev_models:
-                if hasattr(model, '__javascript__'):
-                    js += model.__javascript__
-                if hasattr(model, '__css__'):
-                    css += model.__css__
-                if hasattr(model, '__javascript_module_exports__'):
-                    js_modules.update(
-                        dict(zip(model.__javascript_module_exports__,
-                                 model.__javascript_modules__))
-                    )
+            if hasattr(model, '__javascript__'):
+                js += model.__javascript__
+            if hasattr(model, '__css__'):
+                css += model.__css__
+            if hasattr(model, '__javascript_module_exports__'):
+                js_modules.update(
+                    dict(zip(model.__javascript_module_exports__,
+                             model.__javascript_modules__))
+                )
         for model in param.concrete_descendents(ReactiveHTML).values():
             if not model._loaded():
                 continue
