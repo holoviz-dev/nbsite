@@ -9,6 +9,7 @@ from multiprocessing import Pipe, Process
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+import param
 from bokeh.document import Document
 from bokeh.embed.util import standalone_docs_json_and_render_items
 from bokeh.model import Model
@@ -22,6 +23,7 @@ from panel.io.convert import BOKEH_VERSION
 from panel.io.mime_render import exec_with_return, format_mime
 from panel.io.resources import CDN_DIST, set_resource_mode
 from panel.pane import panel as as_panel
+from panel.reactive import ReactiveHTML
 from panel.util import is_holoviews
 from panel.viewable import Viewable, Viewer
 from sphinx.application import Sphinx
@@ -109,6 +111,11 @@ def extract_extensions(code: str) -> List[str]:
                         dict(zip(model.__javascript_module_exports__,
                                  model.__javascript_modules__))
                     )
+        for model in param.concrete_descendents(ReactiveHTML).values():
+            if not model._loaded():
+                continue
+            js += getattr(model, '__javascript__', []) or []
+            css += getattr(model, '__css__', []) or []
     return js, js_modules, css
 
 def _model_json(model: Model, target: str) -> Tuple[Document, str]:
@@ -186,7 +193,6 @@ class PyodideDirective(Directive):
             stdout = io.StringIO()
             stderr = io.StringIO()
             code = msg['code']
-            js, js_modules, css = extract_extensions(code)
             with set_resource_mode('cdn'):
                 try:
                     out = exec_with_return(code, stdout=stdout, stderr=stderr)
@@ -202,6 +208,7 @@ class PyodideDirective(Directive):
                         warnings.warn(f'Could not render {out!r} generated from executed code directive: {code}')
                 else:
                     content, mime_type = None, None
+            js, js_modules, css = extract_extensions(code)
             pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_modules, css))
         pipe.close()
 
