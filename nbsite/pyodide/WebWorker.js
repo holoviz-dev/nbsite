@@ -2,6 +2,8 @@ importScripts("{{ PYODIDE_URL }}");
 
 const QUEUE = [];
 
+const REQUIRES = {{ requires }}
+
 function sendPatch(patch, buffers, cell_id) {
   self.postMessage({
     type: 'patch',
@@ -26,7 +28,7 @@ function sendStderr(cell_id, stderr) {
   })
 }
 
-async function loadApplication(cell_id) {
+async function loadApplication(cell_id, path) {
   console.log("Loading pyodide!");
   self.pyodide = await loadPyodide();
   self.pyodide.globals.set("sendPatch", sendPatch);
@@ -35,6 +37,16 @@ async function loadApplication(cell_id) {
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
   const packages = [{{ env_spec }}];
+  if (path != null) {
+    for (const key of Object.keys(REQUIRES)) {
+      if (path.replace('.html', '').endsWith(key.replace('.md', ''))) {
+	for (const req of REQUIRES[key]) {
+	  packages.push(req)
+	}
+      }
+    }
+  }
+
   await self.pyodide.runPythonAsync("{{ setup_code }}")
   self.pyodide.runPython("import micropip")
   for (const pkg of packages) {
@@ -116,7 +128,7 @@ self.onmessage = async (event) => {
       msg: 'Loading pyodide',
       id: msg.id
     });
-    await loadApplication(msg.id)
+    await loadApplication(msg.id, msg.path)
     self.postMessage({
       type: 'loaded',
       id: msg.id

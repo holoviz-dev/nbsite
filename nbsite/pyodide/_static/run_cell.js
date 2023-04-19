@@ -78,6 +78,7 @@ function executeCell(id) {
   window.pyodideWorker.postMessage({
     type: 'execute',
     id: id,
+    path: document.location.pathname,
     code: cell.textContent
   })
   cell.setAttribute('executed', true)

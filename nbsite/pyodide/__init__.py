@@ -79,7 +79,8 @@ DEFAULT_PYODIDE_CONF = {
         'https://pypi.org/pypi/'
     ],
     'setup_code': "",
-    'warn_message': "Executing this cell will download Python runtime (typically 40+ MB)."
+    'warn_message': "Executing this cell will download Python runtime (typically 40+ MB).",
+    'requires': {}
 }
 
 EXTRA_RESOURCES = defaultdict(lambda: {'js': [], 'css': [], 'js_modules': {}})
@@ -320,7 +321,8 @@ def write_worker(app: Sphinx, exc):
         'PYODIDE_URL': pyodide_conf['PYODIDE_URL'],
         'env_spec': ', '.join([repr(req) for req in pyodide_conf['requirements']]),
         'setup_code': pyodide_conf['setup_code'],
-        'autodetect_deps': pyodide_conf['autodetect_deps']
+        'autodetect_deps': pyodide_conf['autodetect_deps'],
+        'requires': json.dumps(pyodide_conf['requires'])
     })
     with open(staticdir/ 'PyodideWebWorker.js', 'w') as f:
         f.write(web_worker)
