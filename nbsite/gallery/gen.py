@@ -261,11 +261,13 @@ def convert_notebook_to_md(filename, directive='{pyodide}'):
             md += '\n\n'
         source = cell['source']
         if ctype == 'code':
-            md += f'```{directive}\n'
+            nticks = 4 if any('```' in src for src in source) else 3
+            backticks = '`'*nticks
+            md += f'{backticks}{directive}\n'
         for src in source:
             md += src
         if ctype == 'code':
-            md += '\n```'
+            md += f'\n{backticks}'
     return md
 
 def generate_pyodide_markdown(
