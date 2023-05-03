@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Tuple
 
 import param
 from bokeh.document import Document
+from bokeh.embed.bundle import _bundle_extensions
 from bokeh.embed.util import standalone_docs_json_and_render_items
 from bokeh.model import Model
 from docutils import nodes
@@ -18,7 +19,7 @@ from jinja2.loaders import FileSystemLoader
 from packaging.version import Version
 from panel.io.convert import BOKEH_VERSION
 from panel.io.mime_render import exec_with_return, format_mime
-from panel.io.resources import CDN_DIST, set_resource_mode
+from panel.io.resources import CDN_DIST, Resources, set_resource_mode
 from panel.pane import panel as as_panel
 from panel.reactive import ReactiveHTML
 from panel.util import is_holoviews
@@ -56,7 +57,7 @@ else:
     bk_prefix = 'release'
 
 DEFAULT_PYODIDE_CONF = {
-    'PYODIDE_URL': 'https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js',
+    'PYODIDE_URL': 'https://cdn.jsdelivr.net/pyodide/v0.23.1/full/pyodide.js',
     'autodetect_deps': True,
     'enable_pwa': True,
     'requirements': ['panel', 'pandas'],
@@ -104,6 +105,10 @@ def extract_extensions(code: str) -> List[str]:
                 continue
             js += getattr(model, '__javascript__', []) or []
             css += getattr(model, '__css__', []) or []
+    resources = Resources(mode='cdn')
+    extensions = _bundle_extensions(None, resources)
+    js += [bundle.cdn_url for bundle in extensions if bundle.cdn_url and
+           '@holoviz/panel@' not in bundle.cdn_url]
     return js, js_modules, css
 
 def _model_json(model: Model, target: str) -> Tuple[Document, str]:
