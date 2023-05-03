@@ -1,7 +1,5 @@
-import importlib
 import io
 import json
-import re
 import warnings
 from collections import defaultdict
 from html import escape
@@ -18,7 +16,6 @@ from docutils.parsers.rst import Directive, roles
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader
 from packaging.version import Version
-from panel.config import panel_extension
 from panel.io.convert import BOKEH_VERSION
 from panel.io.mime_render import exec_with_return, format_mime
 from panel.io.resources import CDN_DIST, set_resource_mode

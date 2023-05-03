@@ -1,3 +1,4 @@
+doit
 bokeh<3
 hvplot
 pydata-sphinx-theme<0.10

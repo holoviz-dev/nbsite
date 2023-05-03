@@ -19,12 +19,16 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-A simple script has been implemented to build the site, it
-also takes care of removing any artefact that's been produced
-during the previous/current build.
+A simple task has been implemented to build the site:
 
 ```
-python build_and_clean.py
+doit all_build
+```
+
+To remove the artefacts run:
+
+```
+doit clean --clean-dep all_build
 ```
 
 To try out the `pyodide` directive the built website has to be served.
