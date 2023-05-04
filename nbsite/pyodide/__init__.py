@@ -17,6 +17,7 @@ from docutils.parsers.rst import Directive, roles
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader
 from packaging.version import Version
+from panel.config import config
 from panel.io.convert import BOKEH_VERSION
 from panel.io.mime_render import exec_with_return, format_mime
 from panel.io.resources import CDN_DIST, Resources, set_resource_mode
@@ -105,6 +106,13 @@ def extract_extensions(code: str) -> List[str]:
                 continue
             js += getattr(model, '__javascript__', []) or []
             css += getattr(model, '__css__', []) or []
+    if config.design and hasattr(config.design, 'resolve_resources'):
+        design_resources = config.design().resolve_resources(
+            cdn=True, include_theme=False
+        )
+        js += list(design_resources['js'].values())
+        css += list(design_resources['css'].values())
+        js_modules += list(design_resources['js_modules'].values())
     resources = Resources(mode='cdn')
     extensions = _bundle_extensions(None, resources)
     js += [bundle.cdn_url for bundle in extensions if bundle.cdn_url and
