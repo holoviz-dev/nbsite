@@ -112,7 +112,7 @@ def extract_extensions(code: str) -> List[str]:
         )
         js += list(design_resources['js'].values())
         css += list(design_resources['css'].values())
-        js_modules += list(design_resources['js_modules'].values())
+        js_modules.update(design_resources['js_modules'])
     resources = Resources(mode='cdn')
     extensions = _bundle_extensions(None, resources)
     js += [bundle.cdn_url for bundle in extensions if bundle.cdn_url and
