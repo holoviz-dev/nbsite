@@ -44,6 +44,8 @@ SERVICE_WORKER_TEMPLATE = _env.get_template('ServiceWorker.js')
 SERVICE_HANDLER_TEMPLATE = _env.get_template('ServiceHandler.js')
 WEB_MANIFEST_TEMPLATE = _env.get_template('site.webmanifest')
 
+JS_MODULE_TAG = """
+<script type="module" src="{file}"></script>"""
 JS_MODULE_EXPORT = """
 <script type="module">
   import {name} from "{file}";
@@ -82,14 +84,14 @@ DEFAULT_PYODIDE_CONF = {
     'requires': {}
 }
 
-EXTRA_RESOURCES = defaultdict(lambda: {'js': [], 'css': [], 'js_modules': {}})
+EXTRA_RESOURCES = defaultdict(lambda: {'js': [], 'css': [], 'js_modules': {}, 'js_exports': {}})
 
 def extract_extensions(code: str) -> List[str]:
     """
     Extracts JS and CSS dependencies of Panel extensions from code snippets
     containing pn.extension calls.
     """
-    js, js_modules, css = [], {}, []
+    js, js_exports, js_modules, css = [], {}, {}, []
     with set_resource_mode('cdn'):
         for name, model in Model.model_class_reverse_map.items():
             if hasattr(model, '__javascript__'):
@@ -97,7 +99,7 @@ def extract_extensions(code: str) -> List[str]:
             if hasattr(model, '__css__'):
                 css += model.__css__
             if hasattr(model, '__javascript_module_exports__'):
-                js_modules.update(
+                js_exports.update(
                     dict(zip(model.__javascript_module_exports__,
                              model.__javascript_modules__))
                 )
@@ -117,7 +119,7 @@ def extract_extensions(code: str) -> List[str]:
     extensions = _bundle_extensions(None, resources)
     js += [bundle.cdn_url for bundle in extensions if bundle.cdn_url and
            '@holoviz/panel@' not in bundle.cdn_url]
-    return js, js_modules, css
+    return js, js_exports, js_modules, css
 
 def _model_json(model: Model, target: str) -> Tuple[Document, str]:
     """
@@ -209,8 +211,8 @@ class PyodideDirective(Directive):
                         warnings.warn(f'Could not render {out!r} generated from executed code directive: {code}')
                 else:
                     content, mime_type = None, None
-            js, js_modules, css = extract_extensions(code)
-            pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_modules, css))
+            js, js_exports, js_modules, css = extract_extensions(code)
+            pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_exports, js_modules, css))
         pipe.close()
 
     @classmethod
@@ -268,7 +270,7 @@ class PyodideDirective(Directive):
         self._conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
         if self._conn.poll(60):
             try:
-                output, mime_type, stdout, stderr, js, js_modules, css = self._conn.recv()
+                output, mime_type, stdout, stderr, js, js_exports, js_modules, css = self._conn.recv()
             except Exception:
                 self._kill()
                 return [doctree_node]
@@ -276,6 +278,7 @@ class PyodideDirective(Directive):
             self._kill()
             return [doctree_node]
         EXTRA_RESOURCES[current_source]['js'] += js
+        EXTRA_RESOURCES[current_source]['js_exports'].update(js_exports)
         EXTRA_RESOURCES[current_source]['js_modules'].update(js_modules)
         EXTRA_RESOURCES[current_source]['css'] += css
 
@@ -292,7 +295,7 @@ class PyodideDirective(Directive):
             return rendered_nodes
 
         # Ensure we wait for all JS module exports to be initialized
-        exports = ' && '.join(f'window.{export}' for export in EXTRA_RESOURCES[current_source]['js_modules'])
+        exports = ' && '.join(f'window.{export}' for export in EXTRA_RESOURCES[current_source]['js_exports'])
         if exports:
             exports = f' && {exports}'
 
@@ -400,19 +403,21 @@ def html_page_context(
     # Add additional resources extracted from pn.extension calls
     sourcename = context['sourcename'].replace('.txt', '')
     extra_resources = [
-        (r['js'], r['js_modules'], r['css']) for filename, r in EXTRA_RESOURCES.items()
+        (r['js'], r['js_exports'], r['js_modules'], r['css']) for filename, r in EXTRA_RESOURCES.items()
         if filename.endswith(sourcename)
     ]
     if extra_resources:
-        extra_js, js_modules, extra_css = extra_resources[0]
+        extra_js, js_exports, js_modules, extra_css = extra_resources[0]
     else:
-        extra_js, js_modules, extra_css = [], {}, []
+        extra_js, js_exports, js_modules, extra_css = [], {}, {}, []
     extra_css += app.config.nbsite_pyodide_conf.get('extra_css', [])
     context["script_files"] += extra_js
     context["css_files"] += extra_css
 
     module_tags = ""
     for export, module in js_modules.items():
+        module_tags += JS_MODULE_TAG.format(file=module)
+    for export, module in js_exports.items():
         module_tags += JS_MODULE_EXPORT.format(name=export, file=module)
     if module_tags:
         context["body"] = f'{module_tags}{context["body"]}'
