@@ -56,7 +56,7 @@ async function loadApplication(cell_id, path) {
       id: cell_id
     });
     await self.pyodide.runPythonAsync(`
-      await micropip.install('${pkg}');
+      await micropip.install('${pkg}', keep_going=True);
     `);
   }
   console.log("Packages loaded!");
@@ -163,7 +163,7 @@ self.onmessage = async (event) => {
         id: msg.id
       });
       try {
-	await self.pyodide.runPythonAsync(`await micropip.install('${pkg}')`)
+	await self.pyodide.runPythonAsync(`await micropip.install('${pkg}', keep_going=True)`)
       } catch(e) {
 	console.log(`Auto-detected dependency ${pkg} could not be installed.`)
       }
