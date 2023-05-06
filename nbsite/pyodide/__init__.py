@@ -110,7 +110,7 @@ def extract_extensions(code: str) -> List[str]:
             css += getattr(model, '__css__', []) or []
     if config.design and hasattr(config.design, 'resolve_resources'):
         design_resources = config.design().resolve_resources(
-            cdn=True, include_theme=False
+            cdn=True, include_theme=True
         )
         js += list(design_resources['js'].values())
         css += list(design_resources['css'].values())
