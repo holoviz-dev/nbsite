@@ -571,6 +571,8 @@ def generate_gallery(app, page):
     labels_dir = gallery_conf['labels_dir']
     labels_path = os.path.join(static_path, labels_dir)
     logo = app.config.html_theme_options.get('logo', 'images/logo.png')
+    if isinstance(logo, dict):
+        logo = logo['image_light']
     logo_path = os.path.join(static_path, logo)
 
     if 'sections' in content:
