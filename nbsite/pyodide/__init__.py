@@ -21,9 +21,9 @@ from panel.config import config
 from panel.io.convert import BOKEH_VERSION
 from panel.io.mime_render import exec_with_return, format_mime
 from panel.io.resources import CDN_DIST, Resources, set_resource_mode
+from panel.pane import HoloViews, Interactive
 from panel.pane import panel as as_panel
 from panel.reactive import ReactiveHTML
-from panel.util import is_holoviews
 from panel.viewable import Viewable, Viewer
 from sphinx.application import Sphinx
 
@@ -201,7 +201,7 @@ class PyodideDirective(Directive):
                     out = exec_with_return(code, stdout=stdout, stderr=stderr)
                 except Exception:
                     out = None
-                if isinstance(out, (Model, Viewable, Viewer)) or is_holoviews(out):
+                if isinstance(out, (Model, Viewable, Viewer)) or HoloViews.applies(out) or Interactive.applies(out):
                     _, content = _model_json(as_panel(out), msg['target'])
                     mime_type = 'application/bokeh'
                 elif out is not None:
