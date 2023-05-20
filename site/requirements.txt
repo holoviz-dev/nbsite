@@ -1,7 +1,7 @@
 doit
-bokeh<3
+bokeh
 hvplot
-pydata-sphinx-theme<0.10
+pydata-sphinx-theme
 sphinx_copybutton
 matplotlib
 plotly
