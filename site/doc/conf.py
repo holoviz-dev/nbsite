@@ -8,19 +8,20 @@ authors = 'HoloViz Developers'
 copyright = '2018 ' + authors
 
 import nbsite
+
 version = release = base_version(nbsite.__version__)
 
 html_theme = 'pydata_sphinx_theme'
 
 extensions += [
+    # Activate the cell copy button extension
+    'sphinx_copybutton',
     # To make the pyodide directive available
     'nbsite.pyodide',
     # To build a gallery
     'nbsite.gallery',
     # Activate the docstring extension for Numpy: https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
     'sphinx.ext.napoleon',
-    # Activate the cell copy button extension
-    'sphinx_copybutton',
     # See https://github.com/ipython/ipython/issues/13845
     'IPython.sphinxext.ipython_console_highlighting'
 ]
