@@ -1,3 +1,96 @@
+html[data-theme=dark] .bd-content div.cell_output .text_html {
+    background-color: var(--pst-color-background);
+    color: var(--pst-color-text-base);
+}
+
+/* Align navbar item in center */
+.navbar-header-items__center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Ensure content fills full space */
+.bd-main .bd-content .bd-article-container {
+  max-width: unset;
+}
+
+/* Hide primary sidenav bottom section to avoid extra scroll */
+.sidebar-primary-items__end.sidebar-primary__section {
+  display: none;
+}
+
+.nav-link {
+  white-space: nowrap;
+}
+
+.showcase-table {
+  border-spacing: 15px;
+}
+
+.showcase-table td {
+  border: 0px;
+  vertical-align: top;
+}
+
+.cell_output {
+  padding-left: 0;
+}
+
+html[data-theme='dark'] .bd-content div.cell_output .text_html,
+html[data-theme='light'] .bd-content div.cell_output .text_html {
+  padding: 0;
+}
+
+@media (max-width: 960px) {
+  .homepage-logo {
+    display: none;
+  }
+}
+
+@media (min-width: 1400px) {
+  .bd-sidebar {
+    max-width: 300px;
+  }
+
+  .bd-main .bd-content .bd-article-container .bd-article {
+    padding-left: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .bd-page-width {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1600px) {
+  .bd-page-width {
+    max-width: 85%;
+  }
+}
+
+@media (min-width: 1800px) {
+  .bd-page-width {
+    max-width: 80%;
+  }
+}
+
+#scroller-right {
+  max-width: 14%;
+}
+
+@media (max-width: 1400px) {
+  #scroller-right {
+    position: relative;
+    right: unset;
+    top: unset;
+    max-width: 100%;
+    transform: unset;
+  }
+}
+.theme-switch-button {
+  font-size: unset;
+}
+
 .related a {
     margin-left: .5em;
     margin-right: .5em;
@@ -136,7 +229,7 @@ table.dataframe th, td {
 }
 
 .rendered_html code {
-	font-size: 0.9em !important;
+    font-size: 0.9em !important;
 }
 
 .bk-plot ul {
@@ -513,22 +606,6 @@ div.bk-root {
   font-size: smaller;
 }
 
-.bk.accordion-header {
-  color: black;
-}
-
-.bk.card-header {
-  color: black;
-}
-
-.cell_output {
-  padding-left: 0;
-}
-
-.bk.bk-root {
-  display: none;
-}
-
 .output {
   overflow-x: auto;
 }
@@ -544,7 +621,7 @@ main.bd-content a.headerlink {
   color:rgba(var(--pst-color-headerlink-hover), 1);
   opacity:1 !important
  }
- 
+
  main.bd-content h1:hover a.headerlink,
  main.bd-content h2:hover a.headerlink,
  main.bd-content h3:hover a.headerlink,
