@@ -66,6 +66,8 @@ setup_args = dict(
         'pillow',
         'pydata-sphinx-theme >=0.13.3,<0.14',
         'myst-parser',
+        'sphinx-copybutton',
+        'sphinx-design',
     ],
     extras_require= {
         'refman':[
