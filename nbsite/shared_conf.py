@@ -2,10 +2,9 @@
 
 import datetime
 import os
-
-import nbsite as _nbsite
 import pathlib as _pathlib
 
+import nbsite as _nbsite
 from nbsite import nbbuild
 from nbsite.util import base_version  # noqa
 
@@ -93,7 +92,7 @@ templates_path = [
 
 html_context = {
     'js_includes': ['nbsite.js', 'require.js'],
-    'css_includes': ['nbsite.css'] 
+    'css_includes': ['nbsite.css', 'dataframe.css']
 }
 
 # A single line footer that includes the copyright and the last updated date.

@@ -606,22 +606,6 @@ div.bk-root {
   font-size: smaller;
 }
 
-.bk.accordion-header {
-  color: black;
-}
-
-.bk.card-header {
-  color: black;
-}
-
-.cell_output {
-  padding-left: 0;
-}
-
-.bk.bk-root {
-  display: none;
-}
-
 .output {
   overflow-x: auto;
 }
