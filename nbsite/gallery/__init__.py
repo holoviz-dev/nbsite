@@ -1,5 +1,6 @@
 from .. import __version__ as nbs_version
-from .gen import generate_gallery_rst, DEFAULT_GALLERY_CONF
+from .gen import DEFAULT_GALLERY_CONF, generate_gallery_rst
+
 
 def setup(app):
     """Setup sphinx-gallery sphinx extension"""

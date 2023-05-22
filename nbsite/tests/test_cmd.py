@@ -3,7 +3,7 @@ import shutil
 
 import pytest
 
-from nbsite.cmd import generate_rst, build
+from nbsite.cmd import build, generate_rst
 
 # Note: a lot of this setup is copied from the new (2018-11-01) test in
 # pyct. Potentially this could be consolidated at some point. The fixture

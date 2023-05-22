@@ -5,9 +5,9 @@ extension.
 """
 import os
 import re
-from bs4 import BeautifulSoup
 import warnings
 
+from bs4 import BeautifulSoup
 
 # TODO: holoviews specific links e.g. to reference manual...doc & generalize
 

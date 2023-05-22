@@ -8,7 +8,7 @@ def _add_common_args(parser,*names):
     common = {
         '--project-root': dict(type=str,help='defaults to current working directory',default=''),
         '--examples': dict(type=str,help='if relative, should be relative to project-root',default='examples'),
-        '--doc': dict(type=str,help='if relative, should be releative to project-root',default='doc'),
+        '--doc': dict(type=str,help='if relative, should be relative to project-root',default='doc'),
         '--overwrite': dict(action='store_true', help='whether to overwrite any files [DANGEROUS]')
         }
     for name in names:
@@ -54,7 +54,7 @@ def main(args=None):
     build_parser.add_argument('--output',type=str,help='where to place output',default="builtdocs")
     _add_common_args(build_parser,'--project-root','--doc','--examples', '--overwrite')
     build_parser.add_argument('--examples-assets',type=str,default="assets",
-                              help='dir in which assets for examples are located - if relative, should be releative to project-root')
+                              help='dir in which assets for examples are located - if relative, should be relative to project-root')
     build_parser.add_argument('--clean-dry-run',action='store_true',help='whether to not actually delete files from output (useful for uploading)')
     build_parser.add_argument('--inspect-links',action='store_true',help='whether to not to print all links')
     _set_defaults(build_parser,build)

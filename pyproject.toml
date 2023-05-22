@@ -4,3 +4,39 @@ requires = [
     "setuptools >=30.3.0",
     "wheel"
 ]
+
+[tool.ruff]
+exclude = [
+    ".git",
+    "__pycache__",
+    ".tox",
+    ".eggs",
+    "*.egg",
+    "doc",
+    "dist",
+    "build",
+    "_build",
+    "examples",
+    ".ipynb_checkpoints",
+    "node_modules",
+    "apps",
+]
+ignore = [
+    "E402",
+    "E712",
+    "E731",
+    "E741",
+    "W605"
+]
+line-length = 165
+select = [
+    "E",
+    "F",
+    "W",
+]
+
+
+[tool.codespell]
+ignore-words-list = "nd,doubleclick"
+skip = "site/examples/playground/notebook_directive/preexecuted.ipynb"
+write-changes = true
