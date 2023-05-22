@@ -53,6 +53,13 @@ html[data-theme='light'] .bd-content div.cell_output .text_html {
   }
 }
 
+
+@media (min-width: 1200px) {
+    .bd-main .bd-content .bd-article-container .bd-article {
+	padding-left: 0;
+    }
+}
+
 @media (min-width: 1400px) {
   .bd-sidebar {
     max-width: 300px;
@@ -606,17 +613,13 @@ div.bk-root {
   top: 80%;
   right: 1%;
   max-width: 10%;
-  background: #f2f2f2;
+  background: #ffffff;
   padding: 0.8%;
   transform: translate(0%, -50%);
-  border: 1px solid black;
+  border: 1px solid gray;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
   font-size: smaller;
-}
-
-@media (min-width: 1200px) {
-    .bd-main .bd-content .bd-article-container .bd-article {
-	padding-left: 0;
-    }
+  z-index: 1;
 }
 
 .output {
