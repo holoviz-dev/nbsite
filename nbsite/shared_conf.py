@@ -91,17 +91,16 @@ templates_path = [
     )
 ]
 
-html_context = {
-    'js_includes': ['nbsite.js', 'require.js'],
-    'css_includes': [
-        'nbsite.css',
-        'notebook.css',
-        'gallery.css',
-        'alert.css',
-        'dataframe.css',
-        'scroller.css'
-    ]
-}
+html_context = {}
+
+html_css_files = [
+    'nbsite.css',
+    'notebook.css',
+    'gallery.css',
+    'alert.css',
+    'dataframe.css',
+    'scroller.css'
+]
 
 # A single line footer that includes the copyright and the last updated date.
 html_theme_options = {
