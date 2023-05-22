@@ -191,7 +191,7 @@ are stored under `https://assets.holoviews.org/thumbnails`. To
 toggle this behavior on and off you can set the `enable_downloads`
 config variable.
 
-If you want to be sure never to genereate thumbnails, for instance if
+If you want to be sure never to generate thumbnails, for instance if
 the environment won't have the right dependencies, then use the `only_use_existing`
 to ensure that the script can only use thumbnails found in the directory
 or at `thumbnail_url`.

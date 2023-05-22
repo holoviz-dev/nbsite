@@ -34,3 +34,9 @@ select = [
     "F",
     "W",
 ]
+
+
+[tool.codespell]
+ignore-words-list = "nd,doubleclick"
+skip = "site/examples/playground/notebook_directive/preexecuted.ipynb"
+write-changes = true
