@@ -809,7 +809,9 @@ def generate_gallery(app, page):
                     )
                 else:
                     logger.info('%s %s thumbnail' % (verb, basename))
-                    thumb_path = os.path.join(*path_components+['thumbnails', '%s.%s' % (basename, thumb_extension)])
+                    thumb_path = os.path.join(
+                        dest_dir, 'thumbnails', f'{basename}.{thumb_extension}'
+                    )
                     if thumb_extension not in ('svg', 'gif'):
                         resize_pad(os.path.join(doc_dir, thumb_path))
                     this_entry = _thumbnail_div(
