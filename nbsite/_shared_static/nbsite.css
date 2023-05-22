@@ -51,6 +51,10 @@ html[data-theme="light"] .bd-content div.cell_output .text_html {
   .bd-sidebar {
     max-width: 250px;
   }
+
+  .bd-page-width {
+    max-width: min(100%, 1600px);
+  }
 }
 
 @media (min-width: 1200px) {
@@ -71,22 +75,6 @@ html[data-theme="light"] .bd-content div.cell_output .text_html {
   .bd-main .bd-content .bd-article-container .bd-article {
     padding-left: 0.5rem;
     padding-top: 0.5rem;
-  }
-
-  .bd-page-width {
-    max-width: 100%;
-  }
-}
-
-@media (min-width: 1600px) {
-  .bd-page-width {
-    max-width: 85%;
-  }
-}
-
-@media (min-width: 1800px) {
-  .bd-page-width {
-    max-width: 80%;
   }
 }
 
