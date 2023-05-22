@@ -18,6 +18,10 @@
   white-space: nowrap;
 }
 
+ul.current.nav.bd-sidenav {
+  padding: 0;
+}
+
 @media (max-width: 960px) {
   .homepage-logo {
     display: none;
