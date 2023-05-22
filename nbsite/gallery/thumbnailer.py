@@ -1,14 +1,20 @@
 from __future__ import unicode_literals
-import os, sys, subprocess, ast
-from nbconvert.preprocessors import Preprocessor
+
+import ast
+import os
+import subprocess
+import sys
+import tempfile
+
+import matplotlib.pyplot as plt
 
 from holoviews.core import Dimensioned, Store
-from holoviews.ipython.preprocessors import OptsMagicProcessor, OutputMagicProcessor
-from holoviews.ipython.preprocessors import StripMagicsProcessor
+from holoviews.ipython.preprocessors import (
+    OptsMagicProcessor, OutputMagicProcessor, StripMagicsProcessor,
+)
 from holoviews.util.command import export_to_python
+from nbconvert.preprocessors import Preprocessor
 
-import tempfile
-import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 
 def comment_out_magics(source):

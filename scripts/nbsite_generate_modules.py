@@ -32,9 +32,8 @@ It also creates a modules index (named modules.<suffix>).
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import os
 import optparse
-
+import os
 
 # automodule options
 OPTIONS = ['members',
@@ -119,7 +118,7 @@ def create_package_file(root, master_package, subroot, py_files, opts, subs):
 
     # build a list of directories that are packages (they contain an INIT file)
     subs = [sub for sub in subs if os.path.isfile(os.path.join(root, sub, INIT))]
-    # if there are some package directories, add a TOC for theses subpackages
+    # if there are some package directories, add a TOC for these subpackages
     if subs:
         text += format_heading(2, 'Subpackages')
         text += '.. toctree::\n\n'
@@ -236,7 +235,7 @@ def is_excluded(root, excludes):
     Check if the directory is in the exclude list.
 
     Note: by having trailing slashes, we avoid common prefix issues, like
-          e.g. an exlude "foo" also accidentally excluding "foobar".
+          e.g. an exclude "foo" also accidentally excluding "foobar".
     """
     sep = os.path.sep
     if not root.endswith(sep):

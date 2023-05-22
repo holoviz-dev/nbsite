@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Copyright (c) 2017-2021 HoloViz developers.
 
@@ -27,38 +28,46 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import io, json, os, string, glob, copy, re, sys, shutil
+import copy
+import glob
+import io
+import json
+import os
+import re
+import shutil
+import string
+import sys
 
 from collections import OrderedDict
 from contextlib import contextmanager
 
 import nbformat
 
-from docutils.parsers.rst import directives, Directive
+from docutils.parsers.rst import Directive, directives
 from docutils.statemachine import string2lines
 from docutils.utils import new_document
 from myst_nb.sphinx_ import Parser
-
 from nbconvert import NotebookExporter, PythonExporter
 from nbconvert.preprocessors import (
-    ExecutePreprocessor, CellExecutionError, Preprocessor
+    CellExecutionError, ExecutePreprocessor, Preprocessor,
 )
-from .cmd import hosts, _prepare_paths
+
+from .cmd import _prepare_paths, hosts
 
 NOTEBOOK_VERSION = 4
 
 interactivity_warning_binder = """
-This web page was generated from a Jupyter notebook and not all 
+This web page was generated from a Jupyter notebook and not all
 interactivity will work on this website. <a
-href="{download_link}">Right-click to download and run</a> or <a 
-href="{binder_link}">Launch on Binder</a> for full Python-backed 
+href="{download_link}">Right-click to download and run</a> or <a
+href="{binder_link}">Launch on Binder</a> for full Python-backed
 interactivity.
 """
 
 interactivity_warning = """
-This web page was generated from a Jupyter notebook and not all 
-interactivity will work on this website. <a 
-href="{download_link}">Right click to download and run locally</a> for full 
+This web page was generated from a Jupyter notebook and not all
+interactivity will work on this website. <a
+href="{download_link}">Right click to download and run locally</a> for full
 Python-backed interactivity.
 """
 
@@ -124,7 +133,7 @@ class NotebookSlice(Preprocessor):
         try:
             end = int(endstr)
             count = 0
-        except:
+        except Exception:
             count = None
 
         for ind, cell in enumerate(nbc.cells):
@@ -313,7 +322,7 @@ def disable_execution(env):
 @contextmanager
 def patch_project_source_suffix(env):
     # Ugly patch required as myst-nb obtains a reader that
-    # is infered by sphinx from the document, sphinx literally
+    # is inferred by sphinx from the document, sphinx literally
     # loops through a glob() result looking for files in a particular
     # order, starting from .rst. As the NotebookDirective is embedded
     # in a .rst, it finds that file instead of the Notebook to be parsed.
@@ -410,7 +419,7 @@ class NotebookDirective(Directive):
             preprocessors.append(SkipOutput(self.options['skip_output']))
         return preprocessors
 
-    def interactivity_warning(self, nb_abs_path):        
+    def interactivity_warning(self, nb_abs_path):
         project_name = os.environ.get('PROJECT_NAME','')
         project_root = os.environ.get('PROJECT_ROOT','')
         host = os.environ.get('HOST','GitHub')
@@ -432,7 +441,7 @@ class NotebookDirective(Directive):
         relpath = os.path.relpath(nb_abs_path, paths['examples'])
         dl_link = get_download_link(relpath, org, branch, repo, examples, host)
         binder_link = get_binder_link(relpath, org, repo, branch, examples)
-        
+
         if binder == 'none':
             inner_msg = interactivity_warning.format(download_link=dl_link)
         else:
@@ -469,9 +478,9 @@ class NotebookDirective(Directive):
         rendered_nodes = render_notebook(
             dest_path, self.state.document, preprocessors
         )
-        
+
         link_rst = self.link_rst(nb_basename, nb_abs_path, dest_path)
-        if not ('disable_interactivity_warning' in self.options):
+        if 'disable_interactivity_warning' not in self.options:
             link_rst += self.interactivity_warning(nb_abs_path)
 
         # Insert evaluated notebook HTML into Sphinx
@@ -482,7 +491,7 @@ class NotebookDirective(Directive):
         # add dependency
         self.state.document.settings.record_dependencies.add(nb_abs_path)
 
-        # TODO: doubt this isdoing anyting
+        # TODO: doubt this is doing anything
         # clean up png files left behind by notebooks.
         png_files = glob.glob("*.png")
         for file in png_files:

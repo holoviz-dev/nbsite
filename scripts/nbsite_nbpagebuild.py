@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import sys
 import os
+import sys
 
 from nbsite.cmd import generate_rst
 
@@ -16,7 +16,7 @@ if len(sys.argv) > 5:
     offset = int(sys.argv[5])
 if len(sys.argv) > 6:
     overwrite = int(sys.argv[6])
-    
+
 generate_rst(
     project,
     examples=examples_path,

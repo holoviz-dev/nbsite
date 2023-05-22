@@ -72,15 +72,15 @@ To use the holoviz theme: pip/conda install sphinx_holoviz_theme and set `html_t
 * `logo` and `favicon`: provide paths relative to `html_static_path` (`doc/_static` by default)
 * `primary_color`, `primary_color_dark` and `secondary_color`: control the colors that the website uses for header, nav, links... These can be css named colors, or hex colors.
 * `second_nav`: Boolean indicating whether to use a second nav bar.
-* `custom_css`: path relative to `html_static_path` overriding styles. Styles come first from the theme's `main.css_t`, which is populated with the colors options, extended/overridden by nbsite's own css `nbsite/_shared_static/nbsite.css`, and then extended/overridden by your site's own css. 
+* `custom_css`: path relative to `html_static_path` overriding styles. Styles come first from the theme's `main.css_t`, which is populated with the colors options, extended/overridden by nbsite's own css `nbsite/_shared_static/nbsite.css`, and then extended/overridden by your site's own css.
 
 **NOTE:** Only use the custom_css to overwrite small pieces of the css not to make general improvements. If you have general improvements, please open a PR on the [theme repo](https://github.com/pyviz-dev/sphinx_holoviz_theme).
 ```
 
 ## Customizing running of IPython notebooks
 
-In conf.py, you can set options to control notebook execution: 
+In conf.py, you can set options to control notebook execution:
 
 * `nbbuild_cell_timeout`: timeout per cell (seconds), e.g. `100`
-* `nbbuild_ipython_startup`: code (as string) to execute before running the first cell of each notebook. Defaults to [nbsite's ipython startup code](https://github.com/holoviz-dev/nbsite/blob/main/nbsite/ipystartup.py). E.g. `"module.special_swith=False"`. 
+* `nbbuild_ipython_startup`: code (as string) to execute before running the first cell of each notebook. Defaults to [nbsite's ipython startup code](https://github.com/holoviz-dev/nbsite/blob/main/nbsite/ipystartup.py). E.g. `"module.special_swith=False"`.
 * `nbbuild_patterns_to_take_along`: list of glob patterns to match files that should be copied alongside a notebook. E.g. holoviews is configured to save data in external json files to improve page loading times, so this defaults to `["*.json"]`.

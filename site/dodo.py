@@ -1,7 +1,6 @@
 from pathlib import Path
 from pydoc import importfile
 
-
 DOIT_CONFIG = {
     "verbosity": 2,
     "backend": "sqlite3",

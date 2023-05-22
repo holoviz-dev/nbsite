@@ -1,7 +1,8 @@
-import os
 import glob
+import os
 import re
 import shutil
+
 
 def copy_files(src, dest, pattern='**'):
     """Copy every file matching pattern from src to dest
@@ -23,7 +24,7 @@ def base_version(version):
     """Extract the final release and if available pre-release (alpha, beta,
     release candidate) segments of a PEP440 version, defined with three
     components (major.minor.micro).
-    
+
     Useful to avoid nbsite/sphinx to display the documentation HTML title
     with a not so informative and rather ugly long version (e.g.
     ``0.13.0a19.post4+g0695e214``). Use it in ``conf.py``::
