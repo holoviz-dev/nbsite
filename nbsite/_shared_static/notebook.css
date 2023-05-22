@@ -33,6 +33,7 @@ div.output_prompt {
 }
 
 /* Hide cell toggle */
+
 details.toggle-details {
   display: none;
 }
@@ -47,6 +48,10 @@ button.toggle-button {
 
 .tag_hide-input {
   margin-bottom: 0 !important;
+}
+
+details.hide.above-input {
+  display: none;
 }
 
 .toggle-hidden + .cell_output {
