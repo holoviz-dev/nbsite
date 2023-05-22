@@ -53,10 +53,13 @@ html[data-theme='light'] .bd-content div.cell_output .text_html {
   }
 }
 
-
 @media (min-width: 1200px) {
     .bd-main .bd-content .bd-article-container .bd-article {
 	padding-left: 0;
+    }
+
+    .bd-sidebar-secondary {
+	max-width: 250px;
     }
 }
 
