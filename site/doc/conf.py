@@ -64,7 +64,7 @@ html_theme_options = {
     "pygment_light_style": "material",
     "pygment_dark_style": "material",
     'secondary_sidebar_items': [
-        "github_stars"
+        "github-stars-button"
     ],
 }
 
