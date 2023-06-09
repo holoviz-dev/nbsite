@@ -1,5 +1,6 @@
 import io
 import json
+import sys
 import warnings
 
 from collections import defaultdict
@@ -21,7 +22,7 @@ from docutils.parsers.rst import Directive, roles
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader
 from packaging.version import Version
-from panel.config import config
+from panel.config import config, panel_extension as extension
 from panel.io.convert import BOKEH_VERSION
 from panel.io.mime_render import exec_with_return, format_mime
 from panel.io.resources import CDN_DIST, Resources, set_resource_mode
@@ -122,7 +123,11 @@ def extract_extensions(code: str) -> List[str]:
     extensions = _bundle_extensions(None, resources)
     js += [bundle.cdn_url for bundle in extensions if bundle.cdn_url and
            '@holoviz/panel@' not in bundle.cdn_url]
-    return js, js_exports, js_modules, css
+    global_exports = [
+        extension._globals[ext][0] for ext, imp in extension._imports.items()
+        if imp in sys.modules and ext in extension._globals
+    ]
+    return js, js_exports, js_modules, css, global_exports
 
 def _model_json(model: Model, target: str) -> Tuple[Document, str]:
     """
@@ -214,8 +219,8 @@ class PyodideDirective(Directive):
                         warnings.warn(f'Could not render {out!r} generated from executed code directive: {code}')
                 else:
                     content, mime_type = None, None
-            js, js_exports, js_modules, css = extract_extensions(code)
-            pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_exports, js_modules, css))
+            js, js_exports, js_modules, css, global_exports = extract_extensions(code)
+            pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_exports, js_modules, css, global_exports))
         pipe.close()
 
     @classmethod
@@ -273,7 +278,9 @@ class PyodideDirective(Directive):
         self._conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
         if self._conn.poll(60):
             try:
-                output, mime_type, stdout, stderr, js, js_exports, js_modules, css = self._conn.recv()
+                output, mime_type, stdout, stderr, js, js_exports, js_modules, css, global_exports = (
+                    self._conn.recv()
+                )
             except Exception:
                 self._kill()
                 return [doctree_node]
@@ -298,7 +305,7 @@ class PyodideDirective(Directive):
             return rendered_nodes
 
         # Ensure we wait for all JS module exports to be initialized
-        exports = ' && '.join(f'window.{export}' for export in EXTRA_RESOURCES[current_source]['js_exports'])
+        exports = ' && '.join(f'window.{export}' for export in global_exports)
         if exports:
             exports = f' && {exports}'
 
