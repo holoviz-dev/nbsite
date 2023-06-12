@@ -48,7 +48,7 @@ nbsite_gallery_conf = {
 
 # Configure the theme
 html_theme_options = {
-    "github_url": "https://github.com/pyviz-dev/nbsite",
+    "github_url": "https://github.com/holoviz-dev/nbsite",
     "icon_links": [
         {
             "name": "Discourse",

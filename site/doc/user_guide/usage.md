@@ -4,7 +4,7 @@
 
 1. You want a 'static', fairly self contained site (i.e. just an ordinary web server is required - you can build and serve locally, or copy the build directory to a remote server).
 
-2. You have one or more sets of notebooks (e.g. `notebooks/`, or `examples/getting_started` + `examples/user_guide` + `examples/gallery`). Note: current expectation is for there to be no title in the notebook itself; instead, the title will be taken from filename. E.g. `1_The_Filename.ipynb` will result in a title of `1 The Filename`. If there is a title in the notebook, then the `offset` flag can be used to remove the first cell before rendering. Notebooks should use level 2 headings as their highest heading level (level 1 will used for the title). However, all of this may change - see [issue 18](https://github.com/pyviz-dev/nbsite/issues/18).
+2. You have one or more sets of notebooks (e.g. `notebooks/`, or `examples/getting_started` + `examples/user_guide` + `examples/gallery`). Note: current expectation is for there to be no title in the notebook itself; instead, the title will be taken from filename. E.g. `1_The_Filename.ipynb` will result in a title of `1 The Filename`. If there is a title in the notebook, then the `offset` flag can be used to remove the first cell before rendering. Notebooks should use level 2 headings as their highest heading level (level 1 will used for the title). However, all of this may change - see [issue 18](https://github.com/holoviz-dev/nbsite/issues/18).
 
 3. The packages used by the notebooks are already installed in the environment into which you will install nbsite.
 
@@ -74,7 +74,7 @@ To use the holoviz theme: pip/conda install sphinx_holoviz_theme and set `html_t
 * `second_nav`: Boolean indicating whether to use a second nav bar.
 * `custom_css`: path relative to `html_static_path` overriding styles. Styles come first from the theme's `main.css_t`, which is populated with the colors options, extended/overridden by nbsite's own css `nbsite/_shared_static/nbsite.css`, and then extended/overridden by your site's own css.
 
-**NOTE:** Only use the custom_css to overwrite small pieces of the css not to make general improvements. If you have general improvements, please open a PR on the [theme repo](https://github.com/pyviz-dev/sphinx_holoviz_theme).
+**NOTE:** Only use the custom_css to overwrite small pieces of the css not to make general improvements. If you have general improvements, please open a PR on the [theme repo](https://github.com/holoviz-dev/sphinx_holoviz_theme).
 ```
 
 ## Customizing running of IPython notebooks

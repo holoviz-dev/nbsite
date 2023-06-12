@@ -11,7 +11,7 @@ def task_build_docs():
     """build docs"""
     return {
         'actions': [
-            'nbsite generate-rst --org pyviz-dev --repo nbsite --skip ".*sites.*"',
+            'nbsite generate-rst --org holoviz-dev --repo nbsite --skip ".*sites.*"',
             'nbsite build',
         ],
         'verbosity': 2,
