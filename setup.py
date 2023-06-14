@@ -41,15 +41,15 @@ setup_args = dict(
     description=DESCRIPTION,
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    author='PyViz developers',
-    author_email='developers@pyviz.org',
-    maintainer='PyViz developers',
-    maintainer_email='developers@pyviz.org',
-    url='https://{}.pyviz.org/'.format(NAME),
+    author='HoloViz developers',
+    author_email='developers@holoviz.org',
+    maintainer='HoloViz developers',
+    maintainer_email='developers@holoviz.org',
+    url='https://nbsite.holoviz.org',
     project_urls={
-        'Documentation': 'https://{}.pyviz.org/'.format(NAME),
-        'Source Code': 'https://github.com/pyviz/{}'.format(NAME),
-        'Bug Tracker': 'https://github.com/pyviz/{}/issues'.format(NAME)
+        'Documentation': 'https://nbsite.holoviz.org/',
+        'Source Code': 'https://github.com/holoviz-dev/nbsite',
+        'Bug Tracker': 'https://github.com/holoviz-dev/nbsite/issues'
     },
     packages=find_packages(),
     python_requires='>=3',
