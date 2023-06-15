@@ -27,7 +27,7 @@ jobs:
       run:
         shell: bash -l {0}
     env:
-      CHANS_DEV: "-c pyviz/label/dev -c defaults -c conda-forge"
+      CHANS_DEV: "-c pyviz/label/dev -c conda-forge"
       PKG_TEST_PYTHON: "--test-python=py38"
       PYTHON_VERSION: "3.8"
       CHANS: "-c pyviz"
@@ -48,7 +48,7 @@ jobs:
           conda config --set always_yes True
           conda install -c pyviz "pyctdev>=0.5"
           doit ecosystem=conda ecosystem_setup
-          conda install -c conda-forge "urllib3<2.0.0" "conda-build==3.24"
+          conda install -c conda-forge "urllib3<2.0.0" "conda-build==3.24" "conda=23.3.1"
       - name: conda build
         run: |
           doit ecosystem=conda package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=unit
