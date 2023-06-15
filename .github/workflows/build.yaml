@@ -51,7 +51,7 @@ jobs:
           conda install -c conda-forge "urllib3<2.0.0" "conda-build==3.24" "conda=23.3.1"
       - name: conda build
         run: |
-          doit ecosystem=conda package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=unit
+          doit ecosystem=conda package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=simple
       - name: conda dev upload
         if: (github.event_name == 'push' && (contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc')))
         run: |
