@@ -62,7 +62,10 @@ html_theme_options = {
     ],
     "navbar_end": ["navbar-icon-links"],
     "pygment_light_style": "material",
-    "pygment_dark_style": "material"
+    "pygment_dark_style": "material",
+    'secondary_sidebar_items': [
+        "github-stars-button"
+    ],
 }
 
 # Extra config for the theme
