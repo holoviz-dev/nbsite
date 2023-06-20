@@ -71,6 +71,7 @@ setup_args = dict(
         'myst-parser',
         'sphinx-copybutton',
         'sphinx-design',
+        'urllib3 <2.0.0',
     ],
     extras_require= {
         'refman':[
