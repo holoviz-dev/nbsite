@@ -543,7 +543,9 @@ def resize_pad(im_pth, desired_size=500):
     w = (desired_size-new_size[0])//2
     h = (desired_size-new_size[1])//2
 
-    im = im.resize(new_size, Image.ANTIALIAS)
+    # LANCZOS replaced ANTIALIAS in PIL 10
+    im_filter = getattr(Image, "LANCZOS", None) or getattr(Image, "ANTIALIAS", None)
+    im = im.resize(new_size, im_filter)
     new_im = Image.new("RGBA", (desired_size, desired_size), color=(0, 0, 0, 0))
     new_im.paste(im, (w, h))
     new_im.save(im_pth)
