@@ -737,9 +737,8 @@ def generate_gallery(app, page):
                 thumb_url = '/'.join(url_components).replace('/./', '/')
 
                 thumb_dir = os.path.join(dest_dir, 'thumbnails')
-                if not os.path.isdir(thumb_dir):
-                    os.makedirs(thumb_dir)
-                thumb_path = os.path.join(thumb_dir, '%s.png' % basename)
+                os.makedirs(thumb_dir, exist_ok=True)
+                thumb_path = os.path.join(thumb_dir, f'{basename}.png')
 
                 # Try existing file
                 retcode = 1
@@ -749,6 +748,12 @@ def generate_gallery(app, page):
                     verb = 'Used existing'
                     retcode = 0
 
+                if os.path.isfile(thumb_path[:-4]+'.gif'):
+                    verb = 'Used existing'
+                    retcode = 0
+                    thumb_path = thumb_path[:-4] +'.gif'
+                    thumb_extension = 'gif'
+
                 # Try download
                 if download and retcode:
                     try:
@@ -757,7 +762,7 @@ def generate_gallery(app, page):
                         thumb_req = requests.get(thumb_url, verify=False)
 
                     verb = 'Successfully downloaded'
-                    if thumb_req.status_code == 200:
+                    if thumb_req.ok:
                         verb = 'Successfully downloaded'
                         retcode = 0
                     else:
@@ -765,7 +770,7 @@ def generate_gallery(app, page):
                             thumb_req = requests.get(thumb_url[:-4]+'.gif')
                         except Exception:
                             thumb_req = requests.get(thumb_url[:-4]+'.gif', verify=False)
-                        if thumb_req.status_code == 200:
+                        if thumb_req.ok:
                             thumb_extension = 'gif'
                             thumb_path = thumb_path[:-4]+'.gif'
                             retcode = 0
