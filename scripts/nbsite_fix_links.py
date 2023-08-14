@@ -121,19 +121,23 @@ def cleanup_links(path, inspect_links=False):
                 if os.path.exists(os.path.join(os.path.dirname(path), also_tried)):
                     img['src'] = also_tried
                 else:
-                    warnings.warn('Found reference to missing image {} in: {}. Also tried: {}'.format(src, path, also_tried))
+                    msg = f'Found reference to missing image {src} in: {path}. Also tried: {also_tried}'
+                    warnings.warn(msg)
     with open(path, 'w') as f:
         f.write(str(soup))
 
 if __name__ == '__main__':
     import argparse
+    from concurrent.futures import ThreadPoolExecutor
+    from functools import partial
+    from pathlib import Path
 
     parser = argparse.ArgumentParser()
     parser.add_argument('build_dir', help="Build Directory")
     parser.add_argument('--inspect-links', action='store_true', help="Whether or not to print out all the links on the website")
     args = parser.parse_args()
 
-    for root, dirs, files in os.walk(args.build_dir):
-        for file_path in files:
-            if file_path.endswith(".html"):
-                soup = cleanup_links(os.path.join(root, file_path), args.inspect_links)
+    files = Path(args.build_dir).rglob("*.html")
+    with ThreadPoolExecutor() as executor:
+        func = partial(cleanup_links, inspect_links=args.inspect_links)
+        executor.map(func, files)
