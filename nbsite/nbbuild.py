@@ -393,10 +393,8 @@ class NotebookDirective(Directive):
             dest_path_script = string.replace(dest_path, '.ipynb', '.py')
             rel_path_script = string.replace(nb_basename, '.ipynb', '.py')
             script_text = nb_to_python(nb_abs_path)
-            f = open(dest_path_script, 'w')
-            f.write(script_text.encode('utf8'))
-            f.close()
-
+            with open(dest_path_script, 'w') as f:
+                f.write(script_text.encode('utf-8'))
             link_rst += formatted_link(rel_path_script)
 
         if len(include_opts):
@@ -460,8 +458,7 @@ class NotebookDirective(Directive):
         dest_dir = rst_dir
         dest_path = os.path.join(dest_dir, nb_basename)
 
-        if not os.path.exists(dest_dir):
-            os.makedirs(dest_dir)
+        os.makedirs(dest_dir, exist_ok=True)
 
         # Evaluate Notebook and insert into Sphinx doc
         evaluate_notebook(
