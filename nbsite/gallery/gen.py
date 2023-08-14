@@ -2,6 +2,8 @@ import glob
 import json
 import logging
 import os
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 import requests
 import sphinx.util
@@ -720,64 +722,12 @@ def generate_gallery(app, page):
                         title=backend.title() if backend else None
                     )
 
-            for f in sorted(files, key=subsection_order):
-                extension = f.split('.')[-1]
-                basename = os.path.basename(f)[:-(len(extension)+1)]
+            sorted_files = sorted(files, key=subsection_order)
+            with ThreadPoolExecutor() as ex:
+                func = partial(_download_image, page, thumbnail_url, download, backend, section, dest_dir)
+                futures = ex.map(func, sorted_files)
 
-                # Try to fetch thumbnail otherwise regenerate it
-                url_components = [thumbnail_url, page]
-
-                if section:
-                    url_components.append(section)
-                if backend:
-                    url_components.append(backend)
-                url_components.append('%s.png' % basename)
-
-                # if there is a . in the path, just get rid of it
-                thumb_url = '/'.join(url_components).replace('/./', '/')
-
-                thumb_dir = os.path.join(dest_dir, 'thumbnails')
-                os.makedirs(thumb_dir, exist_ok=True)
-                thumb_path = os.path.join(thumb_dir, f'{basename}.png')
-
-                # Try existing file
-                retcode = 1
-                thumb_extension = 'png'
-
-                if os.path.isfile(thumb_path):
-                    verb = 'Used existing'
-                    retcode = 0
-
-                if os.path.isfile(thumb_path[:-4]+'.gif'):
-                    verb = 'Used existing'
-                    retcode = 0
-                    thumb_path = thumb_path[:-4] +'.gif'
-                    thumb_extension = 'gif'
-
-                # Try download
-                if download and retcode:
-                    try:
-                        thumb_req = requests.get(thumb_url)
-                    except Exception:
-                        thumb_req = requests.get(thumb_url, verify=False)
-
-                    verb = 'Successfully downloaded'
-                    if thumb_req.ok:
-                        verb = 'Successfully downloaded'
-                        retcode = 0
-                    else:
-                        try:
-                            thumb_req = requests.get(thumb_url[:-4]+'.gif')
-                        except Exception:
-                            thumb_req = requests.get(thumb_url[:-4]+'.gif', verify=False)
-                        if thumb_req.ok:
-                            thumb_extension = 'gif'
-                            thumb_path = thumb_path[:-4]+'.gif'
-                            retcode = 0
-                    if not retcode:
-                        with open(thumb_path, 'wb') as thumb_f:
-                            thumb_f.write(thumb_req.content)
-
+            for f, (thumb_extension, extension, basename, retcode, verb) in zip(sorted_files, futures):
                 # Generate thumbnail
                 if not retcode or only_use_existing:
                     pass
@@ -844,6 +794,66 @@ def generate_gallery(app, page):
         gallery_rst += HIDE_JS.format(backends=repr(backends[1:]))
     with open(os.path.join(doc_dir, page, 'index.rst'), 'w') as f:
         f.write(gallery_rst)
+
+
+def _download_image(page, thumbnail_url, download, backend, section, dest_dir, f):
+    extension = f.split('.')[-1]
+    basename = os.path.basename(f)[:-(len(extension)+1)]
+
+    # Try to fetch thumbnail otherwise regenerate it
+    url_components = [thumbnail_url, page]
+
+    if section:
+        url_components.append(section)
+    if backend:
+        url_components.append(backend)
+    url_components.append(f'{basename}.png')
+
+    # if there is a . in the path, just get rid of it
+    thumb_url = '/'.join(url_components).replace('/./', '/')
+
+    thumb_dir = os.path.join(dest_dir, 'thumbnails')
+    os.makedirs(thumb_dir, exist_ok=True)
+    thumb_path = os.path.join(thumb_dir, f'{basename}.png')
+
+    # Try existing file
+    retcode = 1
+    thumb_extension = 'png'
+
+    if os.path.isfile(thumb_path):
+        verb = 'Used existing'
+        retcode = 0
+
+    if os.path.isfile(thumb_path[:-4]+'.gif'):
+        verb = 'Used existing'
+        retcode = 0
+        thumb_path = thumb_path[:-4] +'.gif'
+        thumb_extension = 'gif'
+
+    # Try download
+    if download and retcode:
+        try:
+            thumb_req = requests.get(thumb_url)
+        except Exception:
+            thumb_req = requests.get(thumb_url, verify=False)
+
+        verb = 'Successfully downloaded'
+        if thumb_req.ok:
+            verb = 'Successfully downloaded'
+            retcode = 0
+        else:
+            try:
+                thumb_req = requests.get(thumb_url[:-4]+'.gif')
+            except Exception:
+                thumb_req = requests.get(thumb_url[:-4]+'.gif', verify=False)
+            if thumb_req.ok:
+                thumb_extension = 'gif'
+                thumb_path = thumb_path[:-4]+'.gif'
+                retcode = 0
+        if not retcode:
+            with open(thumb_path, 'wb') as thumb_f:
+                thumb_f.write(thumb_req.content)
+    return thumb_extension, extension, basename, retcode, verb
 
 
 def generate_gallery_rst(app):
