@@ -128,6 +128,7 @@ def cleanup_links(path, inspect_links=False):
 
 if __name__ == '__main__':
     import argparse
+
     from concurrent.futures import ThreadPoolExecutor
     from functools import partial
     from pathlib import Path
