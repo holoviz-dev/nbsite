@@ -33,6 +33,14 @@ from sphinx.application import Sphinx
 
 HERE = Path(__file__).parent
 
+CONVERT_PANE_TYPES = (HoloViews, Interactive)
+
+try:
+    from panel.param import ReactiveExpr
+    CONVERT_PANE_TYPES += (ReactiveExpr,)
+except Exception:
+    pass
+
 def get_env() -> Environment:
     ''' Get the correct Jinja2 Environment, also for frozen scripts.
     '''
@@ -209,7 +217,8 @@ class PyodideDirective(Directive):
                     out = exec_with_return(code, stdout=stdout, stderr=stderr)
                 except Exception:
                     out = None
-                if isinstance(out, (Model, Viewable, Viewer)) or HoloViews.applies(out) or Interactive.applies(out):
+                if (isinstance(out, (Model, Viewable, Viewer)) or
+                    any(pane.applies(out) for pane in CONVERT_PANE_TYPES)):
                     _, content = _model_json(as_panel(out), msg['target'])
                     mime_type = 'application/bokeh'
                 elif out is not None:
