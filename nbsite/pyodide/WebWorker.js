@@ -64,8 +64,11 @@ async function loadApplication(cell_id, path) {
 
 const autodetect_deps_code = `
 import json
-from panel.io.mime_render import find_imports
-json.dumps(find_imports(msg.to_py()['code']))`
+try:
+    from panel.io.mime_render import find_requirements
+except Exception:
+    from panel.io.mime_render import find_imports as find_requirements
+json.dumps(find_requirements(msg.to_py()['code']))`
 
 const exec_code = `
 from functools import partial
