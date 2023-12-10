@@ -60,7 +60,7 @@ setup_args = dict(
         'nbformat',
         'nbconvert',
         'jupyter_client',
-        'myst-nb >=0.17',
+        'myst-nb >=0.17,<1',
         'sphinx-design',
         'notebook',
         'sphinx',
