@@ -8,5 +8,5 @@ plotly
 -e ..
 -e ./dummy_package
 jupyterlab
-jupyeterlab_myst
+jupyterlab_myst
 jupytext
