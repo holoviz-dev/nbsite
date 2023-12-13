@@ -15,6 +15,8 @@ pip-wheel-metadata
 
 # ipython
 */.ipynb_checkpoints
+# jupytext
+.ipynb_checkpoints/
 
 # autover
 */.version
@@ -26,3 +28,5 @@ site/builtdocs/
 site/.venv/
 
 build/
+
+.venv/

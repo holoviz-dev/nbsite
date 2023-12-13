@@ -2,7 +2,9 @@
 
 Using the `pyodide` directive.
 
-```{pyodide}
+```{code-block} python
+:pyodide: null
+
 print('hello')
 ```
 
@@ -13,4 +15,5 @@ print('hello')
 
 Intro <self>
 holoviz
+jupytext
 ```

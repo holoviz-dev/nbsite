@@ -7,3 +7,6 @@ matplotlib
 plotly
 -e ..
 -e ./dummy_package
+jupyterlab
+jupyeterlab_myst
+jupytext
