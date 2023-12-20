@@ -16,7 +16,7 @@ def add_analytics(app):
         goatcounter_holoviz = nbsite_analytics.get('goatcounter_holoviz', False)
         if goatcounter_holoviz:
             hv_default = dict(
-                goatcounter_url='https://holoviz.goatcounter.com',
+                goatcounter_url='https://holoviz.goatcounter.com/count',
                 goatcounter_domain='auto',
             )
             nbsite_analytics = dict(nbsite_analytics, **hv_default)
