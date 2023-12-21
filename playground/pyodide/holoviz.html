@@ -1,0 +1,414 @@
+
+<!DOCTYPE html>
+
+<html data-theme="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="Docutils 0.19: https://docutils.sourceforge.io/" name="generator"/>
+<link href="../../site.webmanifest" rel="manifest"/>
+<title>HoloViz outputs — nbsite v0.8.4</title>
+<script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+<!-- Loaded before other Sphinx assets -->
+<link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet"/>
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet"/>
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet"/>
+<link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet"/>
+<link as="font" crossorigin="" href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="" href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="" href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" rel="preload" type="font/woff2"/>
+<link href="../../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/runbutton.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/nbsite.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/css/custom.css" rel="stylesheet" type="text/css"/>
+<!-- Pre-loaded scripts that we'll load fully later -->
+<link as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" rel="preload"/>
+<link as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" rel="preload"/>
+<script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+<script src="../../_static/jquery.js"></script>
+<script src="../../_static/underscore.js"></script>
+<script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+<script src="../../_static/doctools.js"></script>
+<script src="../../_static/sphinx_highlight.js"></script>
+<script src="../../_static/clipboard.min.js"></script>
+<script src="../../_static/copybutton.js"></script>
+<script src="../../_static/run_cell.js"></script>
+<script src="../../_static/WorkerHandler.js"></script>
+<script src="../../_static/design-tabs.js"></script>
+<script src="../../_static/ServiceHandler.js"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.1.1.min.js"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.1.1.min.js"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.1.1.min.js"></script>
+<script src="https://cdn.holoviz.org/panel/1.2.3/dist/panel.min.js"></script>
+<script>
+    window.goatcounter = {
+        path: function(p) { return location.host + p }
+    }
+</script>
+<script async="async" data-goatcounter="https://holoviz.goatcounter.com/count" src="../../_static/js/goatcounter.js"></script>
+<script>DOCUMENTATION_OPTIONS.pagename = 'playground/pyodide/holoviz';</script>
+<link href="../../_static/favicon.ico" rel="shortcut icon"/>
+<link href="../../genindex.html" rel="index" title="Index"/>
+<link href="../../search.html" rel="search" title="Search"/>
+<link href="../example_gallery/index.html" rel="next" title="Gallery Title"/>
+<link href="index.html" rel="prev" title="Pyodide"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="en" name="docsearch:language"/>
+</head>
+<body data-bs-root-margin="0px 0px -60%" data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-default-mode="light" data-offset="180">
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<input class="sidebar-toggle" id="__primary" name="__primary" type="checkbox"/>
+<label class="overlay overlay-primary" for="__primary"></label>
+<input class="sidebar-toggle" id="__secondary" name="__secondary" type="checkbox"/>
+<label class="overlay overlay-secondary" for="__secondary"></label>
+<div class="search-button__wrapper">
+<div class="search-button__overlay"></div>
+<div class="search-button__search-container">
+<form action="../../search.html" class="bd-search d-flex align-items-center" method="get">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search"/>
+<span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+</div>
+<nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+<label class="sidebar-toggle primary-toggle" for="__primary">
+<span class="fa-solid fa-bars"></span>
+</label>
+<div class="navbar-header-items__start">
+<div class="navbar-item">
+<a class="navbar-brand logo" href="../../index.html">
+<img alt="Logo image" class="logo__image only-light" src="../../_static/nbsite-logo.png"/>
+<script>document.write(`<img src="../../_static/nbsite-logo.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+</a></div>
+</div>
+<div class="col-lg-9 navbar-header-items">
+<div class="me-auto navbar-header-items__center">
+<div class="navbar-item"><nav class="navbar-nav">
+<p aria-label="Site Navigation" aria-level="1" class="sidebar-header-items__title" role="heading">
+    Site Navigation
+  </p>
+<ul class="bd-navbar-elements navbar-nav">
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../../user_guide/index.html">
+                        User Guide
+                      </a>
+</li>
+<li class="nav-item current active">
+<a class="nav-link nav-internal" href="../index.html">
+                        PlayGround
+                      </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../../development.html">
+                        Developers
+                      </a>
+</li>
+</ul>
+</nav></div>
+</div>
+<div class="navbar-header-items__end">
+<div class="navbar-item navbar-persistent--container">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+</div>
+<div class="navbar-item"><ul aria-label="Icon Links" class="navbar-icon-links navbar-nav">
+<li class="nav-item">
+<a class="nav-link" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://github.com/holoviz-dev/nbsite" rel="noopener" target="_blank" title="GitHub"><span><i class="fa-brands fa-square-github"></i></span>
+<label class="sr-only">GitHub</label></a>
+</li>
+<li class="nav-item">
+<a class="nav-link" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://discourse.holoviz.org/" rel="noopener" target="_blank" title="Discourse"><span><i class="fab fa-discourse"></i></span>
+<label class="sr-only">Discourse</label></a>
+</li>
+</ul></div>
+</div>
+</div>
+<div class="navbar-persistent--mobile">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+</div>
+<label class="sidebar-toggle secondary-toggle" for="__secondary">
+<span class="fa-solid fa-outdent"></span>
+</label>
+</div>
+</nav>
+<div class="bd-container">
+<div class="bd-container__inner bd-page-width">
+<div class="bd-sidebar-primary bd-sidebar">
+<div class="sidebar-header-items sidebar-primary__section">
+<div class="sidebar-header-items__center">
+<div class="navbar-item"><nav class="navbar-nav">
+<p aria-label="Site Navigation" aria-level="1" class="sidebar-header-items__title" role="heading">
+    Site Navigation
+  </p>
+<ul class="bd-navbar-elements navbar-nav">
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../../user_guide/index.html">
+                        User Guide
+                      </a>
+</li>
+<li class="nav-item current active">
+<a class="nav-link nav-internal" href="../index.html">
+                        PlayGround
+                      </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../../development.html">
+                        Developers
+                      </a>
+</li>
+</ul>
+</nav></div>
+</div>
+<div class="sidebar-header-items__end">
+<div class="navbar-item"><ul aria-label="Icon Links" class="navbar-icon-links navbar-nav">
+<li class="nav-item">
+<a class="nav-link" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://github.com/holoviz-dev/nbsite" rel="noopener" target="_blank" title="GitHub"><span><i class="fa-brands fa-square-github"></i></span>
+<label class="sr-only">GitHub</label></a>
+</li>
+<li class="nav-item">
+<a class="nav-link" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://discourse.holoviz.org/" rel="noopener" target="_blank" title="Discourse"><span><i class="fab fa-discourse"></i></span>
+<label class="sr-only">Discourse</label></a>
+</li>
+</ul></div>
+</div>
+</div>
+<div class="sidebar-primary-items__start sidebar-primary__section">
+<div class="sidebar-primary-item"><nav aria-label="Section Navigation" class="bd-docs-nav bd-links">
+<div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../user_guide/index.html">User Guide</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../user_guide/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../user_guide/gallery.html">Gallery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../user_guide/param_doc.html">Param reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">PlayGround</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html">Intro</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../markdown/index.html">MyST-Markdown</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../markdown/index.html">Intro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../markdown/example.html">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../rst/index.html">RST</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../rst/index.html">Index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rst/example.html">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../notebook_directive/index.html">NotebookDirective</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../notebook_directive/index.html">Intro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../notebook_directive/example.html">Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../notebook_directive/example2.html">Example2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../notebook_directive/holoviz.html">HoloViz</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../notebook_directive/preexecuted.html">Pre-executed</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../mystmdnb/index.html">Text Notebook</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../mystmdnb/index.html">Intro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mystmdnb/holoviz.html">HoloViz outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../mystnb/index.html">MyST Notebook</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../mystnb/index.html">Intro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mystnb/holoviz.html">HoloViz</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Pyodide</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html">Intro</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">HoloViz outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../example_gallery/index.html">Gallery</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../example_gallery/section1/index.html">Section1</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../example_gallery/section1/thing1.html">Thing1</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../example_gallery/section2/index.html">Section2</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../example_gallery/section2/thing2.html">Thing2</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/index.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Developers</a></li>
+</ul>
+</div>
+</nav></div>
+</div>
+<div class="sidebar-primary-items__end sidebar-primary__section">
+</div>
+<div id="rtd-footer-container"></div>
+</div>
+<main class="bd-main" id="main-content">
+<div class="bd-content">
+<div class="bd-article-container">
+<div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+<div class="header-article-items__start">
+<div class="header-article-item">
+<nav aria-label="Breadcrumbs">
+<ul aria-label="Breadcrumb" class="bd-breadcrumbs" role="navigation">
+<li class="breadcrumb-item breadcrumb-home">
+<a aria-label="Home" class="nav-link" href="../../index.html">
+<i class="fa-solid fa-home"></i>
+</a>
+</li>
+<li class="breadcrumb-item"><a class="nav-link" href="../index.html">NBSite Playground</a></li>
+<li class="breadcrumb-item"><a class="nav-link" href="index.html">Pyodide</a></li>
+<li aria-current="page" class="breadcrumb-item active">HoloViz outputs</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+<div id="searchbox"></div>
+<article class="bd-article" role="main">
+<section id="holoviz-outputs">
+<h1>HoloViz outputs<a class="headerlink" href="#holoviz-outputs" title="Permalink to this heading">#</a></h1>
+<section id="holoviews">
+<h2>HoloViews<a class="headerlink" href="#holoviews" title="Permalink to this heading">#</a></h2>
+<div class="pyodide highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holoviews</span> <span class="k">as</span> <span class="nn">hv</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">hv</span><span class="o">.</span><span class="n">extension</span><span class="p">(</span><span class="s1">'bokeh'</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'x'</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="s1">'y'</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">]})</span>
+
+<span class="n">hv</span><span class="o">.</span><span class="n">Curve</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">kdims</span><span class="o">=</span><span class="s1">'x'</span><span class="p">,</span> <span class="n">vdims</span><span class="o">=</span><span class="s1">'y'</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="pyodide-stdout" id="stdout-codecell0-py"></pre><pre class="pyodide-stderr" id="stderr-codecell0-py"></pre><div class="pyodide-output embedded" id="output-codecell0-py"></div>
+<script>
+              async function embed_bokeh_1 () {
+                if (window.Bokeh && window.Bokeh.Panel) {
+                  await Bokeh.embed.embed_item({"target_id": "output-codecell0-py", "root_id": "p1002", "doc": {"version": "3.1.1", "title": "Panel Application", "defs": [{"type": "model", "name": "ReactiveHTML1"}, {"type": "model", "name": "FlexBox1", "properties": [{"name": "align_content", "kind": "Any", "default": "flex-start"}, {"name": "align_items", "kind": "Any", "default": "flex-start"}, {"name": "flex_direction", "kind": "Any", "default": "row"}, {"name": "flex_wrap", "kind": "Any", "default": "wrap"}, {"name": "justify_content", "kind": "Any", "default": "flex-start"}]}, {"type": "model", "name": "FloatPanel1", "properties": [{"name": "config", "kind": "Any", "default": {"type": "map"}}, {"name": "contained", "kind": "Any", "default": true}, {"name": "position", "kind": "Any", "default": "right-top"}, {"name": "offsetx", "kind": "Any", "default": null}, {"name": "offsety", "kind": "Any", "default": null}, {"name": "theme", "kind": "Any", "default": "primary"}, {"name": "status", "kind": "Any", "default": "normalized"}]}, {"type": "model", "name": "GridStack1", "properties": [{"name": "mode", "kind": "Any", "default": "warn"}, {"name": "ncols", "kind": "Any", "default": null}, {"name": "nrows", "kind": "Any", "default": null}, {"name": "allow_resize", "kind": "Any", "default": true}, {"name": "allow_drag", "kind": "Any", "default": true}, {"name": "state", "kind": "Any", "default": []}]}, {"type": "model", "name": "drag1", "properties": [{"name": "slider_width", "kind": "Any", "default": 5}, {"name": "slider_color", "kind": "Any", "default": "black"}, {"name": "value", "kind": "Any", "default": 50}]}, {"type": "model", "name": "click1", "properties": [{"name": "terminal_output", "kind": "Any", "default": ""}, {"name": "debug_name", "kind": "Any", "default": ""}, {"name": "clears", "kind": "Any", "default": 0}]}, {"type": "model", "name": "FastWrapper1", "properties": [{"name": "object", "kind": "Any", "default": null}, {"name": "style", "kind": "Any", "default": null}]}, {"type": "model", "name": "NotificationAreaBase1", "properties": [{"name": "js_events", "kind": "Any", "default": {"type": "map"}}, {"name": "position", "kind": "Any", "default": "bottom-right"}, {"name": "_clear", "kind": "Any", "default": 0}]}, {"type": "model", "name": "NotificationArea1", "properties": [{"name": "js_events", "kind": "Any", "default": {"type": "map"}}, {"name": "notifications", "kind": "Any", "default": []}, {"name": "position", "kind": "Any", "default": "bottom-right"}, {"name": "_clear", "kind": "Any", "default": 0}, {"name": "types", "kind": "Any", "default": [{"type": "map", "entries": [["type", "warning"], ["background", "#ffc107"], ["icon", {"type": "map", "entries": [["className", "fas fa-exclamation-triangle"], ["tagName", "i"], ["color", "white"]]}]]}, {"type": "map", "entries": [["type", "info"], ["background", "#007bff"], ["icon", {"type": "map", "entries": [["className", "fas fa-info-circle"], ["tagName", "i"], ["color", "white"]]}]]}]}]}, {"type": "model", "name": "Notification", "properties": [{"name": "background", "kind": "Any", "default": null}, {"name": "duration", "kind": "Any", "default": 3000}, {"name": "icon", "kind": "Any", "default": null}, {"name": "message", "kind": "Any", "default": ""}, {"name": "notification_type", "kind": "Any", "default": null}, {"name": "_destroyed", "kind": "Any", "default": false}]}, {"type": "model", "name": "TemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "BootstrapTemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "MaterialTemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}], "roots": [{"type": "object", "name": "Row", "id": "p1002", "attributes": {"name": "Row00814", "stylesheets": ["\n:host(.pn-loading.pn-arc):before, .pn-loading.pn-arc:before {\n  background-image: url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJtYXJnaW46IGF1dG87IGJhY2tncm91bmQ6IG5vbmU7IGRpc3BsYXk6IGJsb2NrOyBzaGFwZS1yZW5kZXJpbmc6IGF1dG87IiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ieE1pZFlNaWQiPiAgPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzNjM2MzIiBzdHJva2Utd2lkdGg9IjEwIiByPSIzNSIgc3Ryb2tlLWRhc2hhcnJheT0iMTY0LjkzMzYxNDMxMzQ2NDE1IDU2Ljk3Nzg3MTQzNzgyMTM4Ij4gICAgPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBkdXI9IjFzIiB2YWx1ZXM9IjAgNTAgNTA7MzYwIDUwIDUwIiBrZXlUaW1lcz0iMDsxIj48L2FuaW1hdGVUcmFuc2Zvcm0+ICA8L2NpcmNsZT48L3N2Zz4=\");\n  background-size: auto calc(min(50%, 400px));\n}", {"type": "object", "name": "ImportedStyleSheet", "id": "p1087", "attributes": {"url": "https://cdn.holoviz.org/panel/1.2.3/dist/css/loading.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1088", "attributes": {"url": "https://cdn.holoviz.org/panel/1.2.3/dist/css/listpanel.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1085", "attributes": {"url": "https://cdn.holoviz.org/panel/1.2.3/dist/bundled/theme/default.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1086", "attributes": {"url": "https://cdn.holoviz.org/panel/1.2.3/dist/bundled/theme/native.css"}}], "margin": 0, "align": "start", "children": [{"type": "object", "name": "Figure", "id": "p1007", "attributes": {"width": 300, "height": 300, "margin": [5, 10], "sizing_mode": "fixed", "align": "start", "x_range": {"type": "object", "name": "Range1d", "id": "p1003", "attributes": {"tags": [[["x", "x", null]], []], "end": 20.0, "reset_start": 0.0, "reset_end": 20.0}}, "y_range": {"type": "object", "name": "Range1d", "id": "p1004", "attributes": {"tags": [[["y", "y", null]], {"type": "map", "entries": [["invert_yaxis", false], ["autorange", false]]}], "start": 0.19999999999999996, "end": 9.8, "reset_start": 0.19999999999999996, "reset_end": 9.8}}, "x_scale": {"type": "object", "name": "LinearScale", "id": "p1019"}, "y_scale": {"type": "object", "name": "LinearScale", "id": "p1020"}, "title": {"type": "object", "name": "Title", "id": "p1010", "attributes": {"text_color": "black", "text_font_size": "12pt"}}, "renderers": [{"type": "object", "name": "GlyphRenderer", "id": "p1058", "attributes": {"data_source": {"type": "object", "name": "ColumnDataSource", "id": "p1048", "attributes": {"selected": {"type": "object", "name": "Selection", "id": "p1049", "attributes": {"indices": [], "line_indices": []}}, "selection_policy": {"type": "object", "name": "UnionRenderers", "id": "p1050"}, "data": {"type": "map", "entries": [["x", {"type": "ndarray", "array": {"type": "bytes", "data": "AAAAAAoAAAAUAAAA"}, "shape": [3], "dtype": "int32", "order": "little"}], ["y", {"type": "ndarray", "array": {"type": "bytes", "data": "BQAAAAEAAAAJAAAA"}, "shape": [3], "dtype": "int32", "order": "little"}]]}}}, "view": {"type": "object", "name": "CDSView", "id": "p1059", "attributes": {"filter": {"type": "object", "name": "AllIndices", "id": "p1060"}}}, "glyph": {"type": "object", "name": "Line", "id": "p1055", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "line_color": "#30a2da", "line_width": 2}}, "selection_glyph": {"type": "object", "name": "Line", "id": "p1061", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "line_color": "#30a2da", "line_width": 2}}, "nonselection_glyph": {"type": "object", "name": "Line", "id": "p1056", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "line_color": "#30a2da", "line_alpha": 0.1, "line_width": 2}}, "muted_glyph": {"type": "object", "name": "Line", "id": "p1057", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "line_color": "#30a2da", "line_alpha": 0.2, "line_width": 2}}}}], "toolbar": {"type": "object", "name": "Toolbar", "id": "p1016", "attributes": {"tools": [{"type": "object", "name": "SaveTool", "id": "p1035"}, {"type": "object", "name": "PanTool", "id": "p1036"}, {"type": "object", "name": "WheelZoomTool", "id": "p1037"}, {"type": "object", "name": "BoxZoomTool", "id": "p1038", "attributes": {"overlay": {"type": "object", "name": "BoxAnnotation", "id": "p1039", "attributes": {"syncable": false, "level": "overlay", "visible": false, "left_units": "canvas", "right_units": "canvas", "bottom_units": "canvas", "top_units": "canvas", "line_color": "black", "line_alpha": 1.0, "line_width": 2, "line_dash": [4, 4], "fill_color": "lightgrey", "fill_alpha": 0.5}}}}, {"type": "object", "name": "ResetTool", "id": "p1040"}], "active_drag": {"id": "p1036"}, "active_scroll": {"id": "p1037"}}}, "left": [{"type": "object", "name": "LinearAxis", "id": "p1028", "attributes": {"ticker": {"type": "object", "name": "BasicTicker", "id": "p1031", "attributes": {"mantissas": [1, 2, 5]}}, "formatter": {"type": "object", "name": "BasicTickFormatter", "id": "p1030"}, "axis_label": "y", "major_label_policy": {"type": "object", "name": "AllLabels", "id": "p1029"}}}], "below": [{"type": "object", "name": "LinearAxis", "id": "p1021", "attributes": {"ticker": {"type": "object", "name": "BasicTicker", "id": "p1024", "attributes": {"mantissas": [1, 2, 5]}}, "formatter": {"type": "object", "name": "BasicTickFormatter", "id": "p1023"}, "axis_label": "x", "major_label_policy": {"type": "object", "name": "AllLabels", "id": "p1022"}}}], "center": [{"type": "object", "name": "Grid", "id": "p1027", "attributes": {"axis": {"id": "p1021"}, "grid_line_color": null}}, {"type": "object", "name": "Grid", "id": "p1034", "attributes": {"dimension": 1, "axis": {"id": "p1028"}, "grid_line_color": null}}], "min_border_top": 10, "min_border_bottom": 10, "min_border_left": 10, "min_border_right": 10, "output_backend": "webgl"}}]}}, {"type": "object", "name": "panel.models.location.Location", "id": "p1115", "attributes": {"name": "location", "reload": false}}], "callbacks": {"type": "map"}}, "version": "3.1.1"})
+                } else {
+                   setTimeout(embed_bokeh_1, 200)
+                }
+              };
+              embed_bokeh_1()
+            </script>
+<p>TODO: Matplotlib + Plotly</p>
+</section>
+<section id="hvplot">
+<h2>hvPlot<a class="headerlink" href="#hvplot" title="Permalink to this heading">#</a></h2>
+<div class="pyodide highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">hvplot.pandas</span>  <span class="c1"># noqa</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">hvplot</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">'x'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">'y'</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="pyodide-stdout" id="stdout-codecell1-py"></pre><pre class="pyodide-stderr" id="stderr-codecell1-py"></pre><div class="pyodide-output embedded" id="output-codecell1-py"></div>
+<script>
+              async function embed_bokeh_2 () {
+                if (window.Bokeh && window.Bokeh.Panel) {
+                  await Bokeh.embed.embed_item({"target_id": "output-codecell1-py", "root_id": "p1157", "doc": {"version": "3.1.1", "title": "Panel Application", "defs": [{"type": "model", "name": "ReactiveHTML1"}, {"type": "model", "name": "FlexBox1", "properties": [{"name": "align_content", "kind": "Any", "default": "flex-start"}, {"name": "align_items", "kind": "Any", "default": "flex-start"}, {"name": "flex_direction", "kind": "Any", "default": "row"}, {"name": "flex_wrap", "kind": "Any", "default": "wrap"}, {"name": "justify_content", "kind": "Any", "default": "flex-start"}]}, {"type": "model", "name": "FloatPanel1", "properties": [{"name": "config", "kind": "Any", "default": {"type": "map"}}, {"name": "contained", "kind": "Any", "default": true}, {"name": "position", "kind": "Any", "default": "right-top"}, {"name": "offsetx", "kind": "Any", "default": null}, {"name": "offsety", "kind": "Any", "default": null}, {"name": "theme", "kind": "Any", "default": "primary"}, {"name": "status", "kind": "Any", "default": "normalized"}]}, {"type": "model", "name": "GridStack1", "properties": [{"name": "mode", "kind": "Any", "default": "warn"}, {"name": "ncols", "kind": "Any", "default": null}, {"name": "nrows", "kind": "Any", "default": null}, {"name": "allow_resize", "kind": "Any", "default": true}, {"name": "allow_drag", "kind": "Any", "default": true}, {"name": "state", "kind": "Any", "default": []}]}, {"type": "model", "name": "drag1", "properties": [{"name": "slider_width", "kind": "Any", "default": 5}, {"name": "slider_color", "kind": "Any", "default": "black"}, {"name": "value", "kind": "Any", "default": 50}]}, {"type": "model", "name": "click1", "properties": [{"name": "terminal_output", "kind": "Any", "default": ""}, {"name": "debug_name", "kind": "Any", "default": ""}, {"name": "clears", "kind": "Any", "default": 0}]}, {"type": "model", "name": "FastWrapper1", "properties": [{"name": "object", "kind": "Any", "default": null}, {"name": "style", "kind": "Any", "default": null}]}, {"type": "model", "name": "NotificationAreaBase1", "properties": [{"name": "js_events", "kind": "Any", "default": {"type": "map"}}, {"name": "position", "kind": "Any", "default": "bottom-right"}, {"name": "_clear", "kind": "Any", "default": 0}]}, {"type": "model", "name": "NotificationArea1", "properties": [{"name": "js_events", "kind": "Any", "default": {"type": "map"}}, {"name": "notifications", "kind": "Any", "default": []}, {"name": "position", "kind": "Any", "default": "bottom-right"}, {"name": "_clear", "kind": "Any", "default": 0}, {"name": "types", "kind": "Any", "default": [{"type": "map", "entries": [["type", "warning"], ["background", "#ffc107"], ["icon", {"type": "map", "entries": [["className", "fas fa-exclamation-triangle"], ["tagName", "i"], ["color", "white"]]}]]}, {"type": "map", "entries": [["type", "info"], ["background", "#007bff"], ["icon", {"type": "map", "entries": [["className", "fas fa-info-circle"], ["tagName", "i"], ["color", "white"]]}]]}]}]}, {"type": "model", "name": "Notification", "properties": [{"name": "background", "kind": "Any", "default": null}, {"name": "duration", "kind": "Any", "default": 3000}, {"name": "icon", "kind": "Any", "default": null}, {"name": "message", "kind": "Any", "default": ""}, {"name": "notification_type", "kind": "Any", "default": null}, {"name": "_destroyed", "kind": "Any", "default": false}]}, {"type": "model", "name": "TemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "BootstrapTemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "MaterialTemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}], "roots": [{"type": "object", "name": "Row", "id": "p1157", "attributes": {"name": "Row00929", "stylesheets": ["\n:host(.pn-loading.pn-arc):before, .pn-loading.pn-arc:before {\n  background-image: url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJtYXJnaW46IGF1dG87IGJhY2tncm91bmQ6IG5vbmU7IGRpc3BsYXk6IGJsb2NrOyBzaGFwZS1yZW5kZXJpbmc6IGF1dG87IiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ieE1pZFlNaWQiPiAgPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzNjM2MzIiBzdHJva2Utd2lkdGg9IjEwIiByPSIzNSIgc3Ryb2tlLWRhc2hhcnJheT0iMTY0LjkzMzYxNDMxMzQ2NDE1IDU2Ljk3Nzg3MTQzNzgyMTM4Ij4gICAgPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBkdXI9IjFzIiB2YWx1ZXM9IjAgNTAgNTA7MzYwIDUwIDUwIiBrZXlUaW1lcz0iMDsxIj48L2FuaW1hdGVUcmFuc2Zvcm0+ICA8L2NpcmNsZT48L3N2Zz4=\");\n  background-size: auto calc(min(50%, 400px));\n}", {"type": "object", "name": "ImportedStyleSheet", "id": "p1244", "attributes": {"url": "https://cdn.holoviz.org/panel/1.2.3/dist/css/loading.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1245", "attributes": {"url": "https://cdn.holoviz.org/panel/1.2.3/dist/css/listpanel.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1242", "attributes": {"url": "https://cdn.holoviz.org/panel/1.2.3/dist/bundled/theme/default.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1243", "attributes": {"url": "https://cdn.holoviz.org/panel/1.2.3/dist/bundled/theme/native.css"}}], "margin": 0, "align": "start", "children": [{"type": "object", "name": "Figure", "id": "p1163", "attributes": {"width": 700, "height": 300, "margin": [5, 10], "sizing_mode": "fixed", "align": "start", "x_range": {"type": "object", "name": "Range1d", "id": "p1158", "attributes": {"tags": [[["x", "x", null]], []], "start": -0.8571428571428572, "end": 20.857142857142858, "reset_start": -0.8571428571428572, "reset_end": 20.857142857142858}}, "y_range": {"type": "object", "name": "Range1d", "id": "p1159", "attributes": {"tags": [[["y", "y", null]], {"type": "map", "entries": [["invert_yaxis", false], ["autorange", false]]}], "start": 0.19999999999999996, "end": 9.8, "reset_start": 0.19999999999999996, "reset_end": 9.8}}, "x_scale": {"type": "object", "name": "LinearScale", "id": "p1175"}, "y_scale": {"type": "object", "name": "LinearScale", "id": "p1176"}, "title": {"type": "object", "name": "Title", "id": "p1166", "attributes": {"text_color": "black", "text_font_size": "12pt"}}, "renderers": [{"type": "object", "name": "GlyphRenderer", "id": "p1215", "attributes": {"data_source": {"type": "object", "name": "ColumnDataSource", "id": "p1205", "attributes": {"selected": {"type": "object", "name": "Selection", "id": "p1206", "attributes": {"indices": [], "line_indices": []}}, "selection_policy": {"type": "object", "name": "UnionRenderers", "id": "p1207"}, "data": {"type": "map", "entries": [["x", {"type": "ndarray", "array": {"type": "bytes", "data": "AAAAAAoAAAAUAAAA"}, "shape": [3], "dtype": "int32", "order": "little"}], ["y", {"type": "ndarray", "array": {"type": "bytes", "data": "BQAAAAEAAAAJAAAA"}, "shape": [3], "dtype": "int32", "order": "little"}]]}}}, "view": {"type": "object", "name": "CDSView", "id": "p1216", "attributes": {"filter": {"type": "object", "name": "AllIndices", "id": "p1217"}}}, "glyph": {"type": "object", "name": "Scatter", "id": "p1212", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "size": {"type": "value", "value": 5.477225575051661}, "line_color": {"type": "value", "value": "#30a2da"}, "fill_color": {"type": "value", "value": "#30a2da"}, "hatch_color": {"type": "value", "value": "#30a2da"}}}, "selection_glyph": {"type": "object", "name": "Scatter", "id": "p1218", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "size": {"type": "value", "value": 5.477225575051661}, "angle": {"type": "value", "value": 0.0}, "line_color": {"type": "value", "value": "#30a2da"}, "line_alpha": {"type": "value", "value": 1.0}, "line_width": {"type": "value", "value": 1}, "line_join": {"type": "value", "value": "bevel"}, "line_cap": {"type": "value", "value": "butt"}, "line_dash": {"type": "value", "value": []}, "line_dash_offset": {"type": "value", "value": 0}, "fill_color": {"type": "value", "value": "#30a2da"}, "fill_alpha": {"type": "value", "value": 1.0}, "hatch_color": {"type": "value", "value": "#30a2da"}, "hatch_alpha": {"type": "value", "value": 1.0}, "hatch_scale": {"type": "value", "value": 12.0}, "hatch_pattern": {"type": "value", "value": null}, "hatch_weight": {"type": "value", "value": 1.0}, "marker": {"type": "value", "value": "circle"}}}, "nonselection_glyph": {"type": "object", "name": "Scatter", "id": "p1213", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "size": {"type": "value", "value": 5.477225575051661}, "line_color": {"type": "value", "value": "#30a2da"}, "line_alpha": {"type": "value", "value": 0.1}, "fill_color": {"type": "value", "value": "#30a2da"}, "fill_alpha": {"type": "value", "value": 0.1}, "hatch_color": {"type": "value", "value": "#30a2da"}, "hatch_alpha": {"type": "value", "value": 0.1}}}, "muted_glyph": {"type": "object", "name": "Scatter", "id": "p1214", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "size": {"type": "value", "value": 5.477225575051661}, "line_color": {"type": "value", "value": "#30a2da"}, "line_alpha": {"type": "value", "value": 0.2}, "fill_color": {"type": "value", "value": "#30a2da"}, "fill_alpha": {"type": "value", "value": 0.2}, "hatch_color": {"type": "value", "value": "#30a2da"}, "hatch_alpha": {"type": "value", "value": 0.2}}}}}], "toolbar": {"type": "object", "name": "Toolbar", "id": "p1172", "attributes": {"tools": [{"type": "object", "name": "HoverTool", "id": "p1162", "attributes": {"tags": ["hv_created"], "renderers": [{"id": "p1215"}], "tooltips": [["x", "@{x}"], ["y", "@{y}"]]}}, {"type": "object", "name": "SaveTool", "id": "p1191"}, {"type": "object", "name": "PanTool", "id": "p1192"}, {"type": "object", "name": "WheelZoomTool", "id": "p1193"}, {"type": "object", "name": "BoxZoomTool", "id": "p1194", "attributes": {"overlay": {"type": "object", "name": "BoxAnnotation", "id": "p1195", "attributes": {"syncable": false, "level": "overlay", "visible": false, "left_units": "canvas", "right_units": "canvas", "bottom_units": "canvas", "top_units": "canvas", "line_color": "black", "line_alpha": 1.0, "line_width": 2, "line_dash": [4, 4], "fill_color": "lightgrey", "fill_alpha": 0.5}}}}, {"type": "object", "name": "ResetTool", "id": "p1196"}], "active_drag": {"id": "p1192"}, "active_scroll": {"id": "p1193"}}}, "left": [{"type": "object", "name": "LinearAxis", "id": "p1184", "attributes": {"ticker": {"type": "object", "name": "BasicTicker", "id": "p1187", "attributes": {"mantissas": [1, 2, 5]}}, "formatter": {"type": "object", "name": "BasicTickFormatter", "id": "p1186"}, "axis_label": "y", "major_label_policy": {"type": "object", "name": "AllLabels", "id": "p1185"}}}], "below": [{"type": "object", "name": "LinearAxis", "id": "p1177", "attributes": {"ticker": {"type": "object", "name": "BasicTicker", "id": "p1180", "attributes": {"mantissas": [1, 2, 5]}}, "formatter": {"type": "object", "name": "BasicTickFormatter", "id": "p1179"}, "axis_label": "x", "major_label_policy": {"type": "object", "name": "AllLabels", "id": "p1178"}}}], "center": [{"type": "object", "name": "Grid", "id": "p1183", "attributes": {"axis": {"id": "p1177"}, "grid_line_color": null}}, {"type": "object", "name": "Grid", "id": "p1190", "attributes": {"dimension": 1, "axis": {"id": "p1184"}, "grid_line_color": null}}], "min_border_top": 10, "min_border_bottom": 10, "min_border_left": 10, "min_border_right": 10, "output_backend": "webgl"}}]}}, {"type": "object", "name": "panel.models.location.Location", "id": "p1272", "attributes": {"name": "location", "reload": false}}], "callbacks": {"type": "map"}}, "version": "3.1.1"})
+                } else {
+                   setTimeout(embed_bokeh_2, 200)
+                }
+              };
+              embed_bokeh_2()
+            </script>
+<p>TODO: Matplotlib + Plotly</p>
+</section>
+<section id="panel">
+<h2>Panel<a class="headerlink" href="#panel" title="Permalink to this heading">#</a></h2>
+<div class="pyodide highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">panel</span> <span class="k">as</span> <span class="nn">pn</span>
+
+<span class="n">pn</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">IntInput</span><span class="p">()</span>
+</pre></div>
+</div>
+<pre class="pyodide-stdout" id="stdout-codecell2-py"></pre><pre class="pyodide-stderr" id="stderr-codecell2-py"></pre><div class="pyodide-output embedded" id="output-codecell2-py"></div>
+<script>
+              async function embed_bokeh_3 () {
+                if (window.Bokeh && window.Bokeh.Panel) {
+                  await Bokeh.embed.embed_item({"target_id": "output-codecell2-py", "root_id": "p1317", "doc": {"version": "3.1.1", "title": "Panel Application", "defs": [{"type": "model", "name": "ReactiveHTML1"}, {"type": "model", "name": "FlexBox1", "properties": [{"name": "align_content", "kind": "Any", "default": "flex-start"}, {"name": "align_items", "kind": "Any", "default": "flex-start"}, {"name": "flex_direction", "kind": "Any", "default": "row"}, {"name": "flex_wrap", "kind": "Any", "default": "wrap"}, {"name": "justify_content", "kind": "Any", "default": "flex-start"}]}, {"type": "model", "name": "FloatPanel1", "properties": [{"name": "config", "kind": "Any", "default": {"type": "map"}}, {"name": "contained", "kind": "Any", "default": true}, {"name": "position", "kind": "Any", "default": "right-top"}, {"name": "offsetx", "kind": "Any", "default": null}, {"name": "offsety", "kind": "Any", "default": null}, {"name": "theme", "kind": "Any", "default": "primary"}, {"name": "status", "kind": "Any", "default": "normalized"}]}, {"type": "model", "name": "GridStack1", "properties": [{"name": "mode", "kind": "Any", "default": "warn"}, {"name": "ncols", "kind": "Any", "default": null}, {"name": "nrows", "kind": "Any", "default": null}, {"name": "allow_resize", "kind": "Any", "default": true}, {"name": "allow_drag", "kind": "Any", "default": true}, {"name": "state", "kind": "Any", "default": []}]}, {"type": "model", "name": "drag1", "properties": [{"name": "slider_width", "kind": "Any", "default": 5}, {"name": "slider_color", "kind": "Any", "default": "black"}, {"name": "value", "kind": "Any", "default": 50}]}, {"type": "model", "name": "click1", "properties": [{"name": "terminal_output", "kind": "Any", "default": ""}, {"name": "debug_name", "kind": "Any", "default": ""}, {"name": "clears", "kind": "Any", "default": 0}]}, {"type": "model", "name": "FastWrapper1", "properties": [{"name": "object", "kind": "Any", "default": null}, {"name": "style", "kind": "Any", "default": null}]}, {"type": "model", "name": "NotificationAreaBase1", "properties": [{"name": "js_events", "kind": "Any", "default": {"type": "map"}}, {"name": "position", "kind": "Any", "default": "bottom-right"}, {"name": "_clear", "kind": "Any", "default": 0}]}, {"type": "model", "name": "NotificationArea1", "properties": [{"name": "js_events", "kind": "Any", "default": {"type": "map"}}, {"name": "notifications", "kind": "Any", "default": []}, {"name": "position", "kind": "Any", "default": "bottom-right"}, {"name": "_clear", "kind": "Any", "default": 0}, {"name": "types", "kind": "Any", "default": [{"type": "map", "entries": [["type", "warning"], ["background", "#ffc107"], ["icon", {"type": "map", "entries": [["className", "fas fa-exclamation-triangle"], ["tagName", "i"], ["color", "white"]]}]]}, {"type": "map", "entries": [["type", "info"], ["background", "#007bff"], ["icon", {"type": "map", "entries": [["className", "fas fa-info-circle"], ["tagName", "i"], ["color", "white"]]}]]}]}]}, {"type": "model", "name": "Notification", "properties": [{"name": "background", "kind": "Any", "default": null}, {"name": "duration", "kind": "Any", "default": 3000}, {"name": "icon", "kind": "Any", "default": null}, {"name": "message", "kind": "Any", "default": ""}, {"name": "notification_type", "kind": "Any", "default": null}, {"name": "_destroyed", "kind": "Any", "default": false}]}, {"type": "model", "name": "TemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "BootstrapTemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "MaterialTemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}], "roots": [{"type": "object", "name": "Spinner", "id": "p1317", "attributes": {"stylesheets": ["\n:host(.pn-loading.pn-arc):before, .pn-loading.pn-arc:before {\n  background-image: url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJtYXJnaW46IGF1dG87IGJhY2tncm91bmQ6IG5vbmU7IGRpc3BsYXk6IGJsb2NrOyBzaGFwZS1yZW5kZXJpbmc6IGF1dG87IiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ieE1pZFlNaWQiPiAgPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzNjM2MzIiBzdHJva2Utd2lkdGg9IjEwIiByPSIzNSIgc3Ryb2tlLWRhc2hhcnJheT0iMTY0LjkzMzYxNDMxMzQ2NDE1IDU2Ljk3Nzg3MTQzNzgyMTM4Ij4gICAgPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBkdXI9IjFzIiB2YWx1ZXM9IjAgNTAgNTA7MzYwIDUwIDUwIiBrZXlUaW1lcz0iMDsxIj48L2FuaW1hdGVUcmFuc2Zvcm0+ICA8L2NpcmNsZT48L3N2Zz4=\");\n  background-size: auto calc(min(50%, 400px));\n}", {"type": "object", "name": "ImportedStyleSheet", "id": "p1316", "attributes": {"url": "https://cdn.holoviz.org/panel/1.2.3/dist/css/loading.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1314", "attributes": {"url": "https://cdn.holoviz.org/panel/1.2.3/dist/bundled/theme/default.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1315", "attributes": {"url": "https://cdn.holoviz.org/panel/1.2.3/dist/bundled/theme/native.css"}}], "width": 300, "min_width": 300, "margin": [5, 10], "align": "start", "value": 0, "placeholder": "0", "mode": "int"}}, {"type": "object", "name": "panel.models.location.Location", "id": "p1318", "attributes": {"name": "location", "reload": false}}], "callbacks": {"type": "map"}}, "version": "3.1.1"})
+                } else {
+                   setTimeout(embed_bokeh_3, 200)
+                }
+              };
+              embed_bokeh_3()
+            </script>
+</section>
+</section>
+</article>
+<footer class="bd-footer-article">
+<div class="footer-article-items footer-article__inner">
+<div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+<a class="left-prev" href="index.html" title="previous page">
+<i class="fa-solid fa-angle-left"></i>
+<div class="prev-next-info">
+<p class="prev-next-subtitle">previous</p>
+<p class="prev-next-title">Pyodide</p>
+</div>
+</a>
+<a class="right-next" href="../example_gallery/index.html" title="next page">
+<div class="prev-next-info">
+<p class="prev-next-subtitle">next</p>
+<p class="prev-next-title">Gallery Title</p>
+</div>
+<i class="fa-solid fa-angle-right"></i>
+</a>
+</div></div>
+</div>
+</footer>
+</div>
+<div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+<div class="sidebar-secondary-item"><div class="github-star-badge">
+<a href="https://github.com/holoviz/holoviews">
+<img alt="Support us with a star on GitHub" src="https://img.shields.io/github/stars/holoviz/holoviews?style=social&amp;label=Star%20on%20%20GitHub%E2%AD%90"/>
+</a>
+</div></div>
+</div></div>
+</div>
+<footer class="bd-footer-content">
+</footer>
+</main>
+</div>
+</div>
+<!-- Scripts loaded after <body> so the DOM is not blocked -->
+<script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+<footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+<div class="footer-items__start">
+<div class="footer-item">
+<p class="copyright">
+    
+      © Copyright 2018 HoloViz Developers.
+      <br/>
+</p>
+</div>
+<div class="footer-item"><p class="last-updated">
+  Last updated on 2023-12-21.
+  <br/>
+</p></div>
+</div>
+<div class="footer-items__end">
+<div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.13.3.
+</p></div>
+</div>
+</div>
+</footer>
+</body>
+</html>

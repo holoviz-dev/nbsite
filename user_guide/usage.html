@@ -1,0 +1,424 @@
+
+<!DOCTYPE html>
+
+<html data-theme="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="Docutils 0.19: https://docutils.sourceforge.io/" name="generator"/>
+<link href="../site.webmanifest" rel="manifest"/>
+<title>Usage — nbsite v0.8.4</title>
+<script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+<!-- Loaded before other Sphinx assets -->
+<link href="../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet"/>
+<link href="../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet"/>
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet"/>
+<link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet"/>
+<link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="" href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" rel="preload" type="font/woff2"/>
+<link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/graphviz.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/nbsite.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/custom.css" rel="stylesheet" type="text/css"/>
+<!-- Pre-loaded scripts that we'll load fully later -->
+<link as="script" href="../_static/scripts/bootstrap.js?digest=e353d410970836974a52" rel="preload"/>
+<link as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" rel="preload"/>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script>
+<script src="../_static/underscore.js"></script>
+<script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+<script src="../_static/doctools.js"></script>
+<script src="../_static/sphinx_highlight.js"></script>
+<script src="../_static/clipboard.min.js"></script>
+<script src="../_static/copybutton.js"></script>
+<script src="../_static/design-tabs.js"></script>
+<script src="../_static/ServiceHandler.js"></script>
+<script>
+    window.goatcounter = {
+        path: function(p) { return location.host + p }
+    }
+</script>
+<script async="async" data-goatcounter="https://holoviz.goatcounter.com/count" src="../_static/js/goatcounter.js"></script>
+<link href="../_static/favicon.ico" rel="shortcut icon"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="gallery.html" rel="next" title="Gallery"/>
+<link href="index.html" rel="prev" title="Guides"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="en" name="docsearch:language"/>
+</head>
+<body data-bs-root-margin="0px 0px -60%" data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-default-mode="light" data-offset="180">
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<input class="sidebar-toggle" id="__primary" name="__primary" type="checkbox"/>
+<label class="overlay overlay-primary" for="__primary"></label>
+<input class="sidebar-toggle" id="__secondary" name="__secondary" type="checkbox"/>
+<label class="overlay overlay-secondary" for="__secondary"></label>
+<div class="search-button__wrapper">
+<div class="search-button__overlay"></div>
+<div class="search-button__search-container">
+<form action="../search.html" class="bd-search d-flex align-items-center" method="get">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" id="search-input" name="q" placeholder="Search the docs ..." spellcheck="false" type="search"/>
+<span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+</div>
+<nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+<label class="sidebar-toggle primary-toggle" for="__primary">
+<span class="fa-solid fa-bars"></span>
+</label>
+<div class="navbar-header-items__start">
+<div class="navbar-item">
+<a class="navbar-brand logo" href="../index.html">
+<img alt="Logo image" class="logo__image only-light" src="../_static/nbsite-logo.png"/>
+<script>document.write(`<img src="../_static/nbsite-logo.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+</a></div>
+</div>
+<div class="col-lg-9 navbar-header-items">
+<div class="me-auto navbar-header-items__center">
+<div class="navbar-item"><nav class="navbar-nav">
+<p aria-label="Site Navigation" aria-level="1" class="sidebar-header-items__title" role="heading">
+    Site Navigation
+  </p>
+<ul class="bd-navbar-elements navbar-nav">
+<li class="nav-item current active">
+<a class="nav-link nav-internal" href="index.html">
+                        User Guide
+                      </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../playground/index.html">
+                        PlayGround
+                      </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../development.html">
+                        Developers
+                      </a>
+</li>
+</ul>
+</nav></div>
+</div>
+<div class="navbar-header-items__end">
+<div class="navbar-item navbar-persistent--container">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+</div>
+<div class="navbar-item"><ul aria-label="Icon Links" class="navbar-icon-links navbar-nav">
+<li class="nav-item">
+<a class="nav-link" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://github.com/holoviz-dev/nbsite" rel="noopener" target="_blank" title="GitHub"><span><i class="fa-brands fa-square-github"></i></span>
+<label class="sr-only">GitHub</label></a>
+</li>
+<li class="nav-item">
+<a class="nav-link" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://discourse.holoviz.org/" rel="noopener" target="_blank" title="Discourse"><span><i class="fab fa-discourse"></i></span>
+<label class="sr-only">Discourse</label></a>
+</li>
+</ul></div>
+</div>
+</div>
+<div class="navbar-persistent--mobile">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+</div>
+<label class="sidebar-toggle secondary-toggle" for="__secondary">
+<span class="fa-solid fa-outdent"></span>
+</label>
+</div>
+</nav>
+<div class="bd-container">
+<div class="bd-container__inner bd-page-width">
+<div class="bd-sidebar-primary bd-sidebar">
+<div class="sidebar-header-items sidebar-primary__section">
+<div class="sidebar-header-items__center">
+<div class="navbar-item"><nav class="navbar-nav">
+<p aria-label="Site Navigation" aria-level="1" class="sidebar-header-items__title" role="heading">
+    Site Navigation
+  </p>
+<ul class="bd-navbar-elements navbar-nav">
+<li class="nav-item current active">
+<a class="nav-link nav-internal" href="index.html">
+                        User Guide
+                      </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../playground/index.html">
+                        PlayGround
+                      </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../development.html">
+                        Developers
+                      </a>
+</li>
+</ul>
+</nav></div>
+</div>
+<div class="sidebar-header-items__end">
+<div class="navbar-item"><ul aria-label="Icon Links" class="navbar-icon-links navbar-nav">
+<li class="nav-item">
+<a class="nav-link" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://github.com/holoviz-dev/nbsite" rel="noopener" target="_blank" title="GitHub"><span><i class="fa-brands fa-square-github"></i></span>
+<label class="sr-only">GitHub</label></a>
+</li>
+<li class="nav-item">
+<a class="nav-link" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://discourse.holoviz.org/" rel="noopener" target="_blank" title="Discourse"><span><i class="fab fa-discourse"></i></span>
+<label class="sr-only">Discourse</label></a>
+</li>
+</ul></div>
+</div>
+</div>
+<div class="sidebar-primary-items__start sidebar-primary__section">
+<div class="sidebar-primary-item"><nav aria-label="Section Navigation" class="bd-docs-nav bd-links">
+<div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">User Guide</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gallery.html">Gallery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="param_doc.html">Param reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../playground/index.html">PlayGround</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../playground/index.html">Intro</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../playground/markdown/index.html">MyST-Markdown</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../playground/markdown/index.html">Intro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../playground/markdown/example.html">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../playground/rst/index.html">RST</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../playground/rst/index.html">Index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../playground/rst/example.html">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../playground/notebook_directive/index.html">NotebookDirective</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../playground/notebook_directive/index.html">Intro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../playground/notebook_directive/example.html">Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../playground/notebook_directive/example2.html">Example2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../playground/notebook_directive/holoviz.html">HoloViz</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../playground/notebook_directive/preexecuted.html">Pre-executed</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../playground/mystmdnb/index.html">Text Notebook</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../playground/mystmdnb/index.html">Intro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../playground/mystmdnb/holoviz.html">HoloViz outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../playground/mystnb/index.html">MyST Notebook</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../playground/mystnb/index.html">Intro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../playground/mystnb/holoviz.html">HoloViz</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../playground/pyodide/index.html">Pyodide</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../playground/pyodide/index.html">Intro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../playground/pyodide/holoviz.html">HoloViz outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../playground/example_gallery/index.html">Gallery</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../playground/example_gallery/section1/index.html">Section1</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../playground/example_gallery/section1/thing1.html">Thing1</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../playground/example_gallery/section2/index.html">Section2</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../playground/example_gallery/section2/thing2.html">Thing2</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../playground/api/index.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Developers</a></li>
+</ul>
+</div>
+</nav></div>
+</div>
+<div class="sidebar-primary-items__end sidebar-primary__section">
+</div>
+<div id="rtd-footer-container"></div>
+</div>
+<main class="bd-main" id="main-content">
+<div class="bd-content">
+<div class="bd-article-container">
+<div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+<div class="header-article-items__start">
+<div class="header-article-item">
+<nav aria-label="Breadcrumbs">
+<ul aria-label="Breadcrumb" class="bd-breadcrumbs" role="navigation">
+<li class="breadcrumb-item breadcrumb-home">
+<a aria-label="Home" class="nav-link" href="../index.html">
+<i class="fa-solid fa-home"></i>
+</a>
+</li>
+<li class="breadcrumb-item"><a class="nav-link" href="index.html">Guides</a></li>
+<li aria-current="page" class="breadcrumb-item active">Usage</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+<div id="searchbox"></div>
+<article class="bd-article" role="main">
+<section id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">#</a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>You want a ‘static’, fairly self contained site (i.e. just an ordinary web server is required - you can build and serve locally, or copy the build directory to a remote server).</p></li>
+<li><p>You have one or more sets of notebooks (e.g. <code class="docutils literal notranslate"><span class="pre">notebooks/</span></code>, or <code class="docutils literal notranslate"><span class="pre">examples/getting_started</span></code> + <code class="docutils literal notranslate"><span class="pre">examples/user_guide</span></code> + <code class="docutils literal notranslate"><span class="pre">examples/gallery</span></code>). Note: current expectation is for there to be no title in the notebook itself; instead, the title will be taken from filename. E.g. <code class="docutils literal notranslate"><span class="pre">1_The_Filename.ipynb</span></code> will result in a title of <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">The</span> <span class="pre">Filename</span></code>. If there is a title in the notebook, then the <code class="docutils literal notranslate"><span class="pre">offset</span></code> flag can be used to remove the first cell before rendering. Notebooks should use level 2 headings as their highest heading level (level 1 will used for the title). However, all of this may change - see <a class="reference external" href="https://github.com/holoviz-dev/nbsite/issues/18">issue 18</a>.</p></li>
+<li><p>The packages used by the notebooks are already installed in the environment into which you will install nbsite.</p></li>
+<li><p>(optional, for API docs) Any packages for which you want to generate API docs are also installed (which could be via e.g. <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">/path/to/pkg</span></code>).</p></li>
+<li><p>Currently, you need to have holoviews available in your environment. Other packages (bokeh, matplotlib, plotly) can be used for visualization in addition to holoviews, but if you don’t have holoviews in the environment, you will at least need to override <code class="docutils literal notranslate"><span class="pre">nbbuild_ipython_startup</span></code> in <code class="docutils literal notranslate"><span class="pre">nbbuild.py</span></code>, setting it to e.g. <code class="docutils literal notranslate"><span class="pre">""</span></code>.</p></li>
+</ol>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">pyviz</span> <span class="pre">nbsite</span></code> or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">nbsite</span></code> (note: certain operations may require extra dependencies; for now, see setup.py to learn what those are)</p>
+</section>
+<section id="one-time-setup">
+<h2>One time setup<a class="headerlink" href="#one-time-setup" title="Permalink to this heading">#</a></h2>
+<p>You can skip and/or modify various steps below depending on what you already have. If you do skip these steps you will need to at least create a doc dir with a conf.py in it. See nbsite/templates/basic for an example.</p>
+<ol class="arabic simple">
+<li><p>Create a set of basic pages: <code class="docutils literal notranslate"><span class="pre">nbsite</span> <span class="pre">init</span></code> (will not overwrite existing files). Use the <code class="docutils literal notranslate"><span class="pre">--theme</span></code> option to specify if you want the holoviz setup.</p></li>
+<li><p>Edit conf.py as appropriate for your project.</p></li>
+<li><p>Edit doc/index.rst toctree to match pages in conf.py</p></li>
+<li><p>Commit any pages that you have edited : <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">commit</span> <span class="pre">-m</span> <span class="pre">"something"</span> <span class="pre">doc/FAQ.rst</span> <span class="pre">doc.about.rst</span> <span class="pre">doc/conf.py</span> <span class="pre">doc/index.rst</span> <span class="pre">doc/latest_news.html</span> <span class="pre">...</span></code> (etc)</p></li>
+</ol>
+</section>
+<section id="building-the-site">
+<h2>Building the site<a class="headerlink" href="#building-the-site" title="Permalink to this heading">#</a></h2>
+<ol class="arabic simple" start="0">
+<li><p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">ORG=yourorg</span></code>, <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">PROJECT=yourproject</span></code> (or just replace as appropriate in commands below)</p></li>
+<li><p>Generate rst containers for notebooks (assuming they are in <code class="docutils literal notranslate"><span class="pre">../examples</span></code>: <code class="docutils literal notranslate"><span class="pre">nbsite</span> <span class="pre">generate-rst</span> <span class="pre">--org</span> <span class="pre">${ORG}</span> <span class="pre">--project</span> <span class="pre">${PROJECT}</span> <span class="pre">--examples</span> <span class="pre">../examples</span></code>)</p></li>
+<li><p><em>(optional, if you want gallery)</em> See <a class="reference internal" href="gallery.html"><span class="doc std std-doc">gallery docs</span></a></p></li>
+<li><p>Make site: <code class="docutils literal notranslate"><span class="pre">nbsite</span> <span class="pre">build</span></code></p></li>
+<li><p>View the result in a browser at localhost:8000: <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">builtdocs</span> <span class="pre">&amp;&amp;</span> <span class="pre">python</span> <span class="pre">-m</span> <span class="pre">http.server</span></code></p></li>
+</ol>
+</section>
+<section id="re-building-updating-the-site">
+<h2>Re-building/updating the site<a class="headerlink" href="#re-building-updating-the-site" title="Permalink to this heading">#</a></h2>
+<section id="rst-pages">
+<h3>rst pages<a class="headerlink" href="#rst-pages" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Added, removed, or edited an rst page? Update any toc as necessary (e.g. removing an entry), then re-run step 5 above.</p></li>
+</ul>
+</section>
+<section id="notebooks">
+<h3>Notebooks<a class="headerlink" href="#notebooks" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Removed a notebook? Delete the corresponding rst file.</p></li>
+<li><p>Edited a notebook? Re-run step 3 above. You need to manually remove the evaluated notebook from <code class="docutils literal notranslate"><span class="pre">doc</span></code> or use <code class="docutils literal notranslate"><span class="pre">--overwrite</span></code> to have the notebook re-run and turned into html.</p></li>
+<li><p>Added a new notebook? Re-run step 1 then proceed as for ‘edited’ above.</p></li>
+</ul>
+</section>
+</section>
+<section id="customizing-style">
+<h2>Customizing Style<a class="headerlink" href="#customizing-style" title="Permalink to this heading">#</a></h2>
+<p>For most of the sites that have been generated so far, we used the <code class="docutils literal notranslate"><span class="pre">sphinx_holoviz_theme</span></code>. <a class="reference external" href="https://pyviz.org">PyViz</a> is the exception and uses the Alabaster theme.</p>
+<section id="holoviz">
+<h3>HoloViz<a class="headerlink" href="#holoviz" title="Permalink to this heading">#</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">sphinx_holoviz_theme</span></code> is no longer use in favor of the PyData Sphinx Theme.
+TODO: Update this to explain how to configure the PyData Sphinx Theme.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To use the holoviz theme: pip/conda install sphinx_holoviz_theme and set <code class="docutils literal notranslate"><span class="pre">html_theme</span></code> to <code class="docutils literal notranslate"><span class="pre">sphinx_holoviz_theme</span></code>. To control the look and feel, change <code class="docutils literal notranslate"><span class="pre">html_theme_options</span></code> in conf.py:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">logo</span></code> and <code class="docutils literal notranslate"><span class="pre">favicon</span></code>: provide paths relative to <code class="docutils literal notranslate"><span class="pre">html_static_path</span></code> (<code class="docutils literal notranslate"><span class="pre">doc/_static</span></code> by default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">primary_color</span></code>, <code class="docutils literal notranslate"><span class="pre">primary_color_dark</span></code> and <code class="docutils literal notranslate"><span class="pre">secondary_color</span></code>: control the colors that the website uses for header, nav, links… These can be css named colors, or hex colors.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">second_nav</span></code>: Boolean indicating whether to use a second nav bar.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">custom_css</span></code>: path relative to <code class="docutils literal notranslate"><span class="pre">html_static_path</span></code> overriding styles. Styles come first from the theme’s <code class="docutils literal notranslate"><span class="pre">main.css_t</span></code>, which is populated with the colors options, extended/overridden by nbsite’s own css <code class="docutils literal notranslate"><span class="pre">nbsite/_shared_static/nbsite.css</span></code>, and then extended/overridden by your site’s own css.</p></li>
+</ul>
+<p><strong>NOTE:</strong> Only use the custom_css to overwrite small pieces of the css not to make general improvements. If you have general improvements, please open a PR on the <a class="reference external" href="https://github.com/holoviz-dev/sphinx_holoviz_theme">theme repo</a>.</p>
+</div>
+</section>
+</section>
+<section id="customizing-running-of-ipython-notebooks">
+<h2>Customizing running of IPython notebooks<a class="headerlink" href="#customizing-running-of-ipython-notebooks" title="Permalink to this heading">#</a></h2>
+<p>In conf.py, you can set options to control notebook execution:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">nbbuild_cell_timeout</span></code>: timeout per cell (seconds), e.g. <code class="docutils literal notranslate"><span class="pre">100</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nbbuild_ipython_startup</span></code>: code (as string) to execute before running the first cell of each notebook. Defaults to <a class="reference external" href="https://github.com/holoviz-dev/nbsite/blob/main/nbsite/ipystartup.py">nbsite’s ipython startup code</a>. E.g. <code class="docutils literal notranslate"><span class="pre">"module.special_swith=False"</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nbbuild_patterns_to_take_along</span></code>: list of glob patterns to match files that should be copied alongside a notebook. E.g. holoviews is configured to save data in external json files to improve page loading times, so this defaults to <code class="docutils literal notranslate"><span class="pre">["*.json"]</span></code>.</p></li>
+</ul>
+</section>
+</section>
+</article>
+<footer class="bd-footer-article">
+<div class="footer-article-items footer-article__inner">
+<div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+<a class="left-prev" href="index.html" title="previous page">
+<i class="fa-solid fa-angle-left"></i>
+<div class="prev-next-info">
+<p class="prev-next-subtitle">previous</p>
+<p class="prev-next-title">Guides</p>
+</div>
+</a>
+<a class="right-next" href="gallery.html" title="next page">
+<div class="prev-next-info">
+<p class="prev-next-subtitle">next</p>
+<p class="prev-next-title">Gallery</p>
+</div>
+<i class="fa-solid fa-angle-right"></i>
+</a>
+</div></div>
+</div>
+</footer>
+</div>
+<div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+<div class="sidebar-secondary-item"><div class="github-star-badge">
+<a href="https://github.com/holoviz/holoviews">
+<img alt="Support us with a star on GitHub" src="https://img.shields.io/github/stars/holoviz/holoviews?style=social&amp;label=Star%20on%20%20GitHub%E2%AD%90"/>
+</a>
+</div></div>
+</div></div>
+</div>
+<footer class="bd-footer-content">
+</footer>
+</main>
+</div>
+</div>
+<!-- Scripts loaded after <body> so the DOM is not blocked -->
+<script src="../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+<footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+<div class="footer-items__start">
+<div class="footer-item">
+<p class="copyright">
+    
+      © Copyright 2018 HoloViz Developers.
+      <br/>
+</p>
+</div>
+<div class="footer-item"><p class="last-updated">
+  Last updated on 2023-12-21.
+  <br/>
+</p></div>
+</div>
+<div class="footer-items__end">
+<div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.13.3.
+</p></div>
+</div>
+</div>
+</footer>
+</body>
+</html>
