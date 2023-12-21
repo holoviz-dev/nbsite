@@ -20,6 +20,8 @@ extensions += [
     'nbsite.pyodide',
     # To build a gallery
     'nbsite.gallery',
+    # To setup GoatCounter
+    'nbsite.analytics',
     # Activate the docstring extension for Numpy: https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
     'sphinx.ext.napoleon',
     # See https://github.com/ipython/ipython/issues/13845
@@ -44,6 +46,10 @@ nbsite_gallery_conf = {
             ]
         }
     },
+}
+
+nbsite_analytics = {
+    'goatcounter_holoviz': True,
 }
 
 # Configure the theme
