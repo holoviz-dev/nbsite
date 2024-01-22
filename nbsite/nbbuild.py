@@ -287,7 +287,8 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
         os.chdir(cwd)
 
         if skip_execute:
-            nbformat.write(notebook, open(dest_path, 'w'))
+            with open(dest_path,'w') as f:
+                nbformat.write(notebook, f)
         else:
             ne = NotebookExporter()
             newnb, _ = ne.from_notebook_node(notebook)
@@ -393,10 +394,8 @@ class NotebookDirective(Directive):
             dest_path_script = string.replace(dest_path, '.ipynb', '.py')
             rel_path_script = string.replace(nb_basename, '.ipynb', '.py')
             script_text = nb_to_python(nb_abs_path)
-            f = open(dest_path_script, 'w')
-            f.write(script_text.encode('utf8'))
-            f.close()
-
+            with open(dest_path_script, 'w') as f:
+                f.write(script_text.encode('utf-8'))
             link_rst += formatted_link(rel_path_script)
 
         if len(include_opts):
@@ -460,18 +459,23 @@ class NotebookDirective(Directive):
         dest_dir = rst_dir
         dest_path = os.path.join(dest_dir, nb_basename)
 
-        if not os.path.exists(dest_dir):
-            os.makedirs(dest_dir)
+        os.makedirs(dest_dir, exist_ok=True)
 
         # Evaluate Notebook and insert into Sphinx doc
-        evaluate_notebook(
-            nb_abs_path, dest_path,
-            skip_exceptions='skip_exceptions' in self.options,
-            skip_execute=self.options.get('skip_execute'),
-            timeout=setup.config.nbbuild_cell_timeout,
-            ipython_startup=setup.config.nbbuild_ipython_startup,
-            patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
-        )
+        import zmq
+        while True:
+            try:
+                evaluate_notebook(
+                    nb_abs_path, dest_path,
+                    skip_exceptions='skip_exceptions' in self.options,
+                    skip_execute=self.options.get('skip_execute'),
+                    timeout=setup.config.nbbuild_cell_timeout,
+                    ipython_startup=setup.config.nbbuild_ipython_startup,
+                    patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
+                )
+                break
+            except zmq.error.ZMQError as e:
+                print(f"{nb_abs_path} failed with {e}, retrying...")
 
         preprocessors = self.preprocessors(dest_dir)
         rendered_nodes = render_notebook(
