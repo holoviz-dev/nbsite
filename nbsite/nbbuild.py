@@ -261,6 +261,12 @@ class FixNotebookLinks(Preprocessor):
         If nb_link is "[sometext](.q./../somepath/01-subject.ipynb#spam)", and
         the target_filename is "subject.rst", returns
         "[sometext](../../somepath/subject.rst#spam)"
+
+        Notes:
+        * If you pass as nb_link text which contains no markdown links, a
+          ValueError will be raised
+        * If you pass as nb_link text which contains more than one markdown
+          links, the behaviour is undefined.
         """
 
         # Example: [sometext](../../somepath/subject.ipynb#spam)
