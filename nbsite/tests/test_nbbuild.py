@@ -42,19 +42,28 @@ class TestFixNotebookLinks:
 
     @pytest.mark.parametrize(
         "notebook_stem, expected_output",
-        [
-            ("notebook", ["notebook.rst", "notebook.md"]),
+        [   
+            # simple
+            ("notebook.ipynb", ["notebook.rst", "notebook.md"]),
             (
-                "01 notebook",
+                # Numeric with space
+                "01 notebook.ipynb",
                 ["01 notebook.rst", "notebook.rst", "01 notebook.md", "notebook.md"],
             ),
             (
-                "01-notebook",
+                # Numeric with dash
+                "01-notebook.ipynb",
                 ["01-notebook.rst", "notebook.rst", "01-notebook.md", "notebook.md"],
             ),
             (
-                "01_notebook",
+                # Numeric with underscore
+                "01_notebook.ipynb",
                 ["01_notebook.rst", "notebook.rst", "01_notebook.md", "notebook.md"],
+            ),
+            (
+                # Numeric with relative path
+                "../foo/01_notebook.ipynb",
+                ["../foo/01_notebook.rst", "../foo/notebook.rst", "../foo/01_notebook.md", "../foo/notebook.md"],
             ),
         ],
     )

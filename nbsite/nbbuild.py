@@ -213,8 +213,8 @@ class FixNotebookLinks(Preprocessor):
             The absolute path to the directory where the notebook is located
             at, withuot a trailing slash.
         """
-        for nb_link, notebook_stem in cls._extract_links(markdown_text):
-            for target_filename in cls._get_potential_link_targets(notebook_stem):
+        for nb_link, nb_filepath in cls._extract_links(markdown_text):
+            for target_filename in cls._get_potential_link_targets(nb_filepath):
                 file_path = os.path.normpath(os.path.join(nb_dir, target_filename))
                 if not cls.file_exists(file_path):
                     continue
@@ -246,25 +246,41 @@ class FixNotebookLinks(Preprocessor):
             yield match.groups()
 
     @classmethod
-    def _get_potential_link_targets(cls, notebook_stem: str) -> Iterable[str]:
-        """Gets potential link targets corresponding to a notebook file stem.
-        Potential link targets are formed by using the stem of the notebook
-        filename, and adding the extensions from `cls.file_types`. In addition
-        if the notebook_filename starts with digits + one of ('-', '_', ' '),
+    def _get_potential_link_targets(cls, nb_filepath: str) -> Iterable[str]:
+        """Gets potential link targets corresponding to a notebook file path.
+        Potential link targets (source files paths) are formed by using the
+        relative path of the link target notebook, and adding the file
+        extensions from `cls.file_types`. In addition if the the filename part
+        of the `nb_filepath` starts with digits + one of ('-', '_', ' '),
         the stem without the number prefix is used to form a potential link
         target.
 
+        Parameters
+        ----------
+        nb_filepath:
+            The filepath of a link target a notebook. Must end with ".ipynb".
+            The links are relative to the directory of the notebook which
+            contains the markdown link. Example: "../foo/10-Some.ipynb"
+
         Example
         -------
-        >>> list(_get_potential_link_targets("01-notebook"))
+        >>> list(_get_potential_link_targets("01-notebook.ipynb"))
         ["01-notebook.rst", "notebook.rst", "01-notebook.md", "notebook.md"]
         """
-        for extension in cls.file_types:
-            yield f"{notebook_stem}.{extension}"
 
-            match = re.match(r"\d+[ -_](.*)", notebook_stem)
+        if not nb_filepath.endswith('.ipynb'):
+            raise ValueError('nb_filepath must end with .ipynb')
+        
+        nb_path_without_extension = nb_filepath[:-6]
+        for extension in cls.file_types:
+            yield f"{nb_path_without_extension}.{extension}"
+
+            *directory, stem = re.split('(/)', nb_path_without_extension)
+            match = re.match(r"\d+[ -_](.*)", stem)
+
             if match:
-                yield f"{match.group(1)}.{extension}"
+                yield ''.join(directory) + match.group(1) + '.' + extension
+
 
     @staticmethod
     def _create_target_link(nb_link: str, target_filename:str) -> str:
