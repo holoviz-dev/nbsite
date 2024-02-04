@@ -9,23 +9,23 @@ class TestFixNotebookLinks:
         "markdowntext, expected_output",
         [
             # Case: one link in the text
-            ("foo [a](b.ipynb) bar", [("[a](b.ipynb)", "b.ipynb")]),
+            ("foo [a](b.ipynb) bar", [("[a](b.ipynb)", "b")]),
             # Case: no link to .ipynb
             ("foo [a](b.md) bar", []),
             # Case: two links in the text
             (
                 "foo [a](b.ipynb) bar [c](d.ipynb) baz.",
-                [("[a](b.ipynb)", "b.ipynb"), ("[c](d.ipynb)", "d.ipynb")],
+                [("[a](b.ipynb)", "b"), ("[c](d.ipynb)", "d")],
             ),
             # Case: Link has an anchor
             (
                 "foo [a](b.ipynb#some-anchor) bar",
-                [("[a](b.ipynb#some-anchor)", "b.ipynb")],
+                [("[a](b.ipynb#some-anchor)", "b")],
             ),
             # Case: Two links has an anchor
             (
                 "foo [a](b.ipynb#spam) bar [c](d.ipynb#eggs) baz.",
-                [("[a](b.ipynb#spam)", "b.ipynb"), ("[c](d.ipynb#eggs)", "d.ipynb")],
+                [("[a](b.ipynb#spam)", "b"), ("[c](d.ipynb#eggs)", "d")],
             ),
         ],
     )
@@ -33,28 +33,23 @@ class TestFixNotebookLinks:
         assert list(FixNotebookLinks._extract_links(markdowntext)) == expected_output
 
     @pytest.mark.parametrize(
-        "notebook_filename, expected_output",
+        "notebook_stem, expected_output",
         [
-            # Case: Simple notebook name. No numbers
-            ("notebook.ipynb", ["notebook.rst", "notebook.md"]),
+            ("notebook", ["notebook.rst", "notebook.md"]),
             (
-                "01 notebook.ipynb",
+                "01 notebook",
                 ["01 notebook.rst", "notebook.rst", "01 notebook.md", "notebook.md"],
             ),
             (
-                "01-notebook.ipynb",
+                "01-notebook",
                 ["01-notebook.rst", "notebook.rst", "01-notebook.md", "notebook.md"],
             ),
             (
-                "01_notebook.ipynb",
+                "01_notebook",
                 ["01_notebook.rst", "notebook.rst", "01_notebook.md", "notebook.md"],
             ),
         ],
     )
-    def test_get_potential_link_targets(self, notebook_filename, expected_output):
-        output = list(FixNotebookLinks._get_potential_link_targets(notebook_filename))
+    def test_get_potential_link_targets(self, notebook_stem, expected_output):
+        output = list(FixNotebookLinks._get_potential_link_targets(notebook_stem))
         assert output == expected_output
-
-    def test_get_potential_link_targets_valueerror(self):
-        with pytest.raises(ValueError, match="The file extension must be .ipynb"):
-            list(FixNotebookLinks._get_potential_link_targets("foo.md"))

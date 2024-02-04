@@ -222,17 +222,17 @@ class FixNotebookLinks(Preprocessor):
         -------
         String "foo [a](b.ipynb) bar [c](d.ipynb)" would return iterable, which
         when converted to a list would be: [
-             [('[a](b.ipynb)', 'b.ipynb')]
-             [('[c](d.ipynb)', 'd.ipynb')]
+             [('[a](b.ipynb)', 'b')]
+             [('[c](d.ipynb)', 'd')]
         ] 
 
         """
-        for match in re.finditer(r"(\[.+?\]\((.+?\.ipynb)#*?.*?\))", markdown_text):
+        for match in re.finditer(r"(\[.+?\]\((.+?)\.ipynb#*?.*?\))", markdown_text):
             yield match.groups()
 
     @classmethod
-    def _get_potential_link_targets(cls, notebook_filename: str) -> Iterable[str]:
-        """Gets potential link targets corresponding to a notebook filename
+    def _get_potential_link_targets(cls, notebook_stem: str) -> Iterable[str]:
+        """Gets potential link targets corresponding to a notebook file stem.
         Potential link targets are formed by using the stem of the notebook
         filename, and adding the extensions from `cls.file_types`. In addition
         if the notebook_filename starts with digits + one of ('-', '_', ' '),
@@ -241,18 +241,13 @@ class FixNotebookLinks(Preprocessor):
 
         Example
         -------
-        >>> list(_get_potential_link_targets("01-notebook.ipynb"))
+        >>> list(_get_potential_link_targets("01-notebook"))
         ["01-notebook.rst", "notebook.rst", "01-notebook.md", "notebook.md"]
         """
-        if not notebook_filename.endswith('.ipynb'):
-            raise ValueError('The file extension must be .ipynb')
-
-        stem = notebook_filename[:-6]
-
         for extension in cls.file_types:
-            yield f"{stem}.{extension}"
+            yield f"{notebook_stem}.{extension}"
 
-            match = re.match(r"\d+[ -_](.*)", stem)
+            match = re.match(r"\d+[ -_](.*)", notebook_stem)
             if match:
                 yield f"{match.group(1)}.{extension}"
 
