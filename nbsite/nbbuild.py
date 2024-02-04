@@ -27,7 +27,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-
+from __future__ import annotations
 import copy
 import glob
 import io
@@ -37,6 +37,8 @@ import re
 import shutil
 import string
 import sys
+import typing
+
 
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -53,6 +55,11 @@ from nbconvert.preprocessors import (
 )
 
 from .cmd import _prepare_paths, hosts
+
+if typing.TYPE_CHECKING:
+    from collections.abc import Iterable
+    from typing import Tuple
+
 
 NOTEBOOK_VERSION = 4
 
@@ -205,6 +212,23 @@ class FixNotebookLinks(Preprocessor):
                     )
                     break
         return cell, resources
+
+    @staticmethod
+    def _get_links(markdown_text: str) -> Iterable[Tuple[str, str]]:
+        """Find links from markdown text and return them. Returns the full link
+        and the link target separately.
+        
+        Example
+        -------
+        String "foo [a](b.ipynb) bar [c](d.ipynb)" would return iterable, which
+        when converted to a list would be: [
+             [('[a](b.ipynb)', 'b.ipynb')]
+             [('[c](d.ipynb)', 'd.ipynb')]
+        ] 
+
+        """
+        for match in re.finditer(r"(\[.+\]\((.+\.ipynb)\))", markdown_text):
+            yield match.groups()
 
     def __call__(self, nb, resources):
         return self.preprocess(nb,resources)
