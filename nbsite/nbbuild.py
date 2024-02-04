@@ -185,33 +185,44 @@ class FixNotebookLinks(Preprocessor):
 
     file_types = ['rst', 'md']
 
-    def __init__(self, nb_path, **kwargs):
+    def __init__(self, nb_path: str, **kwargs):
+        # nb_path: the directory of the notebook, without a trailing slash
         self.nb_path = nb_path
         super(FixNotebookLinks, self).__init__(**kwargs)
 
     def preprocess_cell(self, cell, resources, index):
         if cell['cell_type'] != 'markdown':
             return cell, resources
-        matches = re.findall('\[.+\]\((.+\.ipynb)\)', cell['source'])
-        for match in matches:
-            for ft in self.file_types:
-                file_path = os.path.join(self.nb_path, match[:-5] + ft)
-                if os.path.isfile(file_path):
-                    cell['source'] = cell['source'].replace(
-                        '(%s)' % match, '(%s)' % (match[:-5] + ft)
-                    )
-                    break
 
-                # Try unnumbered path
-                num_name = os.path.basename(file_path)
-                name = re.split(r"^\d+( |-|_)", num_name)[-1]
-                unnumbered_path = file_path.replace(num_name, name)
-                if os.path.isfile(unnumbered_path):
-                    cell['source'] = cell['source'].replace(
-                        '(%s)' % match, '(%s)' % name
-                    )
-                    break
+        cell['source'] = self.replace_notebook_links(
+            markdown_text=cell['source'],
+            nb_dir=self.nb_path
+        )
+
         return cell, resources
+
+    @classmethod
+    def replace_notebook_links(cls, markdown_text: str, nb_dir:str):
+        """Replaces notebook links in a markdown text.
+
+        Parameters
+        ----------
+        markdown_text: str
+            Markdown text from a notebook markdown cell.
+        nb_dir:
+            The absolute path to the directory where the notebook is located
+            at, withuot a trailing slash.
+        """
+        for nb_link, notebook_stem in cls._extract_links(markdown_text):
+            for target_filename in cls._get_potential_link_targets(notebook_stem):
+                file_path = os.path.normpath(os.path.join(nb_dir, target_filename))
+                if not cls.file_exists(file_path):
+                    continue
+                new_link = cls._create_target_link(nb_link, target_filename)
+                markdown_text = markdown_text.replace(nb_link, new_link)
+                break # each notebook_stem may have only one source target filename
+
+        return markdown_text
 
     @staticmethod
     def _extract_links(markdown_text: str) -> Iterable[Tuple[str, str]]:
@@ -288,6 +299,10 @@ class FixNotebookLinks(Preprocessor):
         path_beginning = ''.join(re.split('(/)', nb_path_part)[:-1])
 
         return f"{start}{path_beginning}{target_filename}{end}"
+
+    @staticmethod
+    def file_exists(file_path: str) -> bool:
+        return not os.path.isfile(file_path)
 
     def __call__(self, nb, resources):
         return self.preprocess(nb,resources)

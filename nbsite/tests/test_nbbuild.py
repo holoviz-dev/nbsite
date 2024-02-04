@@ -1,3 +1,6 @@
+import os
+import textwrap
+
 import pytest
 
 from nbsite.nbbuild import FixNotebookLinks
@@ -71,3 +74,59 @@ class TestFixNotebookLinks:
             FixNotebookLinks._create_target_link(nb_link, target_filename)
             == expected_output
         )
+
+    def test_replace_notebook_links(self, monkeypatch):
+
+        nb_dir = '/tmp/somepath/user_guide'
+        class FixNotebookLinksMockFiles(FixNotebookLinks):
+
+            @staticmethod
+            def file_exists(file_path):
+                normalized_path = os.path.normpath(file_path)
+                # mock existence of certain fiels
+                return normalized_path in {
+                    '/tmp/somepath/user_guide/first.rst',
+                    '/tmp/somepath/user_guide/02-Second_Notebook.md',
+                    '/tmp/notebooks/Third_Notebook.rst',
+                    '/tmp/somepath/foo/Notebook.rst',
+                }
+
+        text = textwrap.dedent(
+            """
+        This is a long text with [a link](first.ipynb) here and another
+        [link to a file](02-Second_Notebook.ipynb) here.
+
+        It is also possible to have links with relative paths like
+        [this](../../notebooks/03-Third_Notebook.ipynb).
+
+        The text may also contain links with anchors.
+        Example: [link to achor](../foo/Notebook.ipynb#spam)
+
+        Links which do not point to .ipynb files are not touched.
+        Example [link untouched](../something.rst#eggs)
+        """.strip(
+                "\n"
+            )
+        )
+
+        expected_output = textwrap.dedent(
+            """
+        This is a long text with [a link](first.rst) here and another
+        [link to a file](02-Second_Notebook.md) here.
+
+        It is also possible to have links with relative paths like
+        [this](../../notebooks/Third_Notebook.rst).
+
+        The text may also contain links with anchors.
+        Example: [link to achor](../foo/Notebook.rst#spam)
+
+        Links which do not point to .ipynb files are not touched.
+        Example [link untouched](../something.rst#eggs)
+        """.strip(
+                "\n"
+            )
+        )
+
+
+        processor = FixNotebookLinksMockFiles(nb_dir)
+        assert processor.replace_notebook_links(text, nb_dir) == expected_output
