@@ -215,8 +215,8 @@ class FixNotebookLinks(Preprocessor):
 
     @staticmethod
     def _get_links(markdown_text: str) -> Iterable[Tuple[str, str]]:
-        """Find links from markdown text and return them. Returns the full link
-        and the link target separately.
+        """Find links to Notebook files (.ipynb) from markdown text and return
+        them. Returns the full link and the link target separately.
         
         Example
         -------
