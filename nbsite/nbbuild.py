@@ -233,7 +233,7 @@ class FixNotebookLinks(Preprocessor):
         
         Examples
         --------
-        Mmarkdown link: "[a](../foo/b.ipynb#spam)" 
+        Markdown link: "[a](../foo/b.ipynb#spam)" 
         Link target: "..foo/b.ipynb"
         
         String "foo [a](b.ipynb) bar [c](..foo/d.ipynb#spam)" would return
