@@ -220,25 +220,29 @@ class FixNotebookLinks(Preprocessor):
                     continue
                 new_link = cls._create_target_link(nb_link, target_filename)
                 markdown_text = markdown_text.replace(nb_link, new_link)
-                break # each notebook_stem may have only one source target filename
+                break # each notebook link may have only one source target filename
 
         return markdown_text
 
     @staticmethod
     def _extract_links(markdown_text: str) -> Iterable[Tuple[str, str]]:
-        """Find links to Notebook files (.ipynb) from markdown text and return
-        them. Returns the full link and the link target separately.
+        """Extract links to Notebook files (.ipynb) from markdown text and
+        yield them. Returns the full markdown link and the link target 
+        separately.
         
-        Example
-        -------
-        String "foo [a](b.ipynb) bar [c](d.ipynb)" would return iterable, which
-        when converted to a list would be: [
-             [('[a](b.ipynb)', 'b')]
-             [('[c](d.ipynb)', 'd')]
+        Examples
+        --------
+        Mmarkdown link: "[a](../foo/b.ipynb#spam)" 
+        Link target: "..foo/b.ipynb"
+        
+        String "foo [a](b.ipynb) bar [c](..foo/d.ipynb#spam)" would return
+        iterable, which when converted to a list would be: [
+             [('[a](b.ipynb)', 'b.ipynb')]
+             [('[c](../foo/d.ipynb#spam)', '../foo/d.ipynb')]
         ] 
 
         """
-        for match in re.finditer(r"(\[.+?\]\((.+?)\.ipynb#*?.*?\))", markdown_text):
+        for match in re.finditer(r"(\[.+?\]\((.+?\.ipynb)#*?.*?\))", markdown_text):
             yield match.groups()
 
     @classmethod

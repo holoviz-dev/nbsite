@@ -12,23 +12,28 @@ class TestFixNotebookLinks:
         "markdowntext, expected_output",
         [
             # Case: one link in the text
-            ("foo [a](b.ipynb) bar", [("[a](b.ipynb)", "b")]),
+            ("foo [a](b.ipynb) bar", [("[a](b.ipynb)", "b.ipynb")]),
             # Case: no link to .ipynb
             ("foo [a](b.md) bar", []),
             # Case: two links in the text
             (
                 "foo [a](b.ipynb) bar [c](d.ipynb) baz.",
-                [("[a](b.ipynb)", "b"), ("[c](d.ipynb)", "d")],
+                [("[a](b.ipynb)", "b.ipynb"), ("[c](d.ipynb)", "d.ipynb")],
             ),
             # Case: Link has an anchor
             (
                 "foo [a](b.ipynb#some-anchor) bar",
-                [("[a](b.ipynb#some-anchor)", "b")],
+                [("[a](b.ipynb#some-anchor)", "b.ipynb")],
             ),
             # Case: Two links has an anchor
             (
                 "foo [a](b.ipynb#spam) bar [c](d.ipynb#eggs) baz.",
-                [("[a](b.ipynb#spam)", "b"), ("[c](d.ipynb#eggs)", "d")],
+                [("[a](b.ipynb#spam)", "b.ipynb"), ("[c](d.ipynb#eggs)", "d.ipynb")],
+            ),
+            # Case: Relative path
+            (
+                "foo [a](../foo/b.ipynb#spam) bar.",
+                [("[a](../foo/b.ipynb#spam)", "../foo/b.ipynb")],
             ),
         ],
     )
@@ -77,7 +82,8 @@ class TestFixNotebookLinks:
 
     def test_replace_notebook_links(self, monkeypatch):
 
-        nb_dir = '/tmp/somepath/user_guide'
+        nb_dir = "/tmp/somepath/user_guide"
+
         class FixNotebookLinksMockFiles(FixNotebookLinks):
 
             @staticmethod
@@ -85,10 +91,10 @@ class TestFixNotebookLinks:
                 normalized_path = os.path.normpath(file_path)
                 # mock existence of certain fiels
                 return normalized_path in {
-                    '/tmp/somepath/user_guide/first.rst',
-                    '/tmp/somepath/user_guide/02-Second_Notebook.md',
-                    '/tmp/notebooks/Third_Notebook.rst',
-                    '/tmp/somepath/foo/Notebook.rst',
+                    "/tmp/somepath/user_guide/first.rst",
+                    "/tmp/somepath/user_guide/02-Second_Notebook.md",
+                    "/tmp/notebooks/Third_Notebook.rst",
+                    "/tmp/somepath/foo/Notebook.rst",
                 }
 
         text = textwrap.dedent(
@@ -126,7 +132,6 @@ class TestFixNotebookLinks:
                 "\n"
             )
         )
-
 
         processor = FixNotebookLinksMockFiles(nb_dir)
         assert processor.replace_notebook_links(text, nb_dir) == expected_output
