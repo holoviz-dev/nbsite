@@ -324,7 +324,7 @@ class FixNotebookLinks(Preprocessor):
 
     @staticmethod
     def file_exists(file_path: str) -> bool:
-        return not os.path.isfile(file_path)
+        return os.path.isfile(file_path)
 
     def __call__(self, nb, resources):
         return self.preprocess(nb,resources)
