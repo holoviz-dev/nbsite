@@ -264,8 +264,13 @@ class FixNotebookLinks(Preprocessor):
 
         Example
         -------
-        >>> list(_get_potential_link_targets("01-notebook.ipynb"))
-        ["01-notebook.rst", "notebook.rst", "01-notebook.md", "notebook.md"]
+        >>> list(_get_potential_link_targets("../foo/01-Some_Notebook.ipynb"))
+        [
+            "../foo/01-Some_Notebook.rst",
+            "../foo/01-Some_Notebook.md",
+            "../foo/Some_Notebook.rst",
+            "../foo/Some_Notebook.md",
+        ],
         """
 
         if not nb_filepath.endswith('.ipynb'):
@@ -275,6 +280,7 @@ class FixNotebookLinks(Preprocessor):
         for extension in cls.file_types:
             yield f"{nb_path_without_extension}.{extension}"
 
+        for extension in cls.file_types:
             *directory, stem = re.split('(/)', nb_path_without_extension)
             match = re.match(r"\d+[ -_](.*)", stem)
 
