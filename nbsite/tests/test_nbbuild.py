@@ -10,12 +10,22 @@ class TestFixNotebookLinks:
         [
             # Case: one link in the text
             ("foo [a](b.ipynb) bar", [("[a](b.ipynb)", "b.ipynb")]),
-            # Case: no link to .ipynb
+            # Case: no link to .ipynb 
             ("foo [a](b.md) bar", []),
             # Case: two links in the text
             (
                 "foo [a](b.ipynb) bar [c](d.ipynb) baz.",
                 [("[a](b.ipynb)", "b.ipynb"), ("[c](d.ipynb)", "d.ipynb")],
+            ),
+            # Case: Link has an anchor
+            (
+                "foo [a](b.ipynb#some-anchor) bar",
+                [("[a](b.ipynb#some-anchor)", "b.ipynb")],
+            ),
+            # Case: Two links has an anchor
+            (
+                "foo [a](b.ipynb#spam) bar [c](d.ipynb#eggs) baz.",
+                [("[a](b.ipynb#spam)", "b.ipynb"), ("[c](d.ipynb#eggs)", "d.ipynb")],
             ),
         ],
     )
