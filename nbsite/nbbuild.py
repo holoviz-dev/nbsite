@@ -292,15 +292,15 @@ class FixNotebookLinks(Preprocessor):
 
 
     @staticmethod
-    def _create_target_link(nb_link: str, target_filename:str) -> str:
+    def _create_target_link(nb_link: str, target_relpath:str) -> str:
         """Using a markdown link `nb_link`, create a markdown link which
-        changes the target filename to be `target_filename`.
+        changes the link target file to be `target_relpath`.
 
         Example
         -------
-        If nb_link is "[sometext](.q./../somepath/01-subject.ipynb#spam)", and
-        the target_filename is "subject.rst", returns
-        "[sometext](../../somepath/subject.rst#spam)"
+        If nb_link is "[sometext](../../somepath/01-subject.ipynb#spam)", and
+        the target_filename is "../otherpath/subject.rst", returns
+        "[sometext](../otherpath/subject.rst#spam)"
 
         Notes:
         * If you pass as nb_link text which contains no markdown links, a
@@ -322,12 +322,7 @@ class FixNotebookLinks(Preprocessor):
         if not match:
             raise ValueError(f'Not a valid markdown link!: {nb_link}')
 
-        start, nb_path_part, _, end =  match.groups()
-
-        # Extract "../../somepath/" from "../../somepath/subject"
-        path_beginning = ''.join(re.split('(/)', nb_path_part)[:-1])
-
-        return f"{start}{path_beginning}{target_filename}{end}"
+        return f"{match.group(1)}{target_relpath}{match.group(4)}"
 
     @staticmethod
     def file_exists(file_path: str) -> bool:

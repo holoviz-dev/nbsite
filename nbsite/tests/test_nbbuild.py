@@ -83,8 +83,8 @@ class TestFixNotebookLinks:
             ("[a](b.ipynb#spam)", "file.rst", "[a](file.rst#spam)"),
             (
                 "[sometext](../../somepath/subject.ipynb#spam)",
-                "file.rst",
-                "[sometext](../../somepath/file.rst#spam)",
+                "../../otherpath/file.rst",
+                "[sometext](../../otherpath/file.rst#spam)",
             ),
         ],
     )
@@ -94,7 +94,7 @@ class TestFixNotebookLinks:
             == expected_output
         )
 
-    def test_replace_notebook_links(self, monkeypatch):
+    def test_replace_notebook_links(self):
 
         nb_dir = "/tmp/somepath/user_guide"
 
