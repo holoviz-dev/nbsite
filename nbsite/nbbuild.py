@@ -230,6 +230,19 @@ class FixNotebookLinks(Preprocessor):
         for match in re.finditer(r"(\[.+?\]\((.+?\.ipynb)#*?.*?\))", markdown_text):
             yield match.groups()
 
+    @classmethod
+    def _get_potential_link_targets(cls, notebook_filename: str) -> Iterable[str]:
+
+        stem, extension = notebook_filename.rsplit('.', maxsplit=1)
+        assert extension == 'ipynb', 'The file extension must be .ipynb'
+
+        for extension in cls.file_types:
+            yield f"{stem}.{extension}"
+
+            match = re.match(r"\d+[ |-|_](.*)", stem)
+            if match:
+                yield match.group(1)
+
     def __call__(self, nb, resources):
         return self.preprocess(nb,resources)
 

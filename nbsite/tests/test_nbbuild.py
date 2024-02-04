@@ -31,3 +31,16 @@ class TestFixNotebookLinks:
     )
     def test_extract_links(self, markdowntext, expected_output):
         assert list(FixNotebookLinks._extract_links(markdowntext)) == expected_output
+
+
+    @pytest.mark.parametrize(
+        "notebook_filename, expected_output",
+        [
+            # Case: Simple notebook name. No numbers
+            ("notebook.ipynb", ['notebook.rst', 'notebook.md']),
+
+        ],
+    )
+    def test_get_potential_link_targets(self, notebook_filename, expected_output):
+        assert list(FixNotebookLinks._get_potential_link_targets(notebook_filename)) == expected_output
+
