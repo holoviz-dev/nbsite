@@ -214,15 +214,18 @@ class FixNotebookLinks(Preprocessor):
             at, withuot a trailing slash.
         """
         for nb_link, nb_filepath in cls._extract_links(markdown_text):
-            for target_filename in cls._get_potential_link_targets(nb_filepath):
-                file_path = os.path.normpath(os.path.join(nb_dir, target_filename))
-                if not cls.file_exists(file_path):
-                    continue
-                new_link = cls._create_target_link(nb_link, target_filename)
-                markdown_text = markdown_text.replace(nb_link, new_link)
-                break # each notebook link may have only one source target filename
-
+            for source_filepath in cls._iter_source_file_candidates(nb_filepath):
+                markdown_text = cls.replace_notebook_link(markdown_text, nb_dir, source_filepath, nb_link)
         return markdown_text
+
+    @classmethod
+    def replace_notebook_link(cls, markdown_text: str, nb_dir:str, source_filepath:str, nb_link:str) -> str:
+
+        file_path = os.path.normpath(os.path.join(nb_dir, source_filepath))
+        if not cls.file_exists(file_path):
+            return markdown_text 
+        new_link = cls._create_target_link(nb_link, source_filepath)
+        return markdown_text.replace(nb_link, new_link)
 
     @staticmethod
     def _extract_links(markdown_text: str) -> Iterable[Tuple[str, str]]:
@@ -246,7 +249,7 @@ class FixNotebookLinks(Preprocessor):
             yield match.groups()
 
     @classmethod
-    def _get_potential_link_targets(cls, nb_filepath: str) -> Iterable[str]:
+    def _iter_source_file_candidates(cls, nb_filepath: str) -> Iterable[str]:
         """Gets potential link targets corresponding to a notebook file path.
         Potential link targets (source files paths) are formed by using the
         relative path of the link target notebook, and adding the file
@@ -264,7 +267,7 @@ class FixNotebookLinks(Preprocessor):
 
         Example
         -------
-        >>> list(_get_potential_link_targets("../foo/01-Some_Notebook.ipynb"))
+        >>> list(_iter_source_file_candidates("../foo/01-Some_Notebook.ipynb"))
         [
             "../foo/01-Some_Notebook.rst",
             "../foo/01-Some_Notebook.md",
