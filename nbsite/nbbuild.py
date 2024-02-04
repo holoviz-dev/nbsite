@@ -196,35 +196,35 @@ class FixNotebookLinks(Preprocessor):
 
         cell['source'] = self.replace_notebook_links(
             markdown_text=cell['source'],
-            nb_dir=self.nb_path
+            rootdir=self.nb_path
         )
 
         return cell, resources
 
     @classmethod
-    def replace_notebook_links(cls, markdown_text: str, nb_dir:str):
+    def replace_notebook_links(cls, markdown_text: str, rootdir:str):
         """Replaces notebook links in a markdown text.
 
         Parameters
         ----------
         markdown_text: str
             Markdown text from a notebook markdown cell.
-        nb_dir:
-            The absolute path to the directory where the notebook is located
-            at, withuot a trailing slash.
+        rootdir:
+            The absolute path to the directory where the notebook that is being
+            processed (which contains links) is located at, without a trailing
+            slash.
         """
-        for nb_link, nb_filepath in cls._extract_links(markdown_text):
-            for source_filepath in cls._iter_source_file_candidates(nb_filepath):
-                markdown_text = cls.replace_notebook_link(markdown_text, nb_dir, source_filepath, nb_link)
+        for nb_link, target_nb_filepath in cls._extract_links(markdown_text):
+            for target_source_filepath in cls._iter_source_file_candidates(target_nb_filepath):
+                markdown_text = cls.replace_notebook_link(markdown_text, rootdir, target_source_filepath, nb_link)
         return markdown_text
 
     @classmethod
-    def replace_notebook_link(cls, markdown_text: str, nb_dir:str, source_filepath:str, nb_link:str) -> str:
-
-        file_path = os.path.normpath(os.path.join(nb_dir, source_filepath))
-        if not cls.file_exists(file_path):
+    def replace_notebook_link(cls, markdown_text: str, rootdir:str, target_relpath:str, nb_link:str) -> str:
+        target_abspath = os.path.normpath(os.path.join(rootdir, target_relpath))
+        if not cls.file_exists(target_abspath):
             return markdown_text 
-        new_link = cls._create_target_link(nb_link, source_filepath)
+        new_link = cls._create_target_link(nb_link, target_relpath)
         return markdown_text.replace(nb_link, new_link)
 
     @staticmethod
