@@ -53,3 +53,21 @@ class TestFixNotebookLinks:
     def test_get_potential_link_targets(self, notebook_stem, expected_output):
         output = list(FixNotebookLinks._get_potential_link_targets(notebook_stem))
         assert output == expected_output
+
+    @pytest.mark.parametrize(
+        "nb_link, target_filename, expected_output",
+        [
+            ("[a](b.ipynb)", "file.rst", "[a](file.rst)"),
+            ("[a](b.ipynb#spam)", "file.rst", "[a](file.rst#spam)"),
+            (
+                "[sometext](../../somepath/subject.ipynb#spam)",
+                "file.rst",
+                "[sometext](../../somepath/file.rst#spam)",
+            ),
+        ],
+    )
+    def test_create_target_link(self, nb_link, target_filename, expected_output):
+        assert (
+            FixNotebookLinks._create_target_link(nb_link, target_filename)
+            == expected_output
+        )

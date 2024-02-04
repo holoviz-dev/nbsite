@@ -251,6 +251,38 @@ class FixNotebookLinks(Preprocessor):
             if match:
                 yield f"{match.group(1)}.{extension}"
 
+    @staticmethod
+    def _create_target_link(nb_link: str, target_filename:str) -> str:
+        """Using a markdown link `nb_link`, create a markdown link which
+        changes the target filename to be `target_filename`.
+
+        Example
+        -------
+        If nb_link is "[sometext](.q./../somepath/01-subject.ipynb#spam)", and
+        the target_filename is "subject.rst", returns
+        "[sometext](../../somepath/subject.rst#spam)"
+        """
+
+        # Example: [sometext](../../somepath/subject.ipynb#spam)
+        match = re.match(
+            (
+                r"^(\[.+?\]\()"  # [sometext](
+                r"(.+?)"         #  ../../somepath/subject
+                r"(\.ipynb)"     # .ipynb
+                r"(#*?.*?\))"    # #spam)
+            ),
+            nb_link,
+        )
+        if not match:
+            raise ValueError(f'Not a valid markdown link!: {nb_link}')
+
+        start, nb_path_part, _, end =  match.groups()
+
+        # Extract "../../somepath/" from "../../somepath/subject"
+        path_beginning = ''.join(re.split('(/)', nb_path_part)[:-1])
+
+        return f"{start}{path_beginning}{target_filename}{end}"
+
     def __call__(self, nb, resources):
         return self.preprocess(nb,resources)
 
