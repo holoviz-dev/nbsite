@@ -54,3 +54,7 @@ class TestFixNotebookLinks:
     def test_get_potential_link_targets(self, notebook_filename, expected_output):
         output = list(FixNotebookLinks._get_potential_link_targets(notebook_filename))
         assert output == expected_output
+
+    def test_get_potential_link_targets_valueerror(self):
+        with pytest.raises(ValueError, match="The file extension must be .ipynb"):
+            list(FixNotebookLinks._get_potential_link_targets("foo.md"))

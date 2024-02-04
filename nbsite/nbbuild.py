@@ -244,8 +244,10 @@ class FixNotebookLinks(Preprocessor):
         >>> list(_get_potential_link_targets("01-notebook.ipynb"))
         ["01-notebook.rst", "notebook.rst", "01-notebook.md", "notebook.md"]
         """
-        assert notebook_filename.endswith('.ipynb'), 'The file extension must be .ipynb'
-        stem = notebook_filename[:-5]
+        if not notebook_filename.endswith('.ipynb'):
+            raise ValueError('The file extension must be .ipynb')
+
+        stem = notebook_filename[:-6]
 
         for extension in cls.file_types:
             yield f"{stem}.{extension}"
