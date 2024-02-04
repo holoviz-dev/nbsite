@@ -29,5 +29,5 @@ class TestFixNotebookLinks:
             ),
         ],
     )
-    def test_get_links(self, markdowntext, expected_output):
-        assert list(FixNotebookLinks._get_links(markdowntext)) == expected_output
+    def test_extract_links(self, markdowntext, expected_output):
+        assert list(FixNotebookLinks._extract_links(markdowntext)) == expected_output
