@@ -232,7 +232,18 @@ class FixNotebookLinks(Preprocessor):
 
     @classmethod
     def _get_potential_link_targets(cls, notebook_filename: str) -> Iterable[str]:
+        """Gets potential link targets corresponding to a notebook filename
+        Potential link targets are formed by using the stem of the notebook
+        filename, and adding the extensions from `cls.file_types`. In addition
+        if the notebook_filename starts with digits + one of ('-', '_', ' '),
+        the stem without the number prefix is used to form a potential link
+        target.
 
+        Example
+        -------
+        >>> list(_get_potential_link_targets("01-notebook.ipynb"))
+        ["01-notebook.rst", "notebook.rst", "01-notebook.md", "notebook.md"]
+        """
         stem, extension = notebook_filename.rsplit('.', maxsplit=1)
         assert extension == 'ipynb', 'The file extension must be .ipynb'
 
