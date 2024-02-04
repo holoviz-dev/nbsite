@@ -42,33 +42,38 @@ class TestFixNotebookLinks:
 
     @pytest.mark.parametrize(
         "notebook_stem, expected_output",
-        [   
+        [
             # simple
             ("notebook.ipynb", ["notebook.rst", "notebook.md"]),
             (
                 # Numeric with space
                 "01 notebook.ipynb",
-                ["01 notebook.rst", "01 notebook.md", "notebook.rst","notebook.md"],
+                ["01 notebook.rst", "01 notebook.md", "notebook.rst", "notebook.md"],
             ),
             (
                 # Numeric with dash
                 "01-notebook.ipynb",
-                ["01-notebook.rst",  "01-notebook.md", "notebook.rst","notebook.md"],
+                ["01-notebook.rst", "01-notebook.md", "notebook.rst", "notebook.md"],
             ),
             (
                 # Numeric with underscore
                 "01_notebook.ipynb",
-                ["01_notebook.rst", "01_notebook.md","notebook.rst",  "notebook.md"],
+                ["01_notebook.rst", "01_notebook.md", "notebook.rst", "notebook.md"],
             ),
             (
                 # Numeric with relative path
                 "../foo/01_notebook.ipynb",
-                ["../foo/01_notebook.rst", "../foo/01_notebook.md","../foo/notebook.rst",  "../foo/notebook.md"],
+                [
+                    "../foo/01_notebook.rst",
+                    "../foo/01_notebook.md",
+                    "../foo/notebook.rst",
+                    "../foo/notebook.md",
+                ],
             ),
         ],
     )
-    def test_get_potential_link_targets(self, notebook_stem, expected_output):
-        output = list(FixNotebookLinks._get_potential_link_targets(notebook_stem))
+    def test_iter_source_file_candidates(self, notebook_stem, expected_output):
+        output = list(FixNotebookLinks._iter_source_file_candidates(notebook_stem))
         assert output == expected_output
 
     @pytest.mark.parametrize(
