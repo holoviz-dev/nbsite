@@ -227,7 +227,7 @@ class FixNotebookLinks(Preprocessor):
         ] 
 
         """
-        for match in re.finditer(r"(\[.+\]\((.+\.ipynb)\))", markdown_text):
+        for match in re.finditer(r"(\[.+?\]\((.+?\.ipynb)\))", markdown_text):
             yield match.groups()
 
     def __call__(self, nb, resources):
