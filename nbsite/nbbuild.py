@@ -239,9 +239,9 @@ class FixNotebookLinks(Preprocessor):
         for extension in cls.file_types:
             yield f"{stem}.{extension}"
 
-            match = re.match(r"\d+[ |-|_](.*)", stem)
+            match = re.match(r"\d+[ -_](.*)", stem)
             if match:
-                yield match.group(1)
+                yield f"{match.group(1)}.{extension}"
 
     def __call__(self, nb, resources):
         return self.preprocess(nb,resources)
