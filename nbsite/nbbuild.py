@@ -255,12 +255,12 @@ class FixNotebookLinks(Preprocessor):
         """Extract links to Notebook files (.ipynb) from markdown text and
         yield them. Returns the full markdown link and the link target
         separately.
-        
+
         Examples
         --------
         Markdown link: "[a](../foo/b.ipynb#spam)"
         Link target: "..foo/b.ipynb"
-        
+
         String "foo [a](b.ipynb) bar [c](..foo/d.ipynb#spam)" would return
         iterable, which when converted to a list would be: [
              [('[a](b.ipynb)', 'b.ipynb')]
@@ -301,7 +301,7 @@ class FixNotebookLinks(Preprocessor):
 
         if not nb_filepath.endswith('.ipynb'):
             raise ValueError('nb_filepath must end with .ipynb')
-        
+
         nb_path_without_extension = nb_filepath[:-6]
         for extension in cls.file_types:
             yield f"{nb_path_without_extension}.{extension}"
