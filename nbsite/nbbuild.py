@@ -253,19 +253,19 @@ class FixNotebookLinks(Preprocessor):
     @staticmethod
     def _extract_links(markdown_text: str) -> Iterable[Tuple[str, str]]:
         """Extract links to Notebook files (.ipynb) from markdown text and
-        yield them. Returns the full markdown link and the link target 
+        yield them. Returns the full markdown link and the link target
         separately.
         
         Examples
         --------
-        Markdown link: "[a](../foo/b.ipynb#spam)" 
+        Markdown link: "[a](../foo/b.ipynb#spam)"
         Link target: "..foo/b.ipynb"
         
         String "foo [a](b.ipynb) bar [c](..foo/d.ipynb#spam)" would return
         iterable, which when converted to a list would be: [
              [('[a](b.ipynb)', 'b.ipynb')]
              [('[c](../foo/d.ipynb#spam)', '../foo/d.ipynb')]
-        ] 
+        ]
 
         """
         for match in re.finditer(r"(\[.+?\]\((.+?\.ipynb)#*?.*?\))", markdown_text):

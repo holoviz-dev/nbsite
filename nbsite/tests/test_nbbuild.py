@@ -120,7 +120,7 @@ class TestFixNotebookLinks:
         [this](../../notebooks/03-Third_Notebook.ipynb).
 
         The text may also contain links with anchors.
-        Example: [link to achor](../foo/Notebook.ipynb#spam)
+        Example: [link to anchor](../foo/Notebook.ipynb#spam)
 
         Links which do not point to .ipynb files are not touched.
         Example [link untouched](../something.rst#eggs)
@@ -138,7 +138,7 @@ class TestFixNotebookLinks:
         [this](../../notebooks/Third_Notebook.rst).
 
         The text may also contain links with anchors.
-        Example: [link to achor](../foo/Notebook.rst#spam)
+        Example: [link to anchor](../foo/Notebook.rst#spam)
 
         Links which do not point to .ipynb files are not touched.
         Example [link untouched](../something.rst#eggs)
