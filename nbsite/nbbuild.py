@@ -39,11 +39,11 @@ import string
 import sys
 import typing
 
-
 from collections import OrderedDict
 from contextlib import contextmanager
 
 import nbformat
+from sphinx.util import logging
 
 from docutils.parsers.rst import Directive, directives
 from docutils.statemachine import string2lines
@@ -60,6 +60,7 @@ if typing.TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Tuple
 
+logger = logging.getLogger(__name__)
 
 NOTEBOOK_VERSION = 4
 
@@ -215,15 +216,38 @@ class FixNotebookLinks(Preprocessor):
             slash.
         """
         for nb_link, nb_filepath in cls._extract_links(markdown_text):
-            for target_relpath in cls._iter_source_file_candidates(nb_filepath):
-                target_abspath = os.path.normpath(os.path.join(rootdir, target_relpath))
-                if not cls.file_exists(target_abspath):
-                    continue
-                new_link = cls._create_target_link(nb_link, target_relpath)
-                markdown_text = markdown_text.replace(nb_link, new_link)
-                break # only one match per target notebook
+
+            target_relpath = cls._get_sourcefile(rootdir, nb_filepath)
+            if not target_relpath:
+                logger.warn('Source file for "%s" not found (path relative to "%s")', nb_filepath, rootdir)
+                continue
+
+            new_link = cls._create_target_link(nb_link, target_relpath)
+            markdown_text = markdown_text.replace(nb_link, new_link)
+
         return markdown_text
 
+    @classmethod
+    def _get_sourcefile(cls, rootdir: str, nb_filepath: str) -> str | None:
+        """"Get the source (.rst / .md) file path for a notebook.
+
+        Parameters
+        ----------
+        rootdir:
+            The location of the root notebook (where the link markdown is at)
+        nb_filepath:
+            Location of the notebook which source to find, relative to rootdir.
+
+        Returns
+        -------
+        source_relpath: str | None
+            The source file path relative to root notebook. If the source file
+            is not found, issues a warning and returns none.
+        """
+        for source_relpath in cls._iter_source_file_candidates(nb_filepath):
+            target_abspath = os.path.normpath(os.path.join(rootdir, source_relpath))
+            if cls.file_exists(target_abspath):
+                return source_relpath
 
     @staticmethod
     def _extract_links(markdown_text: str) -> Iterable[Tuple[str, str]]:
