@@ -28,6 +28,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 from __future__ import annotations
+
 import copy
 import glob
 import io
@@ -43,7 +44,6 @@ from collections import OrderedDict
 from contextlib import contextmanager
 
 import nbformat
-from sphinx.util import logging
 
 from docutils.parsers.rst import Directive, directives
 from docutils.statemachine import string2lines
@@ -53,6 +53,7 @@ from nbconvert import NotebookExporter, PythonExporter
 from nbconvert.preprocessors import (
     CellExecutionError, ExecutePreprocessor, Preprocessor,
 )
+from sphinx.util import logging
 
 from .cmd import _prepare_paths, hosts
 
