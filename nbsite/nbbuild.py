@@ -247,7 +247,7 @@ class FixNotebookLinks(Preprocessor):
         """
         for source_relpath in cls._iter_source_file_candidates(nb_filepath):
             target_abspath = os.path.normpath(os.path.join(rootdir, source_relpath))
-            if cls.file_exists(target_abspath):
+            if cls._file_exists(target_abspath):
                 return source_relpath
 
     @staticmethod
@@ -347,7 +347,8 @@ class FixNotebookLinks(Preprocessor):
         return f"{match.group(1)}{target_relpath}{match.group(4)}"
 
     @staticmethod
-    def file_exists(file_path: str) -> bool:
+    def _file_exists(file_path: str) -> bool:
+        # Makes faking files in tests easier. 
         return os.path.isfile(file_path)
 
     def __call__(self, nb, resources):

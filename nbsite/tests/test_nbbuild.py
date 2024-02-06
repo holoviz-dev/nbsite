@@ -101,7 +101,7 @@ class TestFixNotebookLinks:
         class FixNotebookLinksMockFiles(FixNotebookLinks):
 
             @staticmethod
-            def file_exists(file_path):
+            def _file_exists(file_path):
                 normalized_path = os.path.normpath(file_path)
                 # mock existence of certain fiels
                 return normalized_path in {
