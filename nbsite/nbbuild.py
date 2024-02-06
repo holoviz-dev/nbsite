@@ -350,7 +350,7 @@ class FixNotebookLinks(Preprocessor):
 
     @staticmethod
     def _file_exists(file_path: str) -> bool:
-        # Makes faking files in tests easier. 
+        # Makes faking files in tests easier.
         return os.path.isfile(file_path)
 
     def __call__(self, nb, resources):
