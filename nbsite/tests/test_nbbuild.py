@@ -103,7 +103,7 @@ class TestFixNotebookLinks:
             @staticmethod
             def _file_exists(file_path):
                 normalized_path = os.path.normpath(file_path)
-                # mock existence of certain fiels
+                # mock existence of certain files
                 return normalized_path in {
                     "/tmp/somepath/user_guide/first.rst",
                     "/tmp/somepath/user_guide/02-Second_Notebook.md",
