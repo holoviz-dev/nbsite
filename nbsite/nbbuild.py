@@ -187,6 +187,14 @@ class FixNotebookLinks(Preprocessor):
 
     file_types = ['rst', 'md']
 
+    # Regex for matching markdown notebook links.
+    # Example input "[sometext](../../somepath/subject.ipynb#spam)""
+    nb_regex = re.compile((
+                r"(\[.+?\]\()"   # "[sometext]("
+                r"(.+?\.ipynb)"  # "../../somepath/subject.ipynb"
+                r"(#*?.*?\))"    # "#spam)"
+    ))
+
     def __init__(self, nb_path: str, **kwargs):
         # nb_path: the directory of the notebook, without a trailing slash
         self.nb_path = nb_path
@@ -250,8 +258,8 @@ class FixNotebookLinks(Preprocessor):
             if cls._file_exists(target_abspath):
                 return source_relpath
 
-    @staticmethod
-    def _extract_links(markdown_text: str) -> Iterable[Tuple[str, str]]:
+    @classmethod
+    def _extract_links(cls, markdown_text: str) -> Iterable[Tuple[str, str]]:
         """Extract links to Notebook files (.ipynb) from markdown text and
         yield them. Returns the full markdown link and the link target
         separately.
@@ -266,10 +274,12 @@ class FixNotebookLinks(Preprocessor):
              [('[a](b.ipynb)', 'b.ipynb')]
              [('[c](../foo/d.ipynb#spam)', '../foo/d.ipynb')]
         ]
-
         """
-        for match in re.finditer(r"(\[.+?\]\((.+?\.ipynb)#*?.*?\))", markdown_text):
-            yield match.groups()
+
+        for match in cls.nb_regex.finditer(markdown_text):
+            markdown_link = ''.join(match.groups())
+            link_target = match.group(2)
+            yield markdown_link, link_target
 
     @classmethod
     def _iter_source_file_candidates(cls, nb_filepath: str) -> Iterable[str]:
@@ -313,8 +323,8 @@ class FixNotebookLinks(Preprocessor):
                 yield os.path.join(directory, match.group(1) + '.' + extension)
 
 
-    @staticmethod
-    def _create_target_link(nb_link: str, target_relpath:str) -> str:
+    @classmethod
+    def _create_target_link(cls, nb_link: str, target_relpath:str) -> str:
         """Using a markdown link `nb_link`, create a markdown link which
         changes the link target file to be `target_relpath`.
 
@@ -331,20 +341,12 @@ class FixNotebookLinks(Preprocessor):
           links, the behaviour is undefined.
         """
 
-        # Example: [sometext](../../somepath/subject.ipynb#spam)
-        match = re.match(
-            (
-                r"^(\[.+?\]\()"  # [sometext](
-                r"(.+?)"         #  ../../somepath/subject
-                r"(\.ipynb)"     # .ipynb
-                r"(#*?.*?\))"    # #spam)
-            ),
-            nb_link,
-        )
+        match = cls.nb_regex.match(nb_link)
+
         if not match:
             raise ValueError(f'Not a valid markdown link!: {nb_link}')
 
-        return f"{match.group(1)}{target_relpath}{match.group(4)}"
+        return f"{match.group(1)}{target_relpath}{match.group(3)}"
 
     @staticmethod
     def _file_exists(file_path: str) -> bool:
