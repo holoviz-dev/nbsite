@@ -307,11 +307,10 @@ class FixNotebookLinks(Preprocessor):
             yield f"{nb_path_without_extension}.{extension}"
 
         for extension in cls.file_types:
-            *directory, stem = re.split('(/)', nb_path_without_extension)
+            directory, stem = os.path.split(nb_path_without_extension)
             match = re.match(r"\d+[ -_](.*)", stem)
-
             if match:
-                yield ''.join(directory) + match.group(1) + '.' + extension
+                yield os.path.join(directory, match.group(1) + '.' + extension)
 
 
     @staticmethod
