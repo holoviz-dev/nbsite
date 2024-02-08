@@ -27,6 +27,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+from __future__ import annotations
 
 import copy
 import glob
@@ -37,6 +38,7 @@ import re
 import shutil
 import string
 import sys
+import typing
 
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -51,8 +53,15 @@ from nbconvert import NotebookExporter, PythonExporter
 from nbconvert.preprocessors import (
     CellExecutionError, ExecutePreprocessor, Preprocessor,
 )
+from sphinx.util import logging
 
 from .cmd import _prepare_paths, hosts
+
+if typing.TYPE_CHECKING:
+    from collections.abc import Iterable
+    from typing import Tuple
+
+logger = logging.getLogger(__name__)
 
 NOTEBOOK_VERSION = 4
 
@@ -178,33 +187,171 @@ class FixNotebookLinks(Preprocessor):
 
     file_types = ['rst', 'md']
 
-    def __init__(self, nb_path, **kwargs):
+    # Regex for matching markdown notebook links.
+    # Example input "[sometext](../../somepath/subject.ipynb#spam)""
+    nb_regex = re.compile((
+                r"(\[.+?\]\()"   # "[sometext]("
+                r"(.+?\.ipynb)"  # "../../somepath/subject.ipynb"
+                r"(#*?.*?\))"    # "#spam)"
+    ))
+
+    def __init__(self, nb_path: str, **kwargs):
+        # nb_path: the directory of the notebook, without a trailing slash
         self.nb_path = nb_path
         super(FixNotebookLinks, self).__init__(**kwargs)
 
     def preprocess_cell(self, cell, resources, index):
         if cell['cell_type'] != 'markdown':
             return cell, resources
-        matches = re.findall('\[.+\]\((.+\.ipynb)\)', cell['source'])
-        for match in matches:
-            for ft in self.file_types:
-                file_path = os.path.join(self.nb_path, match[:-5] + ft)
-                if os.path.isfile(file_path):
-                    cell['source'] = cell['source'].replace(
-                        '(%s)' % match, '(%s)' % (match[:-5] + ft)
-                    )
-                    break
 
-                # Try unnumbered path
-                num_name = os.path.basename(file_path)
-                name = re.split(r"^\d+( |-|_)", num_name)[-1]
-                unnumbered_path = file_path.replace(num_name, name)
-                if os.path.isfile(unnumbered_path):
-                    cell['source'] = cell['source'].replace(
-                        '(%s)' % match, '(%s)' % name
-                    )
-                    break
+        cell['source'] = self.replace_notebook_links(
+            markdown_text=cell['source'],
+            rootdir=self.nb_path
+        )
+
         return cell, resources
+
+    @classmethod
+    def replace_notebook_links(cls, markdown_text: str, rootdir:str) -> str:
+        """Replaces notebook links in a markdown text.
+
+        Parameters
+        ----------
+        markdown_text: str
+            Markdown text from a notebook markdown cell.
+        rootdir:
+            The absolute path to the directory where the notebook that is being
+            processed (which contains links) is located at, without a trailing
+            slash.
+        """
+        for nb_link, nb_filepath in cls._extract_links(markdown_text):
+
+            target_relpath = cls._get_sourcefile(rootdir, nb_filepath)
+            if not target_relpath:
+                logger.warn('Source file for "%s" not found (path relative to "%s")', nb_filepath, rootdir)
+                continue
+
+            new_link = cls._create_target_link(nb_link, target_relpath)
+            markdown_text = markdown_text.replace(nb_link, new_link)
+
+        return markdown_text
+
+    @classmethod
+    def _get_sourcefile(cls, rootdir: str, nb_filepath: str) -> str | None:
+        """"Get the source (.rst / .md) file path for a notebook.
+
+        Parameters
+        ----------
+        rootdir:
+            The location of the root notebook (where the link markdown is at)
+        nb_filepath:
+            Location of the notebook which source to find, relative to rootdir.
+
+        Returns
+        -------
+        source_relpath: str | None
+            The source file path relative to root notebook. If the source file
+            is not found, issues a warning and returns none.
+        """
+        for source_relpath in cls._iter_source_file_candidates(nb_filepath):
+            target_abspath = os.path.normpath(os.path.join(rootdir, source_relpath))
+            if cls._file_exists(target_abspath):
+                return source_relpath
+
+    @classmethod
+    def _extract_links(cls, markdown_text: str) -> Iterable[Tuple[str, str]]:
+        """Extract links to Notebook files (.ipynb) from markdown text and
+        yield them. Returns the full markdown link and the link target
+        separately.
+
+        Examples
+        --------
+        Markdown link: "[a](../foo/b.ipynb#spam)"
+        Link target: "..foo/b.ipynb"
+
+        String "foo [a](b.ipynb) bar [c](..foo/d.ipynb#spam)" would return
+        iterable, which when converted to a list would be: [
+             [('[a](b.ipynb)', 'b.ipynb')]
+             [('[c](../foo/d.ipynb#spam)', '../foo/d.ipynb')]
+        ]
+        """
+
+        for match in cls.nb_regex.finditer(markdown_text):
+            markdown_link = ''.join(match.groups())
+            link_target = match.group(2)
+            yield markdown_link, link_target
+
+    @classmethod
+    def _iter_source_file_candidates(cls, nb_filepath: str) -> Iterable[str]:
+        """Gets potential link targets corresponding to a notebook file path.
+        Potential link targets (source files paths) are formed by using the
+        relative path of the link target notebook, and adding the file
+        extensions from `cls.file_types`. In addition if the the filename part
+        of the `nb_filepath` starts with digits + one of ('-', '_', ' '),
+        the stem without the number prefix is used to form a potential link
+        target.
+
+        Parameters
+        ----------
+        nb_filepath:
+            The filepath of a link target a notebook. Must end with ".ipynb".
+            The links are relative to the directory of the notebook which
+            contains the markdown link. Example: "../foo/10-Some.ipynb"
+
+        Example
+        -------
+        >>> list(_iter_source_file_candidates("../foo/01-Some_Notebook.ipynb"))
+        [
+            "../foo/01-Some_Notebook.rst",
+            "../foo/01-Some_Notebook.md",
+            "../foo/Some_Notebook.rst",
+            "../foo/Some_Notebook.md",
+        ],
+        """
+
+        if not nb_filepath.endswith('.ipynb'):
+            raise ValueError('nb_filepath must end with .ipynb')
+
+        nb_path_without_extension = nb_filepath[:-6]
+        for extension in cls.file_types:
+            yield f"{nb_path_without_extension}.{extension}"
+
+        for extension in cls.file_types:
+            directory, stem = os.path.split(nb_path_without_extension)
+            match = re.match(r"\d+[ -_](.*)", stem)
+            if match:
+                yield os.path.join(directory, match.group(1) + '.' + extension)
+
+
+    @classmethod
+    def _create_target_link(cls, nb_link: str, target_relpath:str) -> str:
+        """Using a markdown link `nb_link`, create a markdown link which
+        changes the link target file to be `target_relpath`.
+
+        Example
+        -------
+        If nb_link is "[sometext](../../somepath/01-subject.ipynb#spam)", and
+        the target_filename is "../otherpath/subject.rst", returns
+        "[sometext](../otherpath/subject.rst#spam)"
+
+        Notes:
+        * If you pass as nb_link text which contains no markdown links, a
+          ValueError will be raised
+        * If you pass as nb_link text which contains more than one markdown
+          links, the behaviour is undefined.
+        """
+
+        match = cls.nb_regex.match(nb_link)
+
+        if not match:
+            raise ValueError(f'Not a valid markdown link!: {nb_link}')
+
+        return f"{match.group(1)}{target_relpath}{match.group(3)}"
+
+    @staticmethod
+    def _file_exists(file_path: str) -> bool:
+        # Makes faking files in tests easier.
+        return os.path.isfile(file_path)
 
     def __call__(self, nb, resources):
         return self.preprocess(nb,resources)
