@@ -46,10 +46,6 @@ jobs:
           python -m venv .venv
           source .venv/bin/activate
           pip install -r requirements.txt
-      - name: Install Bokeh 3.4.0-dev release
-        run: |
-          pip install bokeh==3.4.0 --pre
-          echo "Installing Bokeh 3.4.0-dev please remove after release" >> $GITHUB_STEP_SUMMARY
       - name: build docs
         run: |
           cd site
