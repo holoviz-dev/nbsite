@@ -52,7 +52,7 @@ setup_args = dict(
         'Bug Tracker': 'https://github.com/holoviz-dev/nbsite/issues'
     },
     packages=find_packages(),
-    python_requires='>=3',
+    python_requires='>=3.8',
     install_requires=[
         'param >=1.7.0',
         'pyviz_comms',
