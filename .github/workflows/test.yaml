@@ -38,7 +38,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu-latest']
-        python-version: [3.8, 3.9]
+        python-version: ['3.9', '3.10', '3.11']
     timeout-minutes: 30
     defaults:
       run:
@@ -86,7 +86,7 @@ jobs:
         run: git fetch --prune --tags --unshallow -f
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.11'
       - name: set up env
         run: |
           cd site

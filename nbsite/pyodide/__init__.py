@@ -129,8 +129,8 @@ def extract_extensions(code: str) -> List[str]:
         js_modules.update(design_resources['js_modules'])
     resources = Resources(mode='cdn')
     extensions = _bundle_extensions(None, resources)
-    js += [bundle.cdn_url for bundle in extensions if bundle.cdn_url and
-           '@holoviz/panel@' not in bundle.cdn_url]
+    js += [cdn_url for bundle in extensions if bundle.cdn_url and
+           '@holoviz/panel@' not in (cdn_url:= str(bundle.cdn_url))]
     global_exports = [
         extension._globals[ext][0] for ext, imp in extension._imports.items()
         if imp in sys.modules and ext in extension._globals
