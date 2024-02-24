@@ -157,6 +157,7 @@ DEFAULT_GALLERY_CONF = {
     'enable_download': True,
     'only_use_existing': False,
     'as_pyodide': False,
+    'skip_rst_notebook_directive': False,
     'examples_dir': os.path.join('..', 'examples'),
     'labels_dir': 'labels',
     'galleries': {
@@ -455,6 +456,10 @@ def generate_file_rst(
     endpoint = content.get('deployment_url', gallery_conf.get('deployment_url', None))
     extensions = content.get('extensions', gallery_conf['default_extensions'])
     as_pyodide = content.get('as_pyodide', gallery_conf.get('as_pyodide', False))
+    skip_rst_notebook_directive = content.get(
+        'skip_rst_notebook_directive',
+        gallery_conf.get('skip_rst_notebook_directive', False)
+    )
 
     deployed_examples = get_deployed_examples(endpoint)
 
@@ -475,9 +480,15 @@ def generate_file_rst(
             deployed_file = None
 
         # Generate document
-        gen = generate_pyodide_markdown if as_pyodide else generate_item_rst
-        gen(app, page, section, backend, filename, src_dir, dest_dir,
-            img_extension, deployed_file, deployed, skip)
+        if as_pyodide:
+            gen = generate_pyodide_markdown
+        elif not skip_rst_notebook_directive:
+            gen = generate_item_rst
+        else:
+            gen = None
+        if gen:
+            gen(app, page, section, backend, filename, src_dir, dest_dir,
+                img_extension, deployed_file, deployed, skip)
 
 
 REDIRECT = """.. raw:: html
