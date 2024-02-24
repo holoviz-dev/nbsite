@@ -434,11 +434,11 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
         os.chdir(cwd)
 
         if skip_execute:
-            nbformat.write(notebook, open(dest_path, 'w'))
+            nbformat.write(notebook, open(dest_path, 'w', encoding='utf-8'))
         else:
             ne = NotebookExporter()
             newnb, _ = ne.from_notebook_node(notebook)
-            with open(dest_path,'w') as f:
+            with open(dest_path, 'w', encoding='utf-8') as f:
                 f.write(newnb)
             for pattern in patterns_to_take_with_me:
                 for f in glob.glob(os.path.join(os.path.dirname(nb_path),pattern)):
@@ -540,7 +540,7 @@ class NotebookDirective(Directive):
             dest_path_script = string.replace(dest_path, '.ipynb', '.py')
             rel_path_script = string.replace(nb_basename, '.ipynb', '.py')
             script_text = nb_to_python(nb_abs_path)
-            f = open(dest_path_script, 'w')
+            f = open(dest_path_script, 'w', encoding='utf-8')
             f.write(script_text.encode('utf8'))
             f.close()
 
