@@ -12,6 +12,7 @@
 *.doit*
 pip-wheel-metadata
 .tox
+.venv/
 
 # ipython
 */.ipynb_checkpoints
