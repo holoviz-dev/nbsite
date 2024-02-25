@@ -499,7 +499,7 @@ def generate_section_index(section, items, dest_dir, rel='..', title=None):
     index_page += '\n' + title + '\n' + '_'*len(title) + '\n'
     index_page += '\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   '
     index_page += '\n   '.join(items)
-    with open(os.path.join(dest_dir, 'index.rst'), 'w') as f:
+    with open(os.path.join(dest_dir, 'index.rst'), 'w', encoding='utf-8') as f:
         f.write(index_page)
 
 def _normalize_label(string):
@@ -837,7 +837,7 @@ def generate_gallery(app, page):
 
     if backends or section_backends:
         gallery_rst += HIDE_JS.format(backends=repr(backends[1:]))
-    with open(os.path.join(doc_dir, page, 'index.rst'), 'w') as f:
+    with open(os.path.join(doc_dir, page, 'index.rst'), 'w', encoding='utf-8') as f:
         f.write(gallery_rst)
 
 

@@ -64,7 +64,7 @@ def write_file(name, text, opts):
         print('File %s already exists, skipping.' % fname)
     else:
         print('Creating file %s.' % fname)
-        f = open(fname, 'w')
+        f = open(fname, 'w', encoding='utf-8')
         f.write(text)
         f.close()
 

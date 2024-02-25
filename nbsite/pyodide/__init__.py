@@ -356,12 +356,12 @@ def write_worker(app: Sphinx, exc):
         'autodetect_deps': pyodide_conf['autodetect_deps'],
         'requires': json.dumps(pyodide_conf['requires'])
     })
-    with open(staticdir/ 'PyodideWebWorker.js', 'w') as f:
+    with open(staticdir/ 'PyodideWebWorker.js', 'w', encoding='utf-8') as f:
         f.write(web_worker)
     worker_setup = WORKER_HANDLER_TEMPLATE.render(
         scripts=pyodide_conf['scripts']
     )
-    with open(staticdir/ 'WorkerHandler.js', 'w') as f:
+    with open(staticdir/ 'WorkerHandler.js', 'w', encoding='utf-8') as f:
         f.write(worker_setup)
 
     if not pyodide_conf['enable_pwa']:
@@ -374,17 +374,17 @@ def write_worker(app: Sphinx, exc):
         'pre_cache': ', '.join([repr(req) for req in pyodide_conf['precache']]),
         'cache_patterns': ', '.join([repr(req) for req in pyodide_conf['cache_patterns']])
     })
-    with open(builddir / 'PyodideServiceWorker.js', 'w') as f:
+    with open(builddir / 'PyodideServiceWorker.js', 'w', encoding='utf-8') as f:
         f.write(service_worker)
     service_handler = SERVICE_HANDLER_TEMPLATE.render()
-    with open(staticdir/ 'ServiceHandler.js', 'w') as f:
+    with open(staticdir/ 'ServiceHandler.js', 'w', encoding='utf-8') as f:
         f.write(service_handler)
 
     # Render manifest
     site_manifest = WEB_MANIFEST_TEMPLATE.render({
         'name': app.config.html_title,
     })
-    with open(builddir / 'site.webmanifest', 'w') as f:
+    with open(builddir / 'site.webmanifest', 'w', encoding='utf-8') as f:
         f.write(site_manifest)
 
 
