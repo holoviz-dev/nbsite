@@ -71,6 +71,7 @@ setup_args = dict(
         'myst-parser',
         'sphinx-copybutton',
         'sphinx-design',
+        'sphinxext-rediraffe',
         'urllib3 <2.0.0',
     ],
     extras_require= {
