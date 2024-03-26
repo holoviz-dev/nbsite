@@ -54,6 +54,7 @@ extensions = [
     'sphinx.ext.linkcode',
     'sphinx.ext.inheritance_diagram',
     'sphinx_copybutton',
+    'sphinxext.rediraffe',
 ]
 
 # Default theme is the PyData Sphinx Theme
