@@ -91,12 +91,15 @@ if msg['mime'] == 'application/bokeh':
     _link_docs_worker(doc, sendPatch, msg['id'], 'js')`
 
 const patch_code = `
-import json
 from panel import state
 
-msg = msg.to_py()
+try:
+    from pane.io.pyodide import _convert_json_patch
+    patch = _convert_json_patch(msg.patch)
+except:
+    patch = msg.patch.to_py()
 doc = state.cache[f"output-{msg['id']}"]
-doc.apply_json_patch(msg['patch'], setter='js')`
+doc.apply_json_patch(patch, setter='js')`
 
 const MESSAGES = {
   patch: patch_code,
