@@ -110,7 +110,7 @@ def extract_extensions(code: str) -> List[str]:
                 js += model.__javascript__
             if hasattr(model, '__css__'):
                 css += model.__css__
-            if hasattr(model, '__javascript_module__'):
+            if hasattr(model, '__javascript_modules__'):
                 js_modules.update({
                     jsm.split("/")[-1][:-3]: jsm for jsm in model.__javascript_modules__
                     if jsm.endswith('.js')
