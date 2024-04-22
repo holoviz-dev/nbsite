@@ -4,6 +4,8 @@ pyodideWorker.documents = {}
 pyodideWorker.busy = false
 pyodideWorker.queues = new Map()
 
+const patching = new Map();
+
 function uid() {
   return String(
     Date.now().toString(32) +
@@ -12,7 +14,8 @@ function uid() {
 }
 
 function send_change(jsdoc, doc_id, event) {
-  if (event.setter_id == 'py') {
+  const patch_status = patching.get(doc_id) || 0
+  if ((event.setter_id == 'py') || (patch_status > 0)) {
     return
   } else if (pyodideWorker.busy && event.model && event.attr) {
     let events = []
@@ -80,6 +83,10 @@ pyodideWorker.onmessage = async (event) => {
 
       // Setup bi-directional syncing
       pyodideWorker.documents[msg.id] = jsdoc = view.model.document
+      if (pyodideWorker.queues != null && pyodideWorker.queues.has(msg.id)) {
+	// Delete old message queue
+        pyodideWorker.queues.delete(msg.id)
+      }
       jsdoc.on_change(send_change.bind(null, jsdoc, msg.id), false)
     } else if (msg.mime === 'text/plain') {
       output.innerHTML = `<pre>${msg.content}</pre>`;
@@ -88,7 +95,17 @@ pyodideWorker.onmessage = async (event) => {
     }
     pyodideWorker.postMessage({type: 'rendered', id: msg.id, mime: msg.mime})
   } else if (msg.type === 'patch') {
-    pyodideWorker.documents[msg.id].apply_json_patch(msg.patch, msg.buffers, setter_id='py')
+    let patch_status = patching.get(msg.id) || 0
+    patching.set(msg.id, patch_status+1)
+    try {
+      pyodideWorker.documents[msg.id].apply_json_patch(msg.patch, msg.buffers, setter_id='py')
+    } finally {
+      if (patch_status === 0) {
+	patching.delete(msg.id)
+      } else {
+	patching.set(msg.id, patch_status)
+      }
+    }
   }
 };
 
