@@ -84,7 +84,6 @@ setup_args = dict(
         'tests':[
             'flake8',
             'pytest >=3.9.1',
-            'importlib-metadata <5.0', # Avoid errors to removal of EntryPoint shims https://importlib-metadata.readthedocs.io/en/latest/history.html#v5-0-0
         ],
         'build': [
             "setuptools",
