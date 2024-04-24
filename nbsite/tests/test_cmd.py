@@ -476,9 +476,23 @@ def test_build_with_fixes_links(tmp_project):
     assert (project / "doc" / "1_First_Notebook.ipynb").is_file()
     assert (project / "builtdocs" / "First_Notebook.html").is_file()
     html = (project / "builtdocs" / "First_Notebook.html").read_text()
-    assert '<a class="reference internal" href="Zeroth_Notebook.html"><span class="doc std std-doc">right number' in html
-    assert '<a class="reference internal" href="Zeroth_Notebook.html"><span class="doc std std-doc">wrong number' in html
-    assert '<a class="reference internal" href="Zeroth_Notebook.html"><span class="doc std std-doc">no number' in html
+    assert '<a class="reference internal" href="Zeroth_Notebook.html"><span class="std std-doc">right number' in html
+    assert '<a class="reference internal" href="Zeroth_Notebook.html"><span class="std std-doc">wrong number' in html
+    assert '<a class="reference internal" href="Zeroth_Notebook.html"><span class="std std-doc">no number' in html
+
+@pytest.mark.slow
+def test_build_cell_content_displayed_as_html(tmp_project):
+    project = tmp_project
+    (project / "doc").mkdir()
+    (project / "doc" / "conf.py").write_text(CONF_CONTENT)
+    (project / "examples" / "index.ipynb").write_text(EXAMPLE_0_CONTENT)
+    generate_rst("test_project", project_root=str(project))
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    assert (project / "doc" / "1_First_Notebook.ipynb").is_file()
+    assert (project / "builtdocs" / "First_Notebook.html").is_file()
+    html = (project / "builtdocs" / "First_Notebook.html").read_text()
+    # Small check to ensure cells are parsed and injected in the HTML output
+    assert '<p>Here is a ref to another notebook with the <a class="reference internal" href="Zeroth_Notebook.html"><span class="std std-doc">right number</span></a>.</p>' in html  # noqa
 
 @pytest.mark.slow
 def test_build_with_keep_numbers_passes_even_when_link_target_does_not_exist(tmp_project):
@@ -491,6 +505,6 @@ def test_build_with_keep_numbers_passes_even_when_link_target_does_not_exist(tmp
     assert (project / "doc" / "1_First_Notebook.ipynb").is_file()
     assert (project / "builtdocs" / "1_First_Notebook.html").is_file()
     html = (project / "builtdocs" / "1_First_Notebook.html").read_text()
-    assert '<a class="reference internal" href="0_Zeroth_Notebook.html"><span class="doc std std-doc">right number' in html
+    assert '<a class="reference internal" href="0_Zeroth_Notebook.html"><span class="std std-doc">right number' in html
     assert '<span class="xref myst">wrong number</span>' in html
     assert '<span class="xref myst">no number</span>' in html
