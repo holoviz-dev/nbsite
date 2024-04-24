@@ -72,7 +72,6 @@ setup_args = dict(
         'sphinx-copybutton',
         'sphinx-design',
         'sphinxext-rediraffe',
-        'urllib3 <2.0.0',
     ],
     extras_require= {
         'refman':[
