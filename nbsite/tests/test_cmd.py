@@ -423,7 +423,8 @@ def test_build_deletes_by_default(tmp_project_with_docs_skeleton):
     assert (project / "builtdocs" / "First_Notebook.html").is_file()
     # Used to test for 10, bumped to 11 as the sphinx-design extension
     # adds a `_sphinx_design_static` folder in `builtdocs/`.
-    assert len(list((project / "builtdocs").iterdir())) == 11
+    # Further incremented when sphinx-rediraffe was added as it adds _rediraffe_redirected.json
+    assert len(list((project / "builtdocs").iterdir())) == 12
 
 @pytest.mark.slow
 def test_build_with_clean_dry_run_does_not_delete(tmp_project_with_docs_skeleton):
@@ -435,7 +436,8 @@ def test_build_with_clean_dry_run_does_not_delete(tmp_project_with_docs_skeleton
     assert (project / "builtdocs" / "First_Notebook.html").is_file()
     # Used to test for 12, bumped to 13 as the sphinx-design extension
     # adds a `_sphinx_design_static` folder in `builtdocs/`.
-    assert len(list((project / "builtdocs").iterdir())) == 13
+    # Further incremented when sphinx-rediraffe was added as it adds _rediraffe_redirected.json
+    assert len(list((project / "builtdocs").iterdir())) == 14
 
 @pytest.mark.slow
 def test_build_copies_json(tmp_project_with_docs_skeleton):
