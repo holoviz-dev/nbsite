@@ -84,6 +84,7 @@ setup_args = dict(
         'tests':[
             'flake8',
             'pytest >=3.9.1',
+            'pre-commit',
         ],
         'build': [
             "setuptools",
