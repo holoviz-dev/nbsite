@@ -53,7 +53,7 @@ nbsite_analytics = {
 }
 
 # Configure the theme
-html_theme_options = {
+html_theme_options.update({
     "github_url": "https://github.com/holoviz-dev/nbsite",
     "icon_links": [
         {
@@ -62,17 +62,13 @@ html_theme_options = {
             "icon": "fab fa-discourse",
         },
     ],
-    "footer_items": [
-        "copyright",
-        "last-updated",
-    ],
     "navbar_end": ["navbar-icon-links"],
     "pygment_light_style": "material",
     "pygment_dark_style": "material",
     'secondary_sidebar_items': [
         "github-stars-button"
     ],
-}
+})
 
 # Extra config for the theme
 html_context.update({
