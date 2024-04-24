@@ -119,10 +119,12 @@ html_theme_options = {
 }
 
 # Default is "**": ["sidebar-nav-bs", "sidebar-ethical-ads"]
-# Overriding the index sidebar to include the toctree.
+# Overriding the index sidebar to include the toctree on the landing page.
+# The layout.html template in pydata-sphinx-theme removes the default
+# sidebar-nav-bs.html template.
 html_sidebars = {
-    "index": ["sidebar-nav-bs-index"],
-    "**": ["sidebar-nav-bs"],
+    "index": ["sidebar-nav-bs-alt"],
+    "**": ["sidebar-nav-bs-alt"],
 }
 
 # To be reused in a conf.py file to define the `copyright` string reused
