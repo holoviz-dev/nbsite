@@ -44,7 +44,12 @@ nbsite_gallery_conf = {
                 'section1',
                 'section2',
             ]
-        }
+        },
+        'playground/gallery_backends': {
+            'title': 'Gallery with backends',
+            'intro': 'This is a gallery with "backends:',
+            'backends': ['option1', 'option2'],
+        },
     },
 }
 
@@ -91,9 +96,7 @@ templates_path += [
 ]
 
 # Add custom css
-html_css_files = [
-    # Inherited from nbsite
-    'nbsite.css',
+html_css_files += [
     # Custom to this site
     'css/custom.css',
 ]
