@@ -630,6 +630,7 @@ def generate_gallery(app, page):
         gallery_rst += BUTTON_GROUP_TEMPLATE.format(buttons=''.join(buttons), backends=backends)
 
     toc = '\n\n.. toctree::\n   :glob:\n   :hidden:\n\n'
+    section_backends = None
     for section in sections:
         if isinstance(section, dict):
             section_backends = section.get('backends', backends)
