@@ -44,7 +44,12 @@ nbsite_gallery_conf = {
                 'section1',
                 'section2',
             ]
-        }
+        },
+        'playground/gallery_backends': {
+            'title': 'Gallery with backends',
+            'intro': 'This is a gallery with "backends:',
+            'backends': ['option1', 'option2'],
+        },
     },
 }
 
@@ -53,7 +58,7 @@ nbsite_analytics = {
 }
 
 # Configure the theme
-html_theme_options = {
+html_theme_options.update({
     "github_url": "https://github.com/holoviz-dev/nbsite",
     "icon_links": [
         {
@@ -62,17 +67,13 @@ html_theme_options = {
             "icon": "fab fa-discourse",
         },
     ],
-    "footer_items": [
-        "copyright",
-        "last-updated",
-    ],
     "navbar_end": ["navbar-icon-links"],
     "pygment_light_style": "material",
     "pygment_dark_style": "material",
     'secondary_sidebar_items': [
         "github-stars-button"
     ],
-}
+})
 
 # Extra config for the theme
 html_context.update({
@@ -95,9 +96,7 @@ templates_path += [
 ]
 
 # Add custom css
-html_css_files = [
-    # Inherited from nbsite
-    'nbsite.css',
+html_css_files += [
     # Custom to this site
     'css/custom.css',
 ]

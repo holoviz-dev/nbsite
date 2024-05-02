@@ -29,8 +29,16 @@ Non exhaustive list of sites built with NBSite (as of November 2022):
 ```{toctree}
 :hidden: true
 :maxdepth: 2
+:caption: FOR USERS
 
 User Guide <user_guide/index>
 PlayGround <playground/index>
+```
+
+```{toctree}
+:hidden: true
+:maxdepth: 2
+:caption: FOR DEVELOPERS
+
 Developers <development>
 ```

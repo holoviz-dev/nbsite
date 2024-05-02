@@ -40,7 +40,6 @@ import string
 import sys
 import typing
 
-from collections import OrderedDict
 from contextlib import contextmanager
 
 import nbformat
@@ -466,21 +465,24 @@ def disable_execution(env):
             env.mystnb_config.execution_mode = old_exec_mode
 
 @contextmanager
-def patch_project_source_suffix(env):
+def patch_project_doc2path(env, nb_path):
     # Ugly patch required as myst-nb obtains a reader that
-    # is inferred by sphinx from the document, sphinx literally
+    # is inferred by sphinx from the document. Sphinx literally
     # loops through a glob() result looking for files in a particular
     # order, starting from .rst. As the NotebookDirective is embedded
     # in a .rst, it finds that file instead of the Notebook to be parsed.
-    # Overriding this dict temporarily seems to do the trick.
-    old_source_suffix = env.project.source_suffix
-    env.project.source_suffix = OrderedDict([('.ipynb', 'myst-nb')])
+    # Overriding the doc2path Project method to directly return the
+    # absolute notebook path.
+    old_doc2path = env.project.doc2path
+
+    def new_doc2path(docname: str, absolute: bool):
+        return nb_path
+
+    env.project.doc2path = new_doc2path
     try:
         yield
     finally:
-        # Restore project source_suffix
-        env.project.source_suffix = old_source_suffix
-
+        env.project.doc2path = old_doc2path
 
 
 def render_notebook(nb_path, document, preprocessors=[]):
@@ -499,7 +501,7 @@ def render_notebook(nb_path, document, preprocessors=[]):
     parser = Parser()
     parser.env = env
 
-    with disable_execution(env), patch_project_source_suffix(env):
+    with disable_execution(env), patch_project_doc2path(env, nb_path):
         parser.parse(sio.read(), doc)
 
     return doc.children

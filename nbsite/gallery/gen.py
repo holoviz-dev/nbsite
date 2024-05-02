@@ -23,13 +23,16 @@ BUTTON_GROUP_TEMPLATE = """
 
     <script>
     function gallery_toggle(input) {{
-        backends = {backends};
-        for (i in backends) {{
-            entries = $('.'+backends[i]+'-example').parent();
-            if (backends[i] == input) {{
-                entries.show();
-            }} else {{
-                entries.attr('style','display: none !important')
+        var backends = {backends};
+        for (var i = 0; i < backends.length; i++) {{
+            var entries = document.getElementsByClassName(backends[i] + '-example');
+            for (var j = 0; j < entries.length; j++) {{
+                var parent = entries[j].parentNode;
+                if (backends[i] == input) {{
+                    parent.style.display = '';
+                }} else {{
+                    parent.style.setProperty('display', 'none', 'important');
+                }}
             }}
         }}
     }}
@@ -52,12 +55,15 @@ HIDE_JS = """
 .. raw:: html
 
     <script>
-        $(document).ready(function () {{
-            backends = {backends};
-            for (var i=0; i<backends.length; i++){{
-                $('.'+backends[i]+'-example').parent().attr('style','display: none !important');
+    document.addEventListener('DOMContentLoaded', function () {{
+        var backends = {backends};
+        for (var i = 0; i < backends.length; i++) {{
+            var elements = document.getElementsByClassName(backends[i] + '-example');
+            for (var j = 0; j < elements.length; j++) {{
+                elements[j].parentNode.style.setProperty('display', 'none', 'important');
             }}
-        }});
+        }}
+    }});
     </script>
 """
 
@@ -624,6 +630,7 @@ def generate_gallery(app, page):
         gallery_rst += BUTTON_GROUP_TEMPLATE.format(buttons=''.join(buttons), backends=backends)
 
     toc = '\n\n.. toctree::\n   :glob:\n   :hidden:\n\n'
+    section_backends = None
     for section in sections:
         if isinstance(section, dict):
             section_backends = section.get('backends', backends)

@@ -110,9 +110,21 @@ html_css_files = [
 
 # A single line footer that includes the copyright and the last updated date.
 html_theme_options = {
-    "footer_items": [
+    "footer_start": [
         "copyright-last-updated",
     ],
+    # To avoid warning as this is the new default
+    # See https://github.com/pydata/pydata-sphinx-theme/issues/1492
+    "navigation_with_keys": False,
+}
+
+# Default is "**": ["sidebar-nav-bs", "sidebar-ethical-ads"]
+# Overriding the index sidebar to include the toctree on the landing page.
+# The layout.html template in pydata-sphinx-theme removes the default
+# sidebar-nav-bs.html template.
+html_sidebars = {
+    "index": ["sidebar-nav-bs-alt"],
+    "**": ["sidebar-nav-bs-alt"],
 }
 
 # To be reused in a conf.py file to define the `copyright` string reused
@@ -125,6 +137,7 @@ copyright_fmt = "{start_year}-{current_year} Holoviz contributors"
 # Format of the last updated date in the footer.
 html_last_updated_fmt = '%Y-%m-%d'
 
+rediraffe_redirects = {}
 
 suppress_warnings = [
     # Ignore: (WARNING/2) Document headings start at H2, not H1
