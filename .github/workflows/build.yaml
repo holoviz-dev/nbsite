@@ -67,14 +67,14 @@ jobs:
       run:
         shell: bash -l {0}
     env:
-      PKG_TEST_PYTHON: "--test-python=py38"
+      PKG_TEST_PYTHON: "--test-python=py39"
     steps:
       - uses: actions/checkout@v3
       - name: Fetch unshallow
         run: git fetch --prune --tags --unshallow -f
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.8"
+          python-version: "3.9"
       - name: env setup
         # toml is installed since a version of doit was raising an error while trying
         # to parse pyproject.toml, looking for potential doit settings.
