@@ -51,7 +51,7 @@ jobs:
           conda install -c conda-forge conda-build
       - name: conda build
         run: |
-          doit ecosystem=conda package_build $CHANS_DEV $PKG_TEST_PYTHON --test-group=simple
+          doit ecosystem=conda package_build $CHANS_DEV $PKG_TEST_PYTHON  # --test-group=simple
       - name: conda dev upload
         if: (github.event_name == 'push' && (contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc')))
         run: |
