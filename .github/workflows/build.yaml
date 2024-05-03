@@ -51,7 +51,7 @@ jobs:
           conda install -c conda-forge conda-build param
       - name: conda build
         run: |
-          conda build conda.recipe/
+          conda build conda.recipe/ -c pyviz/label/dev -c conda-forge
       - name: conda dev upload
         if: (github.event_name == 'push' && (contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc')))
         run: |
