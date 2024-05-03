@@ -48,7 +48,7 @@ jobs:
           conda config --set always_yes True
           conda install -c pyviz "pyctdev>=0.5"
           doit ecosystem=conda ecosystem_setup
-          conda install -c conda-forge conda-build
+          conda install -c conda-forge conda-build param
       - name: conda build
         run: |
           conda build conda.recipe/
