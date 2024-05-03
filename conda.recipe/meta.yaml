@@ -29,6 +29,14 @@ requirements:
     - {{ dep }}
     {% endfor %}
 
+test:
+  imports:
+    - nbsite
+  requires:
+    - pip
+  commands:
+    - pip check
+    - nbsite --help
 
 about:
   home: {{ sdata['url'] }}
