@@ -10,7 +10,6 @@ ul.tab li {
 }
 
 ul.tab li label {
-  background: white;
   padding: 6px;
   border: 1px solid #ccc;
   display: inline-block;
