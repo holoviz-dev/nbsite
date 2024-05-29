@@ -612,20 +612,14 @@ class NotebookDirective(Directive):
         os.makedirs(dest_dir, exist_ok=True)
 
         # Evaluate Notebook and insert into Sphinx doc
-        import zmq
-        while True:
-            try:
-                evaluate_notebook(
-                    nb_abs_path, dest_path,
-                    skip_exceptions='skip_exceptions' in self.options,
-                    skip_execute=self.options.get('skip_execute'),
-                    timeout=setup.config.nbbuild_cell_timeout,
-                    ipython_startup=setup.config.nbbuild_ipython_startup,
-                    patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
-                )
-                break
-            except zmq.error.ZMQError as e:
-                print(f"{nb_abs_path} failed with {e}, retrying...")
+        evaluate_notebook(
+            nb_abs_path, dest_path,
+            skip_exceptions='skip_exceptions' in self.options,
+            skip_execute=self.options.get('skip_execute'),
+            timeout=setup.config.nbbuild_cell_timeout,
+            ipython_startup=setup.config.nbbuild_ipython_startup,
+            patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
+        )
 
         preprocessors = self.preprocessors(dest_dir)
         rendered_nodes = render_notebook(
