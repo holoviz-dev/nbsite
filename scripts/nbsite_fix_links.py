@@ -123,7 +123,7 @@ def cleanup_links(path, inspect_links=False):
                 else:
                     msg = f'Found reference to missing image {src} in: {path}. Also tried: {also_tried}'
                     warnings.warn(msg)
-    with open(path, 'w') as f:
+    with open(path, 'w', encoding='utf-8') as f:
         f.write(str(soup))
 
 if __name__ == '__main__':

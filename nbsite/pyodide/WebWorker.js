@@ -64,8 +64,11 @@ async function loadApplication(cell_id, path) {
 
 const autodetect_deps_code = `
 import json
-from panel.io.mime_render import find_imports
-json.dumps(find_imports(msg.to_py()['code']))`
+try:
+    from panel.io.mime_render import find_requirements
+except Exception:
+    from panel.io.mime_render import find_imports as find_requirements
+json.dumps(find_requirements(msg.to_py()['code']))`
 
 const exec_code = `
 from functools import partial
@@ -88,12 +91,15 @@ if msg['mime'] == 'application/bokeh':
     _link_docs_worker(doc, sendPatch, msg['id'], 'js')`
 
 const patch_code = `
-import json
 from panel import state
 
-msg = msg.to_py()
-doc = state.cache[f"output-{msg['id']}"]
-doc.apply_json_patch(msg['patch'], setter='js')`
+try:
+    from pane.io.pyodide import _convert_json_patch
+    patch = _convert_json_patch(msg.patch)
+except:
+    patch = msg.patch.to_py()
+doc = state.cache[f"output-{msg.id}"]
+doc.apply_json_patch(patch, setter='js')`
 
 const MESSAGES = {
   patch: patch_code,

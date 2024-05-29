@@ -33,6 +33,14 @@ from sphinx.application import Sphinx
 
 HERE = Path(__file__).parent
 
+CONVERT_PANE_TYPES = (HoloViews, Interactive)
+
+try:
+    from panel.param import ReactiveExpr
+    CONVERT_PANE_TYPES += (ReactiveExpr,)
+except Exception:
+    pass
+
 def get_env() -> Environment:
     ''' Get the correct Jinja2 Environment, also for frozen scripts.
     '''
@@ -64,7 +72,7 @@ else:
     bk_prefix = 'release'
 
 DEFAULT_PYODIDE_CONF = {
-    'PYODIDE_URL': 'https://cdn.jsdelivr.net/pyodide/v0.23.1/full/pyodide.js',
+    'PYODIDE_URL': 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js',
     'autodetect_deps': True,
     'enable_pwa': True,
     'requirements': ['panel', 'pandas'],
@@ -102,6 +110,11 @@ def extract_extensions(code: str) -> List[str]:
                 js += model.__javascript__
             if hasattr(model, '__css__'):
                 css += model.__css__
+            if hasattr(model, '__javascript_modules__'):
+                js_modules.update({
+                    jsm.split("/")[-1][:-3]: jsm for jsm in model.__javascript_modules__
+                    if jsm.endswith('.js')
+                })
             if hasattr(model, '__javascript_module_exports__'):
                 js_exports.update(
                     dict(zip(model.__javascript_module_exports__,
@@ -121,8 +134,8 @@ def extract_extensions(code: str) -> List[str]:
         js_modules.update(design_resources['js_modules'])
     resources = Resources(mode='cdn')
     extensions = _bundle_extensions(None, resources)
-    js += [bundle.cdn_url for bundle in extensions if bundle.cdn_url and
-           '@holoviz/panel@' not in bundle.cdn_url]
+    js += [cdn_url for bundle in extensions if bundle.cdn_url and
+           '@holoviz/panel@' not in (cdn_url:= str(bundle.cdn_url))]
     global_exports = [
         extension._globals[ext][0] for ext, imp in extension._imports.items()
         if imp in sys.modules and ext in extension._globals
@@ -209,7 +222,8 @@ class PyodideDirective(Directive):
                     out = exec_with_return(code, stdout=stdout, stderr=stderr)
                 except Exception:
                     out = None
-                if isinstance(out, (Model, Viewable, Viewer)) or HoloViews.applies(out) or Interactive.applies(out):
+                if (isinstance(out, (Model, Viewable, Viewer)) or
+                    any(pane.applies(out) for pane in CONVERT_PANE_TYPES)):
                     _, content = _model_json(as_panel(out), msg['target'])
                     mime_type = 'application/bokeh'
                 elif out is not None:
@@ -347,12 +361,12 @@ def write_worker(app: Sphinx, exc):
         'autodetect_deps': pyodide_conf['autodetect_deps'],
         'requires': json.dumps(pyodide_conf['requires'])
     })
-    with open(staticdir/ 'PyodideWebWorker.js', 'w') as f:
+    with open(staticdir/ 'PyodideWebWorker.js', 'w', encoding='utf-8') as f:
         f.write(web_worker)
     worker_setup = WORKER_HANDLER_TEMPLATE.render(
         scripts=pyodide_conf['scripts']
     )
-    with open(staticdir/ 'WorkerHandler.js', 'w') as f:
+    with open(staticdir/ 'WorkerHandler.js', 'w', encoding='utf-8') as f:
         f.write(worker_setup)
 
     if not pyodide_conf['enable_pwa']:
@@ -365,17 +379,17 @@ def write_worker(app: Sphinx, exc):
         'pre_cache': ', '.join([repr(req) for req in pyodide_conf['precache']]),
         'cache_patterns': ', '.join([repr(req) for req in pyodide_conf['cache_patterns']])
     })
-    with open(builddir / 'PyodideServiceWorker.js', 'w') as f:
+    with open(builddir / 'PyodideServiceWorker.js', 'w', encoding='utf-8') as f:
         f.write(service_worker)
     service_handler = SERVICE_HANDLER_TEMPLATE.render()
-    with open(staticdir/ 'ServiceHandler.js', 'w') as f:
+    with open(staticdir/ 'ServiceHandler.js', 'w', encoding='utf-8') as f:
         f.write(service_handler)
 
     # Render manifest
     site_manifest = WEB_MANIFEST_TEMPLATE.render({
         'name': app.config.html_title,
     })
-    with open(builddir / 'site.webmanifest', 'w') as f:
+    with open(builddir / 'site.webmanifest', 'w', encoding='utf-8') as f:
         f.write(site_manifest)
 
 

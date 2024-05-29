@@ -52,7 +52,7 @@ setup_args = dict(
         'Bug Tracker': 'https://github.com/holoviz-dev/nbsite/issues'
     },
     packages=find_packages(),
-    python_requires='>=3',
+    python_requires='>=3.9',
     install_requires=[
         'param >=1.7.0',
         'pyviz_comms',
@@ -60,18 +60,18 @@ setup_args = dict(
         'nbformat',
         'nbconvert',
         'jupyter_client',
-        'myst-nb >=0.17',
+        'myst-nb >=1.1',
         'sphinx-design',
         'notebook',
-        'sphinx',
+        'sphinx >=7',
         'beautifulsoup4',
         'jinja2',
         'pillow',
-        'pydata-sphinx-theme >=0.13.3,<0.14',
-        'myst-parser',
+        'pydata-sphinx-theme >=0.15,<0.16',
+        'myst-parser >=3',
         'sphinx-copybutton',
         'sphinx-design',
-        'urllib3 <2.0.0',
+        'sphinxext-rediraffe',
     ],
     extras_require= {
         'refman':[
@@ -84,7 +84,7 @@ setup_args = dict(
         'tests':[
             'flake8',
             'pytest >=3.9.1',
-            'importlib-metadata <5.0', # Avoid errors to removal of EntryPoint shims https://importlib-metadata.readthedocs.io/en/latest/history.html#v5-0-0
+            'pre-commit',
         ],
         'build': [
             "setuptools",

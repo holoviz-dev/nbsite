@@ -42,6 +42,7 @@ following options:
 - `orphans`
 - `thumbnail_url`
 - `within_subsection_order`
+- `skip_rst_notebook_directive`
 
 A sample configuration might look something like this:
 

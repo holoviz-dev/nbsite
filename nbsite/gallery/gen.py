@@ -26,13 +26,16 @@ BUTTON_GROUP_TEMPLATE = """
 
     <script>
     function gallery_toggle(input) {{
-        backends = {backends};
-        for (i in backends) {{
-            entries = $('.'+backends[i]+'-example').parent();
-            if (backends[i] == input) {{
-                entries.show();
-            }} else {{
-                entries.attr('style','display: none !important')
+        var backends = {backends};
+        for (var i = 0; i < backends.length; i++) {{
+            var entries = document.getElementsByClassName(backends[i] + '-example');
+            for (var j = 0; j < entries.length; j++) {{
+                var parent = entries[j].parentNode;
+                if (backends[i] == input) {{
+                    parent.style.display = '';
+                }} else {{
+                    parent.style.setProperty('display', 'none', 'important');
+                }}
             }}
         }}
     }}
@@ -55,12 +58,15 @@ HIDE_JS = """
 .. raw:: html
 
     <script>
-        $(document).ready(function () {{
-            backends = {backends};
-            for (var i=0; i<backends.length; i++){{
-                $('.'+backends[i]+'-example').parent().attr('style','display: none !important');
+    document.addEventListener('DOMContentLoaded', function () {{
+        var backends = {backends};
+        for (var i = 0; i < backends.length; i++) {{
+            var elements = document.getElementsByClassName(backends[i] + '-example');
+            for (var j = 0; j < elements.length; j++) {{
+                elements[j].parentNode.style.setProperty('display', 'none', 'important');
             }}
-        }});
+        }}
+    }});
     </script>
 """
 
@@ -160,6 +166,7 @@ DEFAULT_GALLERY_CONF = {
     'enable_download': True,
     'only_use_existing': False,
     'as_pyodide': False,
+    'skip_rst_notebook_directive': False,
     'examples_dir': os.path.join('..', 'examples'),
     'labels_dir': 'labels',
     'galleries': {
@@ -458,6 +465,10 @@ def generate_file_rst(
     endpoint = content.get('deployment_url', gallery_conf.get('deployment_url', None))
     extensions = content.get('extensions', gallery_conf['default_extensions'])
     as_pyodide = content.get('as_pyodide', gallery_conf.get('as_pyodide', False))
+    skip_rst_notebook_directive = content.get(
+        'skip_rst_notebook_directive',
+        gallery_conf.get('skip_rst_notebook_directive', False)
+    )
 
     deployed_examples = get_deployed_examples(endpoint)
 
@@ -478,9 +489,15 @@ def generate_file_rst(
             deployed_file = None
 
         # Generate document
-        gen = generate_pyodide_markdown if as_pyodide else generate_item_rst
-        gen(app, page, section, backend, filename, src_dir, dest_dir,
-            img_extension, deployed_file, deployed, skip)
+        if as_pyodide:
+            gen = generate_pyodide_markdown
+        elif not skip_rst_notebook_directive:
+            gen = generate_item_rst
+        else:
+            gen = None
+        if gen:
+            gen(app, page, section, backend, filename, src_dir, dest_dir,
+                img_extension, deployed_file, deployed, skip)
 
 
 REDIRECT = """.. raw:: html
@@ -502,7 +519,7 @@ def generate_section_index(section, items, dest_dir, rel='..', title=None):
     index_page += '\n' + title + '\n' + '_'*len(title) + '\n'
     index_page += '\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   '
     index_page += '\n   '.join(items)
-    with open(os.path.join(dest_dir, 'index.rst'), 'w') as f:
+    with open(os.path.join(dest_dir, 'index.rst'), 'w', encoding='utf-8') as f:
         f.write(index_page)
 
 def _normalize_label(string):
@@ -616,6 +633,7 @@ def generate_gallery(app, page):
         gallery_rst += BUTTON_GROUP_TEMPLATE.format(buttons=''.join(buttons), backends=backends)
 
     toc = '\n\n.. toctree::\n   :glob:\n   :hidden:\n\n'
+    section_backends = None
     for section in sections:
         if isinstance(section, dict):
             section_backends = section.get('backends', backends)
@@ -793,7 +811,7 @@ def generate_gallery(app, page):
 
     if backends or section_backends:
         gallery_rst += HIDE_JS.format(backends=repr(backends[1:]))
-    with open(os.path.join(doc_dir, page, 'index.rst'), 'w') as f:
+    with open(os.path.join(doc_dir, page, 'index.rst'), 'w', encoding='utf-8') as f:
         f.write(gallery_rst)
 
 
