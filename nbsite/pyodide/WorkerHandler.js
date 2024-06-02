@@ -1,4 +1,5 @@
-const pyodideWorker = new Worker(DOCUMENTATION_OPTIONS.URL_ROOT + '_static/PyodideWebWorker.js');
+const url_root = document.getElementsByTagName('html')[0].getAttribute('data-content_root')
+const pyodideWorker = new Worker(`${url_root}_static/PyodideWebWorker.js`);
 
 pyodideWorker.documents = {}
 pyodideWorker.busy = false
