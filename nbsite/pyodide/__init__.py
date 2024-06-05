@@ -5,6 +5,7 @@ import warnings
 
 from collections import defaultdict
 from html import escape
+from multiprocessing import Pipe, Process
 from pathlib import Path
 from typing import (
     Any, Dict, List, Tuple,
@@ -198,16 +199,21 @@ class PyodideDirective(Directive):
     _current_source = None
     _current_context = {}
     _current_count = 0
+    _current_process = None
+    _conn = None
 
-    def _execution_process(self, msg):
+    @classmethod
+    def _execution_process(cls, pipe):
         """
         Process execution loop to run in separate process that is used
         to evaluate code.
         """
-        msg = msg.copy()
-        if True:  # TODO: Remove
-            if msg['type'] != 'execute':
-                return
+        while True:
+            msg = pipe.recv()
+            if msg['type'] == 'close':
+                break
+            elif msg['type'] != 'execute':
+                continue
             stdout = io.StringIO()
             stderr = io.StringIO()
             code = msg['code']
@@ -228,13 +234,45 @@ class PyodideDirective(Directive):
                 else:
                     content, mime_type = None, None
             js, js_exports, js_modules, css, global_exports = extract_extensions(code)
-            return (content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_exports, js_modules, css, global_exports)
+            pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_exports, js_modules, css, global_exports))
+        pipe.close()
+
+    @classmethod
+    def terminate(cls, *args):
+        """
+        Terminates a running process.
+        """
+        if not cls._current_process:
+            return
+        try:
+            cls._conn.send({'type': 'close'})
+            cls._current_process.join()
+        except Exception:
+            cls._current_process.terminate()
+        finally:
+            cls._current_process = None
+
+    @classmethod
+    def _launch_process(cls, timeout=5):
+        """
+        Launches a process to execute code in.
+        """
+        cls.terminate()
+        cls._conn, child_conn = Pipe()
+        cls._current_process = Process(target=cls._execution_process, args=(child_conn,))
+        cls._current_process.start()
+
+    @classmethod
+    def _kill(cls):
+        cls._current_process.terminate()
+        cls._current_process = None
 
     def run(self):
         current_source = self.state_machine.get_source()
-        if self._current_source != current_source:
-            self._current_count = 0
-            self._current_source = current_source
+        if self._current_source != current_source or self._current_process is None:
+            PyodideDirective._current_count = 0
+            PyodideDirective._current_source = current_source
+            self._launch_process()
 
         classes = 'pyodide'
         if 'class' in self.options:
@@ -246,14 +284,22 @@ class PyodideDirective(Directive):
         doctree_node = nodes.literal_block(code, code, **self.options)
         doctree_node['language'] = 'python'
 
-        self._current_count += 1
+        PyodideDirective._current_count += 1
         if self.options.get('skip-embed'):
             return [doctree_node]
 
-        try:
-            msg = {'type': 'execute', 'target': f'output-{cellid}', 'code': code}
-            output, mime_type, stdout, stderr, js, js_exports, js_modules, css, global_exports = self._execution_process(msg)
-        except Exception:
+        # Send execution request to client and wait for result
+        self._conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
+        if self._conn.poll(60):
+            try:
+                output, mime_type, stdout, stderr, js, js_exports, js_modules, css, global_exports = (
+                    self._conn.recv()
+                )
+            except Exception:
+                self._kill()
+                return [doctree_node]
+        else:
+            self._kill()
             return [doctree_node]
         EXTRA_RESOURCES[current_source]['js'] += js
         EXTRA_RESOURCES[current_source]['js_exports'].update(js_exports)
@@ -432,6 +478,7 @@ def setup(app):
     app.connect('builder-inited', init_conf)
     app.connect('build-finished', write_worker)
     app.connect('html-page-context', html_page_context)
+    app.connect('build-finished', PyodideDirective.terminate)
 
     app.add_directive('pyodide', PyodideDirective)
 
