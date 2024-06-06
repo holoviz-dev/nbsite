@@ -68,8 +68,8 @@ html_theme_options.update({
         },
     ],
     "navbar_end": ["navbar-icon-links"],
-    "pygment_light_style": "material",
-    "pygment_dark_style": "material",
+    "pygments_light_style": "material",
+    "pygments_dark_style": "material",
     'secondary_sidebar_items': [
         "github-stars-button"
     ],
