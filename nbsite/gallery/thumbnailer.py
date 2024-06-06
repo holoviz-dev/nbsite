@@ -157,6 +157,7 @@ def execute(code, cwd, env):
         f.flush()
         proc = subprocess.Popen(['python', f.name], cwd=cwd, env=env)
         proc.wait()
+        proc.kill()
     return proc.returncode
 
 def notebook_thumbnail(filename, subpath):
