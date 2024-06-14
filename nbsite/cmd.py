@@ -7,6 +7,8 @@ import sys
 from collections import ChainMap
 from os.path import dirname
 
+from sphinx.application import Sphinx
+
 from .util import copy_files
 
 DEFAULT_SITE_ORDERING = [
@@ -86,8 +88,9 @@ def build(what='html',
          'EXAMPLES_ASSETS':examples_assets,
          'BINDER':binder
          }
-    merged_env = dict(os.environ, **env)
-    none_vals = {k:v for k,v in merged_env.items() if v is None}
+    for k, v in env.items():
+        os.environ[k] = v
+    none_vals = {k:v for k,v in env.items() if v is None}
     if none_vals:
         raise Exception("Missing value for %s" % list(none_vals.keys()))
 
@@ -96,12 +99,19 @@ def build(what='html',
         for path in glob.glob(os.path.join(paths['doc'], '**', '*.ipynb'), recursive=True):
             print('Removing evaluated notebook from {}'.format(path))
             os.remove(path)
-    if _pyodide_enabled(os.path.join(paths['doc'], 'conf.py')):
-        # Currently pyodide does not work with -j auto
-        cmd = ["sphinx-build", "-b", what, paths['doc'], output]
-    else:
-        cmd = ["sphinx-build", "-j", "auto", "-b", what, paths['doc'], output]
-    subprocess.check_call(cmd, env=merged_env)
+
+    # Currently pyodide does not work with -j auto
+    parallel = 0 if _pyodide_enabled(os.path.join(paths["doc"], "conf.py")) else os.cpu_count()
+    app = Sphinx(
+        srcdir=paths["doc"],
+        confdir=paths["doc"],
+        outdir=output,
+        doctreedir=os.path.join(output, ".doctrees"),
+        buildername=what,
+        parallel=parallel,
+    )
+    app.build()
+
     print('Copying json blobs (used for holomaps) from {} to {}'.format(paths['doc'], output))
     copy_files(paths['doc'], output, '**/*.json')
     copy_files(paths['doc'], output, 'json_*')
@@ -110,10 +120,14 @@ def build(what='html',
         print("Copying examples assets from %s to %s"%(paths['examples_assets'],build_assets))
         copy_files(paths['examples_assets'], build_assets)
     fix_links(output, inspect_links)
+
     # create a .nojekyll file in output for github compatibility
-    subprocess.check_call(["touch", os.path.join(output, '.nojekyll')])
+    with open(os.path.join(output, '.nojekyll'), 'w') as f:
+        f.write('')
+
     if not clean_dry_run:
         print("Call `nbsite build` with `--clean-dry-run` to not actually delete files.")
+
     clean(output, clean_dry_run)
 
 def clean(output, dry_run=False):
