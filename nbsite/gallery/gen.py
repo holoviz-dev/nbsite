@@ -342,6 +342,9 @@ def generate_pyodide_markdown(
         if ftype == 'notebook':
             nb_md = convert_notebook_to_md(filename, directive)
             md_file.write(nb_md)
+        elif extension == 'md':
+            with open(filename, encoding='utf-8') as md_src_file:
+                md_file.write('\n'.join(md_src_file.readlines()[1:]))
         else:
             with open(filename, encoding='utf-8') as script:
                 md_file.write(f'```{directive}\n{script.read()}```')
