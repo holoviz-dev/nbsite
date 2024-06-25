@@ -2,7 +2,9 @@
 
 ## HoloViews
 
-```{pyodide}
+```{code-block} python
+:pyodide: null
+
 import holoviews as hv
 import pandas as pd
 
@@ -17,7 +19,9 @@ TODO: Matplotlib + Plotly
 
 ## hvPlot
 
-```{pyodide}
+```{code-block} python
+:pyodide: null
+
 import hvplot.pandas  # noqa
 
 df.hvplot.scatter(x='x', y='y')
@@ -28,7 +32,9 @@ TODO: Matplotlib + Plotly
 
 ## Panel
 
-```{pyodide}
+```{code-block} python
+:pyodide: null
+
 import panel as pn
 
 pn.widgets.IntInput()
