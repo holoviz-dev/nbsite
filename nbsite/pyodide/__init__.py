@@ -91,6 +91,7 @@ DEFAULT_PYODIDE_CONF = {
         'https://files.pythonhosted.org/packages/',
         'https://pypi.org/pypi/'
     ],
+    'preamble': "",
     'setup_code': "",
     'warn_message': "Executing this cell will download Python runtime (typically 40+ MB).",
     'requires': {}
@@ -438,7 +439,7 @@ def html_page_context(
     context["script_files"] += extra_js
     context["css_files"] += extra_css
 
-    module_tags = ""
+    module_tags = app.config.nbsite_pyodide_conf['preamble']
     for export, module in js_modules.items():
         module_tags += JS_MODULE_TAG.format(file=module)
     for export, module in js_exports.items():
