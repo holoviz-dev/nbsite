@@ -513,9 +513,9 @@ def generate_section_index(section, items, dest_dir, rel='..', title=None):
     gallery index.
     """
     # Reference to section header
-    section_ref = section.lower().replace(' ', '-')
+    section_ref = section.lower().replace(' ', '-').replace('_', '-')
     index_page = REDIRECT.format(rel=rel, section=section_ref)
-    title = title or section
+    title = title or section.replace('_', ' ')
     index_page += '\n' + title + '\n' + '_'*len(title) + '\n'
     index_page += '\n\n.. toctree::\n   :glob:\n   :hidden:\n\n   '
     index_page += '\n   '.join(items)
