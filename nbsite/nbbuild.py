@@ -433,7 +433,8 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
         os.chdir(cwd)
 
         if skip_execute:
-            nbformat.write(notebook, open(dest_path, 'w', encoding='utf-8'))
+            with open(dest_path,'w', encoding='utf-8') as f:
+                nbformat.write(notebook, f)
         else:
             ne = NotebookExporter()
             newnb, _ = ne.from_notebook_node(notebook)
@@ -542,9 +543,8 @@ class NotebookDirective(Directive):
             dest_path_script = string.replace(dest_path, '.ipynb', '.py')
             rel_path_script = string.replace(nb_basename, '.ipynb', '.py')
             script_text = nb_to_python(nb_abs_path)
-            f = open(dest_path_script, 'w', encoding='utf-8')
-            f.write(script_text.encode('utf8'))
-            f.close()
+            with open(dest_path_script, 'w', encoding='utf-8') as f:
+                f.write(script_text.encode('utf-8'))
 
             link_rst += formatted_link(rel_path_script)
 
@@ -609,8 +609,7 @@ class NotebookDirective(Directive):
         dest_dir = rst_dir
         dest_path = os.path.join(dest_dir, nb_basename)
 
-        if not os.path.exists(dest_dir):
-            os.makedirs(dest_dir)
+        os.makedirs(dest_dir, exist_ok=True)
 
         # Evaluate Notebook and insert into Sphinx doc
         evaluate_notebook(
