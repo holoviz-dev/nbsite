@@ -18,7 +18,7 @@ from bokeh.embed.bundle import _bundle_extensions
 from bokeh.embed.util import standalone_docs_json_and_render_items
 from bokeh.model import Model
 from docutils import nodes
-from docutils.parsers.rst import Directive, roles
+from docutils.parsers.rst import roles
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader
 from packaging.version import Version
@@ -189,13 +189,22 @@ def _option_boolean(arg):
     else:
         raise ValueError('"%s" unknown boolean' % arg)
 
-class PyodideDirective(Directive):
+
+from docutils.parsers.rst import directives
+from sphinx.directives.code import CodeBlock
+
+
+# class PyodideDirective(Directive):
+class PyodideCodeBlock(CodeBlock):
 
     has_content = True
 
     option_spec = {
-        'skip-embed': _option_boolean
+        **CodeBlock.option_spec,
+        'skip-embed': _option_boolean,
+        'pyodide': directives.flag,
     }
+
 
     _current_source = None
     _current_context = {}
@@ -269,10 +278,15 @@ class PyodideDirective(Directive):
         cls._current_process = None
 
     def run(self):
+        if 'pyodide' not in self.options:
+            return super().run()
+        return self.run_pyodide()
+
+    def run_pyodide(self):
         current_source = self.state_machine.get_source()
         if self._current_source != current_source or self._current_process is None:
-            PyodideDirective._current_count = 0
-            PyodideDirective._current_source = current_source
+            PyodideCodeBlock._current_count = 0
+            PyodideCodeBlock._current_source = current_source
             self._launch_process()
 
         classes = 'pyodide'
@@ -285,7 +299,7 @@ class PyodideDirective(Directive):
         doctree_node = nodes.literal_block(code, code, **self.options)
         doctree_node['language'] = 'python'
 
-        PyodideDirective._current_count += 1
+        PyodideCodeBlock._current_count += 1
         if self.options.get('skip-embed'):
             return [doctree_node]
 
@@ -472,16 +486,28 @@ def html_page_context(
     ]
 
 
+def replace_code_cell_for_block(app: Sphinx, docname: str, source: list) -> None:
+    env = app.env
+    docpath = env.doc2path(docname, base=False)
+    if docpath.endswith('.md'):
+        source[0] = source[0].replace('{code-cell}', '{code-block}')
+
+
 def setup(app):
     """Setup sphinx-gallery sphinx extension"""
     app.add_config_value('nbsite_pyodide_conf', DEFAULT_PYODIDE_CONF, 'html')
 
     app.connect('builder-inited', init_conf)
+    app.connect('source-read', replace_code_cell_for_block)
     app.connect('build-finished', write_worker)
     app.connect('html-page-context', html_page_context)
-    app.connect('build-finished', PyodideDirective.terminate)
+    app.connect('build-finished', PyodideCodeBlock.terminate)
 
-    app.add_directive('pyodide', PyodideDirective)
+    # app.add_directive('pyodide', PyodideDirective)
+
+	# Code block with customisable indent size.
+    app.add_directive("code-block", PyodideCodeBlock, override=True)
+    app.add_directive("sourcecode", PyodideCodeBlock, override=True)
 
     app.add_css_file('runbutton.css')
     app.add_js_file('run_cell.js')
