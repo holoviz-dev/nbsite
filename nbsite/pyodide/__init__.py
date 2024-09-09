@@ -1,8 +1,8 @@
+import fcntl
 import io
 import json
 import pathlib
 import sys
-import time
 import warnings
 
 from collections import defaultdict
@@ -181,34 +181,28 @@ def _model_json(model: Model, target: str) -> Tuple[Document, str]:
     ))
 
 def write_resources(out_dir, source, resources):
-    out_dir = str(out_dir)
-    out_path = pathlib.Path(out_dir)
+    out_path = pathlib.Path(str(out_dir))
     out_path.mkdir(exist_ok=True)
-    lock_file = out_path / LOCK_FILE
     resources_file = out_path / RESOURCE_FILE
-    while True:
-        if lock_file.is_file():
-            time.sleep(0.05)
+    existing = resources_file.is_file()
+    with open(resources_file, 'a+', encoding='utf-8') as rfile:
+        fcntl.flock(rfile, fcntl.LOCK_EX)
+        rfile.seek(0)
+        if existing:
+            all_resources = json.load(rfile)
+            rfile.seek(0)
+            rfile.truncate()
         else:
-            lock_file.write_text(f'Writing {source!r} resources.')
-            break
-    if resources_file.is_file():
-        all_resources = json.loads(resources_file.read_text())
-    else:
-        all_resources = {}
-    if source in all_resources:
-        source_resources = all_resources[source]
-        source_resources['css'] += [css for css in resources['css'] if css not in source_resources['css']]
-        source_resources['js'] += [js for js in resources['js'] if js not in source_resources['js']]
-        source_resources['js_exports'].update(resources['js_exports'])
-        source_resources['js_modules'].update(resources['js_modules'])
-    else:
-        all_resources[source] = source_resources = resources
-    resources_file.write_text(json.dumps(all_resources))
-    try:
-        lock_file.unlink()
-    except Exception:
-        pass
+            all_resources = {}
+        if source in all_resources:
+            source_resources = all_resources[source]
+            source_resources['css'] += [css for css in resources['css'] if css not in source_resources['css']]
+            source_resources['js'] += [js for js in resources['js'] if js not in source_resources['js']]
+            source_resources['js_exports'].update(resources['js_exports'])
+            source_resources['js_modules'].update(resources['js_modules'])
+        else:
+            all_resources[source] = source_resources = resources
+        json.dump(all_resources, rfile)
 
 
 def _option_boolean(arg):
