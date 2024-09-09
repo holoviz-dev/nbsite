@@ -1,6 +1,8 @@
 import io
 import json
+import pathlib
 import sys
+import time
 import warnings
 
 from collections import defaultdict
@@ -65,6 +67,9 @@ JS_MODULE_EXPORT = """
 </script>
 """
 
+LOCK_FILE = '.resources.lock'
+RESOURCE_FILE = '.extra_resources.json'
+
 bokeh_version = Version(BOKEH_VERSION)
 if bokeh_version.is_devrelease or bokeh_version.is_prerelease:
     bk_prefix = 'dev'
@@ -96,8 +101,6 @@ DEFAULT_PYODIDE_CONF = {
     'warn_message': "Executing this cell will download Python runtime (typically 40+ MB).",
     'requires': {}
 }
-
-EXTRA_RESOURCES = defaultdict(lambda: {'js': [], 'css': [], 'js_modules': {}, 'js_exports': {}})
 
 def extract_extensions(code: str) -> List[str]:
     """
@@ -177,6 +180,36 @@ def _model_json(model: Model, target: str) -> Tuple[Document, str]:
         version   = BOKEH_VERSION,
     ))
 
+def write_resources(out_dir, source, resources):
+    out_dir = str(out_dir)
+    out_path = pathlib.Path(out_dir)
+    out_path.mkdir(exist_ok=True)
+    lock_file = out_path / LOCK_FILE
+    resources_file = out_path / RESOURCE_FILE
+    while True:
+        if lock_file.is_file():
+            time.sleep(0.05)
+        else:
+            lock_file.write_text(f'Writing {source!r} resources.')
+            break
+    if resources_file.is_file():
+        all_resources = json.loads(resources_file.read_text())
+    else:
+        all_resources = {}
+    if source in all_resources:
+        source_resources = all_resources[source]
+        source_resources['css'] += [css for css in resources['css'] if css not in source_resources['css']]
+        source_resources['js'] += [js for js in resources['js'] if js not in source_resources['js']]
+        source_resources['js_exports'].update(resources['js_exports'])
+        source_resources['js_modules'].update(resources['js_modules'])
+    else:
+        all_resources[source] = source_resources = resources
+    resources_file.write_text(json.dumps(all_resources))
+    try:
+        lock_file.unlink()
+    except Exception:
+        pass
+
 
 def _option_boolean(arg):
     if not arg or not arg.strip():
@@ -197,11 +230,14 @@ class PyodideDirective(Directive):
         'skip-embed': _option_boolean
     }
 
-    _current_source = None
-    _current_context = {}
-    _current_count = 0
-    _current_process = None
-    _conn = None
+    _state = defaultdict(lambda: {
+        'source': None,
+        'context': {},
+        'count': 0,
+        'total': None,
+        'process': None,
+        'conn': None
+    })
 
     @classmethod
     def _execution_process(cls, pipe):
@@ -243,69 +279,85 @@ class PyodideDirective(Directive):
         """
         Terminates a running process.
         """
-        if not cls._current_process:
-            return
-        try:
-            cls._conn.send({'type': 'close'})
-            cls._current_process.join()
-        except Exception:
-            cls._current_process.terminate()
-        finally:
-            cls._current_process = None
+        for state in cls._state.values():
+            if state['process'] is None:
+                return
+            try:
+                state['conn'].send({'type': 'close'})
+                state['process'].join()
+            except Exception:
+                state['process'].terminate()
+        cls._state.clear()
 
     @classmethod
-    def _launch_process(cls, timeout=5):
+    def _launch_process(cls, source, timeout=5):
         """
         Launches a process to execute code in.
         """
-        cls.terminate()
-        cls._conn, child_conn = Pipe()
-        cls._current_process = Process(target=cls._execution_process, args=(child_conn,))
-        cls._current_process.start()
+        cls._state[source]['conn'], child_conn = Pipe()
+        cls._state[source]['process'] = process = Process(
+            target=cls._execution_process, args=(child_conn,), daemon=True
+        )
+        process.start()
 
     @classmethod
-    def _kill(cls):
-        cls._current_process.terminate()
-        cls._current_process = None
+    def _kill(cls, source):
+        cls._state[source]['process'].terminate()
+        del cls._state[source]
 
     def run(self):
         current_source = self.state_machine.get_source()
-        if self._current_source != current_source or self._current_process is None:
-            PyodideDirective._current_count = 0
-            PyodideDirective._current_source = current_source
-            self._launch_process()
+        if current_source not in self._state:
+            with open(current_source, encoding='utf-8') as src_doc:
+                total = src_doc.read().count('{pyodide}')
+            self._state[current_source]['total'] = total
+            self._launch_process(current_source)
+        else:
+            self._state[current_source]['count'] += 1
+        state = self._state[current_source]
+        count = state['count']
 
+        # Construct code block node
         classes = 'pyodide'
         if 'class' in self.options:
             classes += f" {self.options['class']}"
         self.options['class'] = [classes]
-        self.options['id'] = cellid = f'codecell{self._current_count}-py'
+        self.options['id'] = cellid = f'codecell{count}-py'
         roles.set_classes(self.options)
         code = '\n'.join(self.content)
         doctree_node = nodes.literal_block(code, code, **self.options)
         doctree_node['language'] = 'python'
 
-        PyodideDirective._current_count += 1
         if self.options.get('skip-embed'):
             return [doctree_node]
 
         # Send execution request to client and wait for result
-        self._conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
-        if self._conn.poll(60):
+        conn = state['conn']
+        conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
+        if conn.poll(10):
             try:
                 output, mime_type, stdout, stderr, js, js_exports, js_modules, css, global_exports = (
-                    self._conn.recv()
+                    conn.recv()
                 )
             except Exception:
-                self._kill()
+                self._kill(current_source)
                 return [doctree_node]
         else:
-            self._kill()
+            self._kill(current_source)
             return [doctree_node]
-        EXTRA_RESOURCES[current_source]['js'] += js
-        EXTRA_RESOURCES[current_source]['js_exports'].update(js_exports)
-        EXTRA_RESOURCES[current_source]['js_modules'].update(js_modules)
-        EXTRA_RESOURCES[current_source]['css'] += css
+
+        # If we are in the last pyodide cell kill the process
+        if (count+1) == state['total']:
+            self._kill(current_source)
+
+        # Write out resources
+        resources = {
+            'css': css,
+            'js': js,
+            'js_exports': js_exports,
+            'js_modules': js_modules
+        }
+        write_resources(self.state.document.settings.env.app.outdir, current_source, resources)
 
         stdout_style = 'style="display: block;"' if stdout else ''
         stdout_html = f'<pre id="stdout-{cellid}" class="pyodide-stdout" {stdout_style}>{escape(stdout)}</pre>'
@@ -330,14 +382,14 @@ class PyodideDirective(Directive):
         elif mime_type == 'application/bokeh':
             script = f"""
             <script>
-              async function embed_bokeh_{self._current_count} () {{
+              async function embed_bokeh_{count} () {{
                 if (window.Bokeh && window.Bokeh.Panel{exports}) {{
                   await Bokeh.embed.embed_item({output})
                 }} else {{
-                   setTimeout(embed_bokeh_{self._current_count}, 200)
+                   setTimeout(embed_bokeh_{count}, 200)
                 }}
               }};
-              embed_bokeh_{self._current_count}()
+              embed_bokeh_{count}()
             </script>
             """
             output = ""
@@ -396,6 +448,15 @@ def write_worker(app: Sphinx, exc):
 
 def init_conf(app: Sphinx) -> None:
     pyodide_conf = dict(DEFAULT_PYODIDE_CONF, **app.config.nbsite_pyodide_conf)
+
+    out_dir = pathlib.Path(str(app.outdir))
+    lock_file = out_dir / LOCK_FILE
+    if lock_file.is_file():
+        lock_file.unlink()
+    resource_file = out_dir / RESOURCE_FILE
+    if resource_file.is_file():
+        resource_file.unlink()
+
     app.config.nbsite_pyodide_conf = pyodide_conf
     app.config.html_static_path.append(
         str((HERE /'_static' ).absolute())
@@ -427,8 +488,15 @@ def html_page_context(
 
     # Add additional resources extracted from pn.extension calls
     sourcename = context['sourcename'].replace('.txt', '')
+
+    resource_file = pathlib.Path(str(app.outdir)) / RESOURCE_FILE
+    if resource_file.is_file():
+        resources = json.loads(resource_file.read_text())
+    else:
+        resources = {}
     extra_resources = [
-        (r['js'], r['js_exports'], r['js_modules'], r['css']) for filename, r in EXTRA_RESOURCES.items()
+        (r['js'], r['js_exports'], r['js_modules'], r['css'])
+        for filename, r in resources.items()
         if filename.endswith(sourcename)
     ]
     if extra_resources:

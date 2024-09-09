@@ -92,10 +92,6 @@ let ACCEPTED = false;
 let ADDED = false;
 
 const _addRunButtonToCodeCells = () => {
-  if (ADDED) {
-    return
-  }
-
   // If Pyodide Worker hasn't loaded, wait a bit and try again.
   if (window.pyodideWorker === undefined) {
     setTimeout(addRunButtonToCodeCells, 250)
@@ -113,6 +109,9 @@ const _addRunButtonToCodeCells = () => {
     }
     codeCell.setAttribute('id', id)
     codeCell.setAttribute('executed', false)
+    if (!ADDED) {
+      return
+    }
 
     const RunButton = id =>
     `<button id="button-${id}" class="runbtn o-tooltip--left" data-tooltip="Run cell" data-clipboard-target="#${id}">

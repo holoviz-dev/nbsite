@@ -47,14 +47,6 @@ def fix_links(output, inspect_links):
         args.append( "--inspect-links")
     subprocess.check_call(args)
 
-def _pyodide_enabled(confpy):
-    import runpy
-    current_dir = os.getcwd()
-    os.chdir(os.path.dirname(confpy))
-    file = runpy.run_path(confpy)
-    os.chdir(current_dir)
-    return 'nbsite.pyodide' in file["extensions"]
-
 def build(what='html',
           output='builtdocs',
           project_root='',
@@ -75,17 +67,18 @@ def build(what='html',
 
     Usually this is run after `nbsite scaffold`
     """
-    env={'PROJECT_NAME':project_name,
-         'PROJECT_ROOT':project_root if project_root!='' else os.getcwd(),
-         'HOST':host,
-         'REPO':repo,
-         'BRANCH':branch,
-         'ORG':org,
-         'EXAMPLES':examples,
-         'DOC':doc,
-         'EXAMPLES_ASSETS':examples_assets,
-         'BINDER':binder
-         }
+    env = {
+        'PROJECT_NAME':project_name,
+        'PROJECT_ROOT':project_root if project_root!='' else os.getcwd(),
+        'HOST':host,
+        'REPO':repo,
+        'BRANCH':branch,
+        'ORG':org,
+        'EXAMPLES':examples,
+        'DOC':doc,
+        'EXAMPLES_ASSETS':examples_assets,
+        'BINDER':binder
+    }
     merged_env = dict(os.environ, **env)
     none_vals = {k:v for k,v in merged_env.items() if v is None}
     if none_vals:
@@ -96,11 +89,7 @@ def build(what='html',
         for path in glob.glob(os.path.join(paths['doc'], '**', '*.ipynb'), recursive=True):
             print('Removing evaluated notebook from {}'.format(path))
             os.remove(path)
-    if _pyodide_enabled(os.path.join(paths['doc'], 'conf.py')):
-        # Currently pyodide does not work with -j auto
-        cmd = ["sphinx-build", "-b", what, paths['doc'], output]
-    else:
-        cmd = ["sphinx-build", "-j", "auto", "-b", what, paths['doc'], output]
+    cmd = ["sphinx-build", "-j", "auto", "-b", what, paths['doc'], output]
     subprocess.check_call(cmd, env=merged_env)
     print('Copying json blobs (used for holomaps) from {} to {}'.format(paths['doc'], output))
     copy_files(paths['doc'], output, '**/*.json')
