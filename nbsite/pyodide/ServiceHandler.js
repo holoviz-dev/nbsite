@@ -4,11 +4,11 @@ if ('serviceWorker' in navigator) {
     reg.onupdatefound = () => {
       const installingWorker = reg.installing;
       installingWorker.onstatechange = () => {
-	if (installingWorker.state === 'installed' &&
+        if (installingWorker.state === 'installed' &&
             navigator.serviceWorker.controller) {
-	  // Reload page if service worker is replaced
+          // Reload page if service worker is replaced
           location.reload();
-	}
+        }
       }
     }
   })

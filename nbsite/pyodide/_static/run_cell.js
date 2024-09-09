@@ -89,8 +89,13 @@ const _query_params = new Proxy(new URLSearchParams(window.location.search), {
 });
 
 let ACCEPTED = false;
+let ADDED = false;
 
 const _addRunButtonToCodeCells = () => {
+  if (ADDED) {
+    return
+  }
+
   // If Pyodide Worker hasn't loaded, wait a bit and try again.
   if (window.pyodideWorker === undefined) {
     setTimeout(addRunButtonToCodeCells, 250)
@@ -126,9 +131,9 @@ const _addRunButtonToCodeCells = () => {
       while (true) {
         let cell_id = _codeCellId(i)
         let cell = document.getElementById(cell_id)
-	if (cell == null) {
-	  break
-	}
+        if (cell == null) {
+          break
+        }
         const output = document.getElementById(`output-${cell_id}`)
         const stdout = document.getElementById(`stdout-${cell_id}`)
         const stderr = document.getElementById(`stderr-${cell_id}`)
@@ -141,13 +146,13 @@ const _addRunButtonToCodeCells = () => {
             stdout.innerHTML = '';
             stdout.style.display = 'none';
           }
-	  if (stderr) {
+          if (stderr) {
             stderr.innerHTML = '';
             stderr.style.display = 'none';
           }
-	  executeCell(cell_id)
+          executeCell(cell_id)
         }
-	i++;
+        i++;
       }
     })
   })
@@ -157,6 +162,7 @@ const _addRunButtonToCodeCells = () => {
     run_button.click()
     run_button.click()
   }
+  ADDED = true
 }
 
 _runWhenDOMLoaded(_addRunButtonToCodeCells)

@@ -40,9 +40,9 @@ async function loadApplication(cell_id, path) {
   if (path != null) {
     for (const key of Object.keys(REQUIRES)) {
       if (path.replace('.html', '').endsWith(key.replace('.md', ''))) {
-	for (const req of REQUIRES[key]) {
-	  packages.push(req)
-	}
+        for (const req of REQUIRES[key]) {
+          packages.push(req)
+        }
       }
     }
   }
@@ -169,9 +169,9 @@ self.onmessage = async (event) => {
         id: msg.id
       });
       try {
-	await self.pyodide.runPythonAsync(`await micropip.install('${pkg}', keep_going=True)`)
+        await self.pyodide.runPythonAsync(`await micropip.install('${pkg}', keep_going=True)`)
       } catch(e) {
-	console.log(`Auto-detected dependency ${pkg} could not be installed.`)
+        console.log(`Auto-detected dependency ${pkg} could not be installed.`)
       }
     }
   }
