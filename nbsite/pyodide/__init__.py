@@ -297,6 +297,8 @@ class PyodideDirective(Directive):
                         content, mime_type = None, None
                     js, js_exports, js_modules, css, global_exports = extract_extensions(code)
                 pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_exports, js_modules, css, global_exports))
+            cur_task = asyncio.current_task()
+            await asyncio.gather(*(t for t in asyncio.all_tasks() if t is not cur_task), return_exceptions=True)
         asyncio.get_event_loop().run_until_complete(loop())
         pipe.close()
 
