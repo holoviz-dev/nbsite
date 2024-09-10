@@ -251,7 +251,7 @@ class PyodideDirective(Directive):
         'skip-embed': _option_boolean
     }
 
-    _state = defaultdict(lambda: {
+    _exec_state = defaultdict(lambda: {
         'source': None,
         'context': {},
         'count': 0,
@@ -302,54 +302,52 @@ class PyodideDirective(Directive):
         """
         Terminates a running process.
         """
-        for state in cls._state.values():
-            if state['process'] is None:
-                return
-            try:
-                state['conn'].send({'type': 'close'})
-                state['process'].join()
-            except Exception:
-                state['process'].terminate()
-        cls._state.clear()
+        for source in cls._exec_state:
+            cls._kill(source)
 
     @classmethod
     def _launch_process(cls, source, timeout=5):
         """
         Launches a process to execute code in.
         """
-        cls._state[source]['conn'], child_conn = Pipe()
-        cls._state[source]['process'] = process = Process(
+        cls._exec_state[source]['conn'], child_conn = Pipe()
+        cls._exec_state[source]['process'] = process = Process(
             target=cls._execution_process, args=(child_conn,), daemon=True
         )
         process.start()
 
     @classmethod
     def _kill(cls, source):
-        if cls._state[source]['process']:
-            cls._state[source]['process'].terminate()
-        del cls._state[source]
+        state = cls._exec_state[source]
+        if state['process']:
+            try:
+                state['conn'].send({'type': 'close'})
+                state['process'].join()
+            except Exception:
+                state['process'].terminate()
+        del cls._exec_state[source]
 
     def run(self):
         outdir = self.state.document.settings.env.app.outdir
         cache_path = pathlib.Path(str(outdir)) / '.pyodide'
         cache_path.mkdir(exist_ok=True)
         current_source = self.state_machine.get_source()
-        if current_source not in self._state:
+        if current_source not in self._exec_state:
             with open(current_source, encoding='utf-8') as src_doc:
                 content = src_doc.read()
             content_hash = hashlib.md5(content.encode('utf-8')).hexdigest()
             cache_file = cache_path / f'{content_hash}.json'
             if cache_file.is_file():
                 with open(cache_file, encoding='utf-8') as cf:
-                    self._state[current_source]['cache'] = json.load(cf)
+                    self._exec_state[current_source]['cache'] = json.load(cf)
             else:
                 self._launch_process(current_source)
             total = content.count('{pyodide}')
-            self._state[current_source]['total'] = total
-            self._state[current_source]['hash'] = content_hash
+            self._exec_state[current_source]['total'] = total
+            self._exec_state[current_source]['hash'] = content_hash
         else:
-            self._state[current_source]['count'] += 1
-        state = self._state[current_source]
+            self._exec_state[current_source]['count'] += 1
+        state = self._exec_state[current_source]
         count = state['count']
         cache_file = cache_path / f'{state["hash"]}.json'
 
@@ -371,17 +369,15 @@ class PyodideDirective(Directive):
         conn = state['conn']
         try:
             code_hash = hashlib.md5(code.encode('utf-8')).hexdigest()
-            if hash(code) in state['cache']:
+            if code_hash in state['cache']:
                 result = state['cache'][code_hash]
             else:
                 conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
-                if conn.poll(10):
+                if conn.poll(30):
                     state['cache'][code_hash] = result = conn.recv()
                 else:
-                    self._kill(current_source)
                     return [doctree_node]
         except Exception:
-            self._kill(current_source)
             return [doctree_node]
         finally:
             # If we are in the last pyodide cell kill the process
