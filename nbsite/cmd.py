@@ -101,7 +101,7 @@ def build(what='html',
         # Currently pyodide does not work with -j auto
         cmd = ["sphinx-build", "-b", what, paths['doc'], output]
     else:
-        cmd = ["sphinx-build", "-j", "auto", "-b", what, paths['doc'], output]
+        cmd = ["sphinx-build", "-vvv", "-j", "auto", "-b", what, paths['doc'], output]
     subprocess.check_call(cmd, env=merged_env)
     print('Copying json blobs (used for holomaps) from {} to {}'.format(paths['doc'], output))
     copy_files(paths['doc'], output, '**/*.json')
