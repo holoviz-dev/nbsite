@@ -376,7 +376,7 @@ class PyodideDirective(Directive):
                 result = state['cache'][code_hash]
             else:
                 conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
-                if conn.poll(30):
+                if conn.poll(60):
                     state['cache'][code_hash] = result = conn.recv()
                 else:
                     return [doctree_node]
