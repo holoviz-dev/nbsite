@@ -89,7 +89,7 @@ const _query_params = new Proxy(new URLSearchParams(window.location.search), {
 });
 
 let ACCEPTED = false;
-let ADDED = false;
+let INITIALIZED = 0;
 let EXECUTED = false;
 
 const _addRunButtonToCodeCells = () => {
@@ -102,6 +102,8 @@ const _addRunButtonToCodeCells = () => {
   // Add copybuttons to all of our code cells
   const RUNBUTTON_SELECTOR = 'div.pyodide div.highlight pre';
   const codeCells = document.querySelectorAll(RUNBUTTON_SELECTOR)
+
+  INITIALIZED += 1
   codeCells.forEach((codeCell, index) => {
     const id = _codeCellId(index)
     const copybtn = codeCell.parentElement.getElementsByClassName('copybtn')
@@ -113,10 +115,9 @@ const _addRunButtonToCodeCells = () => {
 
     // importShim will cause DOMLoaded event to trigger twice so we skip
     // adding buttons the first time
-    if (!ADDED && window.importShim) {
+    if ((INITIALIZED < 2) && window.importShim) {
       return
     }
-    ADDED = true
 
     const RunButton = id =>
     `<button id="button-${id}" class="runbtn o-tooltip--left" data-tooltip="Run cell" data-clipboard-target="#${id}">
