@@ -8,7 +8,7 @@ import warnings
 
 from collections import defaultdict
 from html import escape
-from multiprocessing import Pipe, Process
+from multiprocessing import Pipe, get_context
 from pathlib import Path
 from typing import (
     Any, Dict, List, Tuple,
@@ -316,7 +316,7 @@ class PyodideDirective(Directive):
         Launches a process to execute code in.
         """
         cls._exec_state[source]['conn'], child_conn = Pipe()
-        cls._exec_state[source]['process'] = process = Process(
+        cls._exec_state[source]['process'] = process = get_context('spawn').Process(
             target=cls._execution_process, args=(child_conn,), daemon=True
         )
         process.start()
