@@ -624,7 +624,7 @@ class NotebookDirective(Directive):
                     patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
                 )
                 break
-            except zmq.error.ZMQError as e:
+            except (zmq.error.ZMQError, RuntimeError) as e:
                 # Sometimes the kernel dies
                 print(f"{nb_abs_path} failed with {e}, retrying ({n}/5)...", flush=True)
 
