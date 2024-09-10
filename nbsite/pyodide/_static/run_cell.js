@@ -90,6 +90,7 @@ const _query_params = new Proxy(new URLSearchParams(window.location.search), {
 
 let ACCEPTED = false;
 let ADDED = false;
+let EXECUTED = false;
 
 const _addRunButtonToCodeCells = () => {
   // If Pyodide Worker hasn't loaded, wait a bit and try again.
@@ -125,6 +126,9 @@ const _addRunButtonToCodeCells = () => {
         _ChangeIcon(e.currentTarget, iconAlert)
         ACCEPTED = true
         return
+      } else if (!EXECUTED) {
+	Bokeh.index.roots.map((v) => v.remove())
+	EXECUTED = true
       }
       let i = 0;
       while (true) {
@@ -136,7 +140,7 @@ const _addRunButtonToCodeCells = () => {
         const output = document.getElementById(`output-${cell_id}`)
         const stdout = document.getElementById(`stdout-${cell_id}`)
         const stderr = document.getElementById(`stderr-${cell_id}`)
-        if (cell.getAttribute('executed') == 'false' || i == index) {
+	if (cell.getAttribute('executed') == 'false' || i == index) {
           if (output) {
             output.innerHTML = '';
             output.style.display = 'none';
