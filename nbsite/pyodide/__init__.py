@@ -182,6 +182,20 @@ def _model_json(model: Model, target: str) -> Tuple[Document, str]:
 extra_resources = defaultdict(lambda: {'js': [], 'css': [], 'js_modules': {}, 'js_exports': {}})
 
 def write_resources(out_dir, source, resources):
+    """
+    Writes resources extracted from process to a shared JSON file to
+    which will be read on document write. On windows uses in-memory
+    variable since parallelization is not supported.
+
+    Arguments
+    ---------
+    out_dir: str
+        The build directory
+    source: str
+        The source file the resources are assosicated with.
+    resources: dict[str, any]
+        The resources to add to the resource dictionary.
+    """
     if sys.platform == "win32":
         extra_resources[source]['css'] += resources['css']
         extra_resources[source]['js'] += resources['js']
@@ -197,19 +211,23 @@ def write_resources(out_dir, source, resources):
     with open(resources_file, 'a+', encoding='utf-8') as rfile:
         fcntl.flock(rfile, fcntl.LOCK_EX)
         rfile.seek(0)
+
+        # Load existing resources from file
+        all_resources = {}
         if existing:
             all_resources = json.load(rfile)
             rfile.seek(0)
             rfile.truncate()
-        else:
-            all_resources = {}
+
         if source in all_resources:
+            # Merge with existing resources for source file
             source_resources = all_resources[source]
             source_resources['css'] += [css for css in resources['css'] if css not in source_resources['css']]
             source_resources['js'] += [js for js in resources['js'] if js not in source_resources['js']]
             source_resources['js_exports'].update(resources['js_exports'])
             source_resources['js_modules'].update(resources['js_modules'])
         else:
+            # Add new resources for this source file
             all_resources[source] = source_resources = resources
         json.dump(all_resources, rfile)
 
