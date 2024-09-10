@@ -67,6 +67,7 @@ setup_args = dict(
         'beautifulsoup4',
         'jinja2',
         'pillow',
+        'portalocker',
         'pydata-sphinx-theme >=0.15,<0.16',
         'myst-parser >=3',
         'sphinx-copybutton',

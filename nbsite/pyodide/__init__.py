@@ -15,6 +15,7 @@ from typing import (
 )
 
 import param
+import portalocker
 
 from bokeh.document import Document
 from bokeh.embed.bundle import _bundle_extensions
@@ -180,8 +181,6 @@ def _model_json(model: Model, target: str) -> Tuple[Document, str]:
         version   = BOKEH_VERSION,
     ))
 
-extra_resources = defaultdict(lambda: {'js': [], 'css': [], 'js_modules': {}, 'js_exports': {}})
-
 def write_resources(out_dir, source, resources):
     """
     Writes resources extracted from process to a shared JSON file to
@@ -197,20 +196,11 @@ def write_resources(out_dir, source, resources):
     resources: dict[str, any]
         The resources to add to the resource dictionary.
     """
-    if sys.platform == "win32":
-        extra_resources[source]['css'] += resources['css']
-        extra_resources[source]['js'] += resources['js']
-        extra_resources[source]['js_exports'].update(resources['js_exports'])
-        extra_resources[source]['js_modules'].update(resources['js_modules'])
-        return
-
-    import fcntl
     out_path = pathlib.Path(str(out_dir))
     out_path.mkdir(exist_ok=True)
     resources_file = out_path / RESOURCE_FILE
     existing = resources_file.is_file()
-    with open(resources_file, 'a+', encoding='utf-8') as rfile:
-        fcntl.flock(rfile, fcntl.LOCK_EX)
+    with portalocker.Lock(resources_file, 'a+') as rfile:
         rfile.seek(0)
 
         # Load existing resources from file
@@ -532,14 +522,11 @@ def html_page_context(
     # Add additional resources extracted from pn.extension calls
     sourcename = context['sourcename'].replace('.txt', '')
 
-    if sys.platform == "win32":
-        resources = extra_resources
+    resource_file = pathlib.Path(str(app.outdir)) / RESOURCE_FILE
+    if resource_file.is_file():
+        resources = json.loads(resource_file.read_text())
     else:
-        resource_file = pathlib.Path(str(app.outdir)) / RESOURCE_FILE
-        if resource_file.is_file():
-            resources = json.loads(resource_file.read_text())
-        else:
-            resources = {}
+        resources = {}
     code_resources = [
         (r['js'], r['js_exports'], r['js_modules'], r['css'])
         for filename, r in resources.items()
