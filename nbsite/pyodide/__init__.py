@@ -1,4 +1,4 @@
-import fcntl
+import hashlib
 import io
 import json
 import pathlib
@@ -67,7 +67,6 @@ JS_MODULE_EXPORT = """
 </script>
 """
 
-LOCK_FILE = '.resources.lock'
 RESOURCE_FILE = '.extra_resources.json'
 
 bokeh_version = Version(BOKEH_VERSION)
@@ -180,7 +179,17 @@ def _model_json(model: Model, target: str) -> Tuple[Document, str]:
         version   = BOKEH_VERSION,
     ))
 
+extra_resources = defaultdict(lambda: {'js': [], 'css': [], 'js_modules': {}, 'js_exports': {}})
+
 def write_resources(out_dir, source, resources):
+    if sys.platform == "win32":
+        extra_resources[source]['css'] += resources['css']
+        extra_resources[source]['js'] += resources['js']
+        extra_resources[source]['js_exports'].update(resources['js_exports'])
+        extra_resources[source]['js_modules'].update(resources['js_modules'])
+        return
+
+    import fcntl
     out_path = pathlib.Path(str(out_dir))
     out_path.mkdir(exist_ok=True)
     resources_file = out_path / RESOURCE_FILE
@@ -230,7 +239,9 @@ class PyodideDirective(Directive):
         'count': 0,
         'total': None,
         'process': None,
-        'conn': None
+        'conn': None,
+        'cache': {},
+        'hash': None
     })
 
     @classmethod
@@ -296,20 +307,33 @@ class PyodideDirective(Directive):
 
     @classmethod
     def _kill(cls, source):
-        cls._state[source]['process'].terminate()
+        if cls._state[source]['process']:
+            cls._state[source]['process'].terminate()
         del cls._state[source]
 
     def run(self):
+        outdir = self.state.document.settings.env.app.outdir
+        cache_path = pathlib.Path(str(outdir)) / '.pyodide'
+        cache_path.mkdir(exist_ok=True)
         current_source = self.state_machine.get_source()
         if current_source not in self._state:
             with open(current_source, encoding='utf-8') as src_doc:
-                total = src_doc.read().count('{pyodide}')
+                content = src_doc.read()
+            content_hash = hashlib.md5(content.encode('utf-8')).hexdigest()
+            cache_file = cache_path / f'{content_hash}.json'
+            if cache_file.is_file():
+                with open(cache_file, encoding='utf-8') as cf:
+                    self._state[current_source]['cache'] = json.load(cf)
+            else:
+                self._launch_process(current_source)
+            total = content.count('{pyodide}')
             self._state[current_source]['total'] = total
-            self._launch_process(current_source)
+            self._state[current_source]['hash'] = content_hash
         else:
             self._state[current_source]['count'] += 1
         state = self._state[current_source]
         count = state['count']
+        cache_file = cache_path / f'{state["hash"]}.json'
 
         # Construct code block node
         classes = 'pyodide'
@@ -327,22 +351,29 @@ class PyodideDirective(Directive):
 
         # Send execution request to client and wait for result
         conn = state['conn']
-        conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
-        if conn.poll(10):
-            try:
-                output, mime_type, stdout, stderr, js, js_exports, js_modules, css, global_exports = (
-                    conn.recv()
-                )
-            except Exception:
-                self._kill(current_source)
-                return [doctree_node]
-        else:
+        try:
+            code_hash = hashlib.md5(code.encode('utf-8')).hexdigest()
+            if hash(code) in state['cache']:
+                result = state['cache'][code_hash]
+            else:
+                conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
+                if conn.poll(10):
+                    state['cache'][code_hash] = result = (
+                        conn.recv()
+                    )
+                else:
+                    self._kill(current_source)
+                    return [doctree_node]
+        except Exception:
             self._kill(current_source)
             return [doctree_node]
+        finally:
+            # If we are in the last pyodide cell kill the process
+            if (count+1) == state['total']:
+                self._kill(current_source)
+                cache_file.write_text(json.dumps(state['cache']))
 
-        # If we are in the last pyodide cell kill the process
-        if (count+1) == state['total']:
-            self._kill(current_source)
+        output, mime_type, stdout, stderr, js, js_exports, js_modules, css, global_exports = result
 
         # Write out resources
         resources = {
@@ -351,7 +382,7 @@ class PyodideDirective(Directive):
             'js_exports': js_exports,
             'js_modules': js_modules
         }
-        write_resources(self.state.document.settings.env.app.outdir, current_source, resources)
+        write_resources(outdir, current_source, resources)
 
         stdout_style = 'style="display: block;"' if stdout else ''
         stdout_html = f'<pre id="stdout-{cellid}" class="pyodide-stdout" {stdout_style}>{escape(stdout)}</pre>'
@@ -444,9 +475,6 @@ def init_conf(app: Sphinx) -> None:
     pyodide_conf = dict(DEFAULT_PYODIDE_CONF, **app.config.nbsite_pyodide_conf)
 
     out_dir = pathlib.Path(str(app.outdir))
-    lock_file = out_dir / LOCK_FILE
-    if lock_file.is_file():
-        lock_file.unlink()
     resource_file = out_dir / RESOURCE_FILE
     if resource_file.is_file():
         resource_file.unlink()
@@ -483,18 +511,21 @@ def html_page_context(
     # Add additional resources extracted from pn.extension calls
     sourcename = context['sourcename'].replace('.txt', '')
 
-    resource_file = pathlib.Path(str(app.outdir)) / RESOURCE_FILE
-    if resource_file.is_file():
-        resources = json.loads(resource_file.read_text())
+    if sys.platform == "win32":
+        resources = extra_resources
     else:
-        resources = {}
-    extra_resources = [
+        resource_file = pathlib.Path(str(app.outdir)) / RESOURCE_FILE
+        if resource_file.is_file():
+            resources = json.loads(resource_file.read_text())
+        else:
+            resources = {}
+    code_resources = [
         (r['js'], r['js_exports'], r['js_modules'], r['css'])
         for filename, r in resources.items()
         if filename.endswith(sourcename)
     ]
-    if extra_resources:
-        extra_js, js_exports, js_modules, extra_css = extra_resources[0]
+    if code_resources:
+        extra_js, js_exports, js_modules, extra_css = code_resources[0]
     else:
         extra_js, js_exports, js_modules, extra_css = [], {}, {}, []
     extra_css += app.config.nbsite_pyodide_conf.get('extra_css', [])
