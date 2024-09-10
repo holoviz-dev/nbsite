@@ -110,9 +110,13 @@ const _addRunButtonToCodeCells = () => {
     }
     codeCell.setAttribute('id', id)
     codeCell.setAttribute('executed', false)
-    if (!ADDED) {
+
+    // importShim will cause DOMLoaded event to trigger twice so we skip
+    // adding buttons the first time
+    if (!ADDED && window.importShim) {
       return
     }
+    ADDED = true
 
     const RunButton = id =>
     `<button id="button-${id}" class="runbtn o-tooltip--left" data-tooltip="Run cell" data-clipboard-target="#${id}">
@@ -127,8 +131,8 @@ const _addRunButtonToCodeCells = () => {
         ACCEPTED = true
         return
       } else if (!EXECUTED) {
-	Bokeh.index.roots.map((v) => v.remove())
-	EXECUTED = true
+        Bokeh.index.roots.map((v) => v.remove())
+        EXECUTED = true
       }
       let i = 0;
       while (true) {
@@ -140,7 +144,7 @@ const _addRunButtonToCodeCells = () => {
         const output = document.getElementById(`output-${cell_id}`)
         const stdout = document.getElementById(`stdout-${cell_id}`)
         const stderr = document.getElementById(`stderr-${cell_id}`)
-	if (cell.getAttribute('executed') == 'false' || i == index) {
+        if (cell.getAttribute('executed') == 'false' || i == index) {
           if (output) {
             output.innerHTML = '';
             output.style.display = 'none';
@@ -165,7 +169,6 @@ const _addRunButtonToCodeCells = () => {
     run_button.click()
     run_button.click()
   }
-  ADDED = true
 }
 
 _runWhenDOMLoaded(_addRunButtonToCodeCells)
