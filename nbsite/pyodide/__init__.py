@@ -322,7 +322,7 @@ class PyodideDirective(Directive):
         process.start()
 
     @classmethod
-    def _kill(cls, source):
+    def _kill(cls, source, clear=True):
         state = cls._exec_state[source]
         if state['process']:
             try:
@@ -330,7 +330,8 @@ class PyodideDirective(Directive):
                 state['process'].join()
             except Exception:
                 state['process'].terminate()
-        del cls._exec_state[source]
+        if clear:
+            del cls._exec_state[source]
 
     def run(self):
         outdir = self.state.document.settings.env.app.outdir
@@ -376,13 +377,16 @@ class PyodideDirective(Directive):
             code_hash = hashlib.md5(code.encode('utf-8')).hexdigest()
             if code_hash in state['cache']:
                 result = state['cache'][code_hash]
-            else:
+            elif conn:
                 conn.send({'type': 'execute', 'target': f'output-{cellid}', 'code': code})
                 if conn.poll(60):
                     state['cache'][code_hash] = result = conn.recv()
                 else:
-                    return [doctree_node]
+                    raise RuntimeError('Timed out')
+            else:
+                raise RuntimeError('Process was shut down')
         except Exception:
+            self._kill(current_source, clear=False)
             return [doctree_node]
         finally:
             # If we are in the last pyodide cell kill the process
