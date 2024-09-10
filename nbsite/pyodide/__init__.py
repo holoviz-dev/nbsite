@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import io
 import json
@@ -268,33 +269,35 @@ class PyodideDirective(Directive):
         Process execution loop to run in separate process that is used
         to evaluate code.
         """
-        while True:
-            msg = pipe.recv()
-            if msg['type'] == 'close':
-                break
-            elif msg['type'] != 'execute':
-                continue
-            stdout = io.StringIO()
-            stderr = io.StringIO()
-            code = msg['code']
-            with set_resource_mode('cdn'):
-                try:
-                    out = exec_with_return(code, stdout=stdout, stderr=stderr)
-                except Exception:
-                    out = None
-                if (isinstance(out, (Model, Viewable, Viewer)) or
-                    any(pane.applies(out) for pane in CONVERT_PANE_TYPES)):
-                    _, content = _model_json(as_panel(out), msg['target'])
-                    mime_type = 'application/bokeh'
-                elif out is not None:
+        async def loop():
+            while True:
+                msg = pipe.recv()
+                if msg['type'] == 'close':
+                    break
+                elif msg['type'] != 'execute':
+                    continue
+                stdout = io.StringIO()
+                stderr = io.StringIO()
+                code = msg['code']
+                with set_resource_mode('cdn'):
                     try:
-                        content, mime_type = format_mime(out)
+                        out = exec_with_return(code, stdout=stdout, stderr=stderr)
                     except Exception:
-                        warnings.warn(f'Could not render {out!r} generated from executed code directive: {code}')
-                else:
-                    content, mime_type = None, None
-            js, js_exports, js_modules, css, global_exports = extract_extensions(code)
-            pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_exports, js_modules, css, global_exports))
+                        out = None
+                    if (isinstance(out, (Model, Viewable, Viewer)) or
+                        any(pane.applies(out) for pane in CONVERT_PANE_TYPES)):
+                        _, content = _model_json(as_panel(out), msg['target'])
+                        mime_type = 'application/bokeh'
+                    elif out is not None:
+                        try:
+                            content, mime_type = format_mime(out)
+                        except Exception:
+                            warnings.warn(f'Could not render {out!r} generated from executed code directive: {code}')
+                    else:
+                        content, mime_type = None, None
+                    js, js_exports, js_modules, css, global_exports = extract_extensions(code)
+                pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_exports, js_modules, css, global_exports))
+        asyncio.get_event_loop().run_until_complete(loop())
         pipe.close()
 
     @classmethod
