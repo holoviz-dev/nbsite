@@ -89,7 +89,7 @@ def build(what='html',
         for path in glob.glob(os.path.join(paths['doc'], '**', '*.ipynb'), recursive=True):
             print('Removing evaluated notebook from {}'.format(path))
             os.remove(path)
-    cmd = ["sphinx-build", "-v", "-j", "auto", "-b", what, paths['doc'], output]
+    cmd = ["sphinx-build", "-vvv", "-j", "auto", "-b", what, paths['doc'], output]
     subprocess.check_call(cmd, env=merged_env)
     print('Copying json blobs (used for holomaps) from {} to {}'.format(paths['doc'], output))
     copy_files(paths['doc'], output, '**/*.json')
