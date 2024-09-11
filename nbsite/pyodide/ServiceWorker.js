@@ -51,7 +51,9 @@ self.addEventListener('fetch', (e) => {
       throw Error(`[Service Worker] Fetching resource ${e.request.url} failed with response: ${response.status}`);
     }
     console.log(`[Service Worker] Caching new resource: ${e.request.url}`);
-    cache.put(e.request, response.clone());
+    if (e.request.mode !== 'no-cors') {
+      cache.put(e.request, response.clone());
+    }
     return response;
   })());
 });
