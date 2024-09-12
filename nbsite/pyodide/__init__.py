@@ -311,7 +311,7 @@ class PyodideDirective(Directive):
         """
         Terminates a running process.
         """
-        for source in cls._exec_state:
+        for source in cls._exec_state.copy():
             cls._kill(source)
 
     @classmethod
