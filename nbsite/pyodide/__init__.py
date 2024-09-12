@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import io
 import json
+import os
 import pathlib
 import sys
 import warnings
@@ -221,6 +222,8 @@ def write_resources(out_dir, source, resources):
             # Add new resources for this source file
             all_resources[source] = source_resources = resources
         json.dump(all_resources, rfile)
+        os.fsync(rfile.fileno())
+
 
 
 def _option_boolean(arg):
