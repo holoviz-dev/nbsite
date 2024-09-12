@@ -57,7 +57,7 @@ def build(what='html',
           branch='main',
           org='',
           binder='none',
-          parallel=False,
+          disable_parallel=False,
           examples='examples',
           examples_assets='assets',
           clean_dry_run=False,
@@ -90,7 +90,7 @@ def build(what='html',
         for path in glob.glob(os.path.join(paths['doc'], '**', '*.ipynb'), recursive=True):
             print('Removing evaluated notebook from {}'.format(path))
             os.remove(path)
-    extras = ["-j", "auto"] if parallel else []
+    extras = [] if disable_parallel else ["-j", "auto"]
     cmd = ["sphinx-build", "-b", what, paths['doc'], output] + extras
     subprocess.check_call(cmd, env=merged_env)
     print('Copying json blobs (used for holomaps) from {} to {}'.format(paths['doc'], output))
