@@ -89,13 +89,10 @@ const _query_params = new Proxy(new URLSearchParams(window.location.search), {
 });
 
 let ACCEPTED = false;
-let ADDED = false;
+let INITIALIZED = 0;
+let EXECUTED = false;
 
 const _addRunButtonToCodeCells = () => {
-  if (ADDED) {
-    return
-  }
-
   // If Pyodide Worker hasn't loaded, wait a bit and try again.
   if (window.pyodideWorker === undefined) {
     setTimeout(addRunButtonToCodeCells, 250)
@@ -105,6 +102,8 @@ const _addRunButtonToCodeCells = () => {
   // Add copybuttons to all of our code cells
   const RUNBUTTON_SELECTOR = 'div.pyodide div.highlight pre';
   const codeCells = document.querySelectorAll(RUNBUTTON_SELECTOR)
+
+  INITIALIZED += 1
   codeCells.forEach((codeCell, index) => {
     const id = _codeCellId(index)
     const copybtn = codeCell.parentElement.getElementsByClassName('copybtn')
@@ -113,6 +112,12 @@ const _addRunButtonToCodeCells = () => {
     }
     codeCell.setAttribute('id', id)
     codeCell.setAttribute('executed', false)
+
+    // importShim will cause DOMLoaded event to trigger twice so we skip
+    // adding buttons the first time
+    if ((INITIALIZED < 2) && window.importShim) {
+      return
+    }
 
     const RunButton = id =>
     `<button id="button-${id}" class="runbtn o-tooltip--left" data-tooltip="Run cell" data-clipboard-target="#${id}">
@@ -126,6 +131,9 @@ const _addRunButtonToCodeCells = () => {
         _ChangeIcon(e.currentTarget, iconAlert)
         ACCEPTED = true
         return
+      } else if (!EXECUTED) {
+        Bokeh.index.roots.map((v) => v.remove())
+        EXECUTED = true
       }
       let i = 0;
       while (true) {
@@ -162,7 +170,6 @@ const _addRunButtonToCodeCells = () => {
     run_button.click()
     run_button.click()
   }
-  ADDED = true
 }
 
 _runWhenDOMLoaded(_addRunButtonToCodeCells)
