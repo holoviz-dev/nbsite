@@ -197,7 +197,7 @@ def write_resources(out_dir, source, resources):
     resources: dict[str, any]
         The resources to add to the resource dictionary.
     """
-    out_path = pathlib.Path(str(out_dir))
+    out_path = pathlib.Path(os.fspath(out_dir))
     out_path.mkdir(exist_ok=True)
     resources_file = out_path / RESOURCE_FILE
     existing = resources_file.is_file()
