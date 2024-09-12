@@ -278,17 +278,21 @@ class PyodideDirective(Directive):
                         out = exec_with_return(code, stdout=stdout, stderr=stderr)
                     except Exception:
                         out = None
+                    mime_type = None
                     if (isinstance(out, (Model, Viewable, Viewer)) or
                         any(pane.applies(out) for pane in CONVERT_PANE_TYPES)):
-                        _, content = _model_json(as_panel(out), msg['target'])
-                        mime_type = 'application/bokeh'
+                        try:
+                            _, content = _model_json(as_panel(out), msg['target'])
+                            mime_type = 'application/bokeh'
+                        except Exception:
+                            warnings.warn(f'Could not render {out!r} generated from executed code directive: {code}')
                     elif out is not None:
                         try:
                             content, mime_type = format_mime(out)
                         except Exception:
                             warnings.warn(f'Could not render {out!r} generated from executed code directive: {code}')
                     else:
-                        content, mime_type = None, None
+                        content = None
                     js, js_exports, js_modules, css, global_exports = extract_extensions(code)
                 pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_exports, js_modules, css, global_exports))
             cur_task = asyncio.current_task()
