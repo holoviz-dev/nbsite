@@ -5,6 +5,7 @@ import json
 import os
 import pathlib
 import sys
+import traceback as tb
 import warnings
 
 from collections import defaultdict
@@ -286,7 +287,10 @@ class PyodideDirective(Directive):
                             mime_type = 'application/bokeh'
                         except Exception:
                             content = None
-                            warnings.warn(f'Could not render {out!r} generated from executed code directive: {code}')
+                            warnings.warn(
+                                f'Could not render {out!r} generated from executed code directive:\n\n{code}\n\n'
+                                f'Failed with following error:\n\n{tb.format_exc()}'
+                            )
                     elif out is not None:
                         try:
                             content, mime_type = format_mime(out)
@@ -568,7 +572,8 @@ def html_page_context(
     # Remove JS files
     pyodide_scripts = (
         app.config.nbsite_pyodide_conf['scripts'] +
-        ['_static/run_cell.js', '_static/WorkerHandler.js']
+        ['_static/run_cell.js', '_static/WorkerHandler.js'] +
+        app.config.html_js_files
     )
 
     context["script_files"] = [
