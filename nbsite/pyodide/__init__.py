@@ -222,6 +222,7 @@ def write_resources(out_dir, source, resources):
             # Add new resources for this source file
             all_resources[source] = source_resources = resources
         json.dump(all_resources, rfile)
+        rfile.flush()
         os.fsync(rfile.fileno())
 
 
