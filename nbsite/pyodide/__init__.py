@@ -285,11 +285,13 @@ class PyodideDirective(Directive):
                             _, content = _model_json(as_panel(out), msg['target'])
                             mime_type = 'application/bokeh'
                         except Exception:
+                            content = None
                             warnings.warn(f'Could not render {out!r} generated from executed code directive: {code}')
                     elif out is not None:
                         try:
                             content, mime_type = format_mime(out)
                         except Exception:
+                            content = None
                             warnings.warn(f'Could not render {out!r} generated from executed code directive: {code}')
                     else:
                         content = None
