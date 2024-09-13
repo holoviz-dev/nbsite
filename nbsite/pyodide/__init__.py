@@ -578,13 +578,13 @@ def html_page_context(
 
     context["script_files"] = [
         ii for ii in context["script_files"]
-        if ii not in pyodide_scripts
+        if getattr(ii, 'filename', ii) not in pyodide_scripts
     ]
 
     # Remove pyodide CSS files
     context["css_files"] = [
         ii for ii in context["css_files"]
-        if ii not in ['_static/runbutton.css']
+        if getattr(ii, 'filename', ii) not in ['_static/runbutton.css']
     ]
 
 
