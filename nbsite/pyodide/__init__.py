@@ -551,7 +551,12 @@ def html_page_context(
     else:
         extra_js, js_exports, js_modules, extra_css = [], {}, {}, []
     extra_css += app.config.nbsite_pyodide_conf.get('extra_css', [])
-    context["script_files"] += extra_js
+    existing_js = [
+        getattr(js, 'filename', js) or js for js in context["script_files"]
+    ]
+    for js in extra_js:
+        if js not in existing_js:
+            context["script_files"].append(js)
     context["css_files"] += extra_css
 
     module_tags = app.config.nbsite_pyodide_conf['preamble']
@@ -562,27 +567,22 @@ def html_page_context(
     if module_tags:
         context["body"] = f'{module_tags}{context["body"]}'
 
-    # Remove Scripts and CSS from page if no pyodide cells are found.
-    if any(
+    if not any(
         'pyodide' in cb.attributes.get('classes', [])
         for cb in doctree.traverse(nodes.literal_block)
     ):
         return
 
-    # Remove JS files
+    # Remove Scripts and CSS from page if no pyodide cells are found.
     pyodide_scripts = (
         app.config.nbsite_pyodide_conf['scripts'] +
-        ['_static/run_cell.js', '_static/WorkerHandler.js'] +
-        [js_file[0] for js_file in app.config.html_js_files]
+        ['_static/run_cell.js', '_static/WorkerHandler.js']
     )
 
     context["script_files"] = [
         ii for ii in context["script_files"]
         if (getattr(ii, 'filename', ii) or ii) not in pyodide_scripts
     ]
-    print(pyodide_scripts, context['script_files'])
-    import pdb
-    pdb.set_trace()
 
     # Remove pyodide CSS files
     context["css_files"] = [
