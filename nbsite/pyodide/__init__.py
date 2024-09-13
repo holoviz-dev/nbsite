@@ -573,18 +573,21 @@ def html_page_context(
     pyodide_scripts = (
         app.config.nbsite_pyodide_conf['scripts'] +
         ['_static/run_cell.js', '_static/WorkerHandler.js'] +
-        app.config.html_js_files
+        [js_file[0] for js_file in app.config.html_js_files]
     )
 
     context["script_files"] = [
         ii for ii in context["script_files"]
-        if getattr(ii, 'filename', ii) not in pyodide_scripts
+        if (getattr(ii, 'filename', ii) or ii) not in pyodide_scripts
     ]
+    print(pyodide_scripts, context['script_files'])
+    import pdb
+    pdb.set_trace()
 
     # Remove pyodide CSS files
     context["css_files"] = [
         ii for ii in context["css_files"]
-        if getattr(ii, 'filename', ii) not in ['_static/runbutton.css']
+        if (getattr(ii, 'filename', ii) or ii) not in ['_static/runbutton.css']
     ]
 
 
