@@ -567,7 +567,7 @@ def html_page_context(
     if module_tags:
         context["body"] = f'{module_tags}{context["body"]}'
 
-    if not any(
+    if any(
         'pyodide' in cb.attributes.get('classes', [])
         for cb in doctree.traverse(nodes.literal_block)
     ):
