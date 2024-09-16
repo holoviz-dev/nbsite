@@ -2,9 +2,11 @@ import glob
 import json
 import logging
 import os
+import re
 
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
+from urllib.parse import urlparse
 
 import requests
 import sphinx.util
@@ -258,6 +260,45 @@ def get_nblink_rst(
         else:
             text += f'`Download this {ftype}. </assets/{path}/{basename}>`_'
     return text
+
+def replace_ipynb_links(line: str, filepath: str) -> str:
+    """
+    Replace relative .ipynb links in a Markdown line with .md links if the .ipynb file exists.
+
+    Arguments
+    ---------
+    line: str
+        A line of Markdown text.
+    filepath: str
+        The path to the Markdown file containing the line.
+
+    Returns
+    -------
+    The modified line with .ipynb links replaced by .md links where applicable.
+    """
+    markdown_link_regex = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
+
+    def replace_link(match):
+        text = match.group(1)
+        link = match.group(2)
+
+        # Do not change absolute links and non-ipynb links
+        parsed_url = urlparse(link)
+        if parsed_url.scheme != '' or parsed_url.netloc != '' or link.lower().endswith('.ipynb'):
+            return match.group(0)
+
+        md_dir = os.path.dirname(os.path.abspath(filepath))
+        ipynb_path = os.path.normpath(os.path.join(md_dir, link))
+
+        if os.path.exists(ipynb_path):
+            new_link = re.sub(r'\.ipynb$', '.md', link, flags=re.IGNORECASE)
+            return f'[{text}]({new_link})'
+        else:
+            # The .ipynb file does not exist; do not modify
+            return match.group(0)
+
+    new_line = markdown_link_regex.sub(replace_link, line)
+    return new_line
 
 def convert_notebook_to_md(filename, directive='{pyodide}'):
     with open(filename, encoding='utf-8') as nb:
