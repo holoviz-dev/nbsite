@@ -317,6 +317,8 @@ def convert_notebook_to_md(filename, directive='{pyodide}'):
             backticks = '`'*nticks
             md += f'{backticks}{directive}\n'
         for src in source:
+            if ctype == 'markdown':
+                src = replace_ipynb_links(src, filename)
             md += src
         if ctype == 'code':
             md += f'\n{backticks}'
