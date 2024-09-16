@@ -291,7 +291,7 @@ def replace_ipynb_links(line: str, filepath: str) -> str:
         ipynb_path = os.path.normpath(os.path.join(md_dir, link))
 
         if os.path.exists(ipynb_path):
-            new_link = re.sub(r'\.ipynb$', '.md', link, flags=re.IGNORECASE)
+            new_link = re.sub(r'\.ipynb$', '', link, flags=re.IGNORECASE)
             return f'[{text}]({new_link})'
         else:
             # The .ipynb file does not exist; do not modify
