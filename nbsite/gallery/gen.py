@@ -284,7 +284,7 @@ def replace_ipynb_links(line: str, filepath: str) -> str:
 
         # Do not change absolute links and non-ipynb links
         parsed_url = urlparse(link)
-        if parsed_url.scheme != '' or parsed_url.netloc != '' or link.lower().endswith('.ipynb'):
+        if parsed_url.scheme != '' or parsed_url.netloc != '' or not link.lower().endswith('.ipynb'):
             return match.group(0)
 
         md_dir = os.path.dirname(os.path.abspath(filepath))
