@@ -59,7 +59,7 @@ jobs:
       - name: conda main upload
         if: (github.event_name == 'push' && !(contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc')))
         run: |
-          doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev --label=main --label tooling --label tooling_dev
+          doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev --label=main --label tooling_dev
   pip_build:
     name: Build PyPI Packages
     runs-on: 'ubuntu-latest'
