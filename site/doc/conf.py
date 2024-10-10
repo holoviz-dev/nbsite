@@ -22,6 +22,8 @@ extensions += [
     'nbsite.gallery',
     # To setup GoatCounter
     'nbsite.analytics',
+    # To add an interactive warning on pages built from a notebook.
+    'nbsite.nb_interactivity_warning',
     # Activate the docstring extension for Numpy: https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
     'sphinx.ext.napoleon',
     # See https://github.com/ipython/ipython/issues/13845
