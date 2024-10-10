@@ -8,4 +8,5 @@
 Usage <usage>
 Gallery <gallery>
 Param reference <param_doc>
+Extra extensions <extra_extension>
 ```
