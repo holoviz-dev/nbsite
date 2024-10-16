@@ -49,18 +49,12 @@ jobs:
         run: |
           set -xe
           python -VV
-          python -m site
           python -m pip install --upgrade pip
-          python -m pip install toml
-          python -m pip install pyctdev
-          python -m pip install setuptools  # for pyctdev on py3.12
-          doit ecosystem_setup
-      - name: doit develop_install
-        run: doit develop_install -o tests
-      - name: env_capture
-        run: doit env_capture
+          python -m pip install -e ".[tests]"
+      - name: pip list
+        run: pip list
       - name: tests
-        run: doit test_unit
+        run: pytest nbsite
   build_docs:
     name: Documentation
     needs: [pre_commit]
