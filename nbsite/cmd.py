@@ -82,8 +82,6 @@ def build(what='html',
         'EXAMPLES_ASSETS':examples_assets,
         'BINDER':binder
     }
-    for k, v in env.items():
-        os.environ[k] = v
     none_vals = {k:v for k,v in env.items() if v is None}
     if none_vals:
         raise Exception("Missing value for %s" % list(none_vals.keys()))
@@ -94,17 +92,25 @@ def build(what='html',
             print('Removing evaluated notebook from {}'.format(path))
             os.remove(path)
 
-    # Currently pyodide does not work with -j auto
     parallel = 0 if disable_parallel else os.cpu_count()
-    app = Sphinx(
-        srcdir=paths["doc"],
-        confdir=paths["doc"],
-        outdir=output,
-        doctreedir=os.path.join(output, ".doctrees"),
-        buildername=what,
-        parallel=parallel,
-    )
-    app.build()
+    # Code smell as there should be a way to configure Sphinx/Nbsite without
+    # env vars, but that's how it was done at the time Sphinx was called
+    # via subprocess.
+    _environ = dict(os.environ)
+    os.environ.update(env)
+    try:
+        app = Sphinx(
+            srcdir=paths["doc"],
+            confdir=paths["doc"],
+            outdir=output,
+            doctreedir=os.path.join(output, ".doctrees"),
+            buildername=what,
+            parallel=parallel,
+        )
+        app.build()
+    finally:
+        os.environ.clear()
+        os.environ.update(_environ)
 
     print('Copying json blobs (used for holomaps) from {} to {}'.format(paths['doc'], output))
     copy_files(paths['doc'], output, '**/*.json')
