@@ -22,7 +22,6 @@ def add_sidebar_content(
     """
     Adds custom content to the right sidebar if the page is a Jupyter Notebook.
     """
-    print("XXX", pagename, context.get("page_source_suffix") )
     if context.get("page_source_suffix") == ".ipynb" or (
         context.get("page_source_suffix") == ".md"
         # There might be other ways to find this out, seems to work.
@@ -40,7 +39,6 @@ def add_sidebar_content(
         else:
             sidebar_items.append("nb-interactivity-warning")
         context["theme_secondary_sidebar_items"] = sidebar_items
-        print("YYY", context["theme_secondary_sidebar_items"])
         logger.debug(
             "Adding 'nb-interactivity-warning' item to the secondary sidebar: %s",
             pagename,
