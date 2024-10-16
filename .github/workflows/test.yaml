@@ -53,6 +53,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install toml
           python -m pip install pyctdev
+          python -m pip install setuptools  # for pyctdev on py3.12
           doit ecosystem_setup
       - name: doit develop_install
         run: doit develop_install -o tests
