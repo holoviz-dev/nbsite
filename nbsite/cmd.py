@@ -49,14 +49,6 @@ def fix_links(output, inspect_links):
         args.append( "--inspect-links")
     subprocess.check_call(args)
 
-def _pyodide_enabled(confpy):
-    import runpy
-    current_dir = os.getcwd()
-    os.chdir(os.path.dirname(confpy))
-    file = runpy.run_path(confpy)
-    os.chdir(current_dir)
-    return 'nbsite.pyodide' in file["extensions"]
-
 def build(what='html',
           output='builtdocs',
           project_root='',
@@ -67,6 +59,7 @@ def build(what='html',
           branch='main',
           org='',
           binder='none',
+          disable_parallel=False,
           examples='examples',
           examples_assets='assets',
           clean_dry_run=False,
@@ -77,17 +70,18 @@ def build(what='html',
 
     Usually this is run after `nbsite scaffold`
     """
-    env={'PROJECT_NAME':project_name,
-         'PROJECT_ROOT':project_root if project_root!='' else os.getcwd(),
-         'HOST':host,
-         'REPO':repo,
-         'BRANCH':branch,
-         'ORG':org,
-         'EXAMPLES':examples,
-         'DOC':doc,
-         'EXAMPLES_ASSETS':examples_assets,
-         'BINDER':binder
-         }
+    env = {
+        'PROJECT_NAME':project_name,
+        'PROJECT_ROOT':project_root if project_root!='' else os.getcwd(),
+        'HOST':host,
+        'REPO':repo,
+        'BRANCH':branch,
+        'ORG':org,
+        'EXAMPLES':examples,
+        'DOC':doc,
+        'EXAMPLES_ASSETS':examples_assets,
+        'BINDER':binder
+    }
     for k, v in env.items():
         os.environ[k] = v
     none_vals = {k:v for k,v in env.items() if v is None}
@@ -101,7 +95,7 @@ def build(what='html',
             os.remove(path)
 
     # Currently pyodide does not work with -j auto
-    parallel = 0 if _pyodide_enabled(os.path.join(paths["doc"], "conf.py")) else os.cpu_count()
+    parallel = 0 if disable_parallel else os.cpu_count()
     app = Sphinx(
         srcdir=paths["doc"],
         confdir=paths["doc"],

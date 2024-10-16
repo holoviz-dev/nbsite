@@ -85,7 +85,7 @@ pyodideWorker.onmessage = async (event) => {
       // Setup bi-directional syncing
       pyodideWorker.documents[msg.id] = jsdoc = view.model.document
       if (pyodideWorker.queues != null && pyodideWorker.queues.has(msg.id)) {
-	// Delete old message queue
+        // Delete old message queue
         pyodideWorker.queues.delete(msg.id)
       }
       jsdoc.on_change(send_change.bind(null, jsdoc, msg.id), false)
@@ -102,9 +102,9 @@ pyodideWorker.onmessage = async (event) => {
       pyodideWorker.documents[msg.id].apply_json_patch(msg.patch, msg.buffers, setter_id='py')
     } finally {
       if (patch_status === 0) {
-	patching.delete(msg.id)
+        patching.delete(msg.id)
       } else {
-	patching.set(msg.id, patch_status)
+        patching.set(msg.id, patch_status)
       }
     }
   }

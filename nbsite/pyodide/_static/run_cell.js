@@ -89,6 +89,8 @@ const _query_params = new Proxy(new URLSearchParams(window.location.search), {
 });
 
 let ACCEPTED = false;
+let INITIALIZED = 0;
+let EXECUTED = false;
 
 const _addRunButtonToCodeCells = () => {
   // If Pyodide Worker hasn't loaded, wait a bit and try again.
@@ -100,6 +102,8 @@ const _addRunButtonToCodeCells = () => {
   // Add copybuttons to all of our code cells
   const RUNBUTTON_SELECTOR = 'div.pyodide div.highlight pre';
   const codeCells = document.querySelectorAll(RUNBUTTON_SELECTOR)
+
+  INITIALIZED += 1
   codeCells.forEach((codeCell, index) => {
     const id = _codeCellId(index)
     const copybtn = codeCell.parentElement.getElementsByClassName('copybtn')
@@ -108,6 +112,12 @@ const _addRunButtonToCodeCells = () => {
     }
     codeCell.setAttribute('id', id)
     codeCell.setAttribute('executed', false)
+
+    // importShim will cause DOMLoaded event to trigger twice so we skip
+    // adding buttons the first time
+    if ((INITIALIZED < 2) && window.importShim) {
+      return
+    }
 
     const RunButton = id =>
     `<button id="button-${id}" class="runbtn o-tooltip--left" data-tooltip="Run cell" data-clipboard-target="#${id}">
@@ -121,14 +131,17 @@ const _addRunButtonToCodeCells = () => {
         _ChangeIcon(e.currentTarget, iconAlert)
         ACCEPTED = true
         return
+      } else if (!EXECUTED) {
+        Bokeh.index.roots.map((v) => v.remove())
+        EXECUTED = true
       }
       let i = 0;
       while (true) {
         let cell_id = _codeCellId(i)
         let cell = document.getElementById(cell_id)
-	if (cell == null) {
-	  break
-	}
+        if (cell == null) {
+          break
+        }
         const output = document.getElementById(`output-${cell_id}`)
         const stdout = document.getElementById(`stdout-${cell_id}`)
         const stderr = document.getElementById(`stderr-${cell_id}`)
@@ -141,13 +154,13 @@ const _addRunButtonToCodeCells = () => {
             stdout.innerHTML = '';
             stdout.style.display = 'none';
           }
-	  if (stderr) {
+          if (stderr) {
             stderr.innerHTML = '';
             stderr.style.display = 'none';
           }
-	  executeCell(cell_id)
+          executeCell(cell_id)
         }
-	i++;
+        i++;
       }
     })
   })
