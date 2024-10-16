@@ -28,7 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu-latest']
-        python-version: ['3.9', '3.10', '3.11']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
     timeout-minutes: 30
     defaults:
       run:
@@ -37,10 +37,10 @@ jobs:
       PYTHON_VERSION: ${{ matrix.python-version }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: "100"
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Fetch
@@ -49,17 +49,12 @@ jobs:
         run: |
           set -xe
           python -VV
-          python -m site
           python -m pip install --upgrade pip
-          python -m pip install toml
-          python -m pip install pyctdev
-          doit ecosystem_setup
-      - name: doit develop_install
-        run: doit develop_install -o tests
-      - name: env_capture
-        run: doit env_capture
+          python -m pip install -e ".[tests]"
+      - name: pip list
+        run: pip list
       - name: tests
-        run: doit test_unit
+        run: pytest nbsite
   build_docs:
     name: Documentation
     needs: [pre_commit]
@@ -71,10 +66,10 @@ jobs:
     env:
       DESC: "Documentation build"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Fetch unshallow
         run: git fetch --prune --tags --unshallow -f
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: set up env
@@ -89,7 +84,7 @@ jobs:
           source .venv/bin/activate
           doit all_build
       - name: Deploy dev
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           personal_token: ${{ secrets.ACCESS_TOKEN }}
           external_repository: pyviz-dev/nbsite-dev
