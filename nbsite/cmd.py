@@ -7,6 +7,8 @@ import sys
 from collections import ChainMap
 from os.path import dirname
 
+from sphinx.application import Sphinx
+
 from .util import copy_files
 
 DEFAULT_SITE_ORDERING = [
@@ -80,8 +82,7 @@ def build(what='html',
         'EXAMPLES_ASSETS':examples_assets,
         'BINDER':binder
     }
-    merged_env = dict(os.environ, **env)
-    none_vals = {k:v for k,v in merged_env.items() if v is None}
+    none_vals = {k:v for k,v in env.items() if v is None}
     if none_vals:
         raise Exception("Missing value for %s" % list(none_vals.keys()))
 
@@ -90,9 +91,27 @@ def build(what='html',
         for path in glob.glob(os.path.join(paths['doc'], '**', '*.ipynb'), recursive=True):
             print('Removing evaluated notebook from {}'.format(path))
             os.remove(path)
-    extras = [] if disable_parallel else ["-j", "auto"]
-    cmd = ["sphinx-build", "-b", what, paths['doc'], output] + extras
-    subprocess.check_call(cmd, env=merged_env)
+
+    parallel = 0 if disable_parallel else os.cpu_count()
+    # Code smell as there should be a way to configure Sphinx/Nbsite without
+    # env vars, but that's how it was done at the time Sphinx was called
+    # via subprocess.
+    _environ = dict(os.environ)
+    os.environ.update(env)
+    try:
+        app = Sphinx(
+            srcdir=paths["doc"],
+            confdir=paths["doc"],
+            outdir=output,
+            doctreedir=os.path.join(output, ".doctrees"),
+            buildername=what,
+            parallel=parallel,
+        )
+        app.build()
+    finally:
+        os.environ.clear()
+        os.environ.update(_environ)
+
     print('Copying json blobs (used for holomaps) from {} to {}'.format(paths['doc'], output))
     copy_files(paths['doc'], output, '**/*.json')
     copy_files(paths['doc'], output, 'json_*')
@@ -101,10 +120,14 @@ def build(what='html',
         print("Copying examples assets from %s to %s"%(paths['examples_assets'],build_assets))
         copy_files(paths['examples_assets'], build_assets)
     fix_links(output, inspect_links)
+
     # create a .nojekyll file in output for github compatibility
-    subprocess.check_call(["touch", os.path.join(output, '.nojekyll')])
+    with open(os.path.join(output, '.nojekyll'), 'w') as f:
+        f.write('')
+
     if not clean_dry_run:
         print("Call `nbsite build` with `--clean-dry-run` to not actually delete files.")
+
     clean(output, clean_dry_run)
 
 def clean(output, dry_run=False):

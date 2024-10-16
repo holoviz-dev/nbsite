@@ -155,7 +155,7 @@ def execute(code, cwd, env):
     with tempfile.NamedTemporaryFile('wb', delete=True) as f:
         f.write(code)
         f.flush()
-        proc = subprocess.Popen(['python', f.name], cwd=cwd, env=env)
+        proc = subprocess.Popen([sys.executable, f.name], cwd=cwd, env=env)
         proc.wait()
         proc.kill()
     return proc.returncode
