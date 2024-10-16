@@ -36,7 +36,10 @@ def add_interactivity_warning_to_body(
     ):
         if HTML_INTERACTIVITY_WARNING not in context.get('body', ''):
             context['body'] += HTML_INTERACTIVITY_WARNING
-
+            logger.debug(
+                "Adding Notebook interactivity warning to page body as HTML: %s",
+                pagename,
+            )
 
 def setup(app: Sphinx):
     # Event triggered when HTML pages are built
