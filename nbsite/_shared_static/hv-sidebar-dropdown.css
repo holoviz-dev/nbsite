@@ -1,0 +1,30 @@
+/* Sidebar styling for the HoloViz dropdown section */
+.hv-sidebar-dropdown {
+  margin-bottom: 0.5em;
+}
+
+.hv-sidebar-dropdown .btn-group {
+  width: 100%;
+}
+
+.hv-sidebar-dropdown a.btn-light {
+  text-align: start;
+  font-size: 0.9rem;
+}
+
+.hv-sidebar-dropdown .dropdown-toggle-split {
+  border-left: solid 1px lightgray;
+}
+
+.hv-sidebar-dropdown .dropdown-menu {
+  width: 100%;
+}
+
+.hv-sidebar-dropdown .dropdown-item {
+  font-size: 0.8rem;
+}
+
+.hv-sidebar-dropdown .hv-icon {
+  font-size: 0.75em;
+  margin-left: 0.3em;
+}

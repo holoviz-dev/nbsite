@@ -105,7 +105,8 @@ html_css_files = [
     'gallery.css',
     'alert.css',
     'dataframe.css',
-    'scroller.css'
+    'scroller.css',
+    'hv-sidebar-dropdown.css',
 ]
 
 # A single line footer that includes the copyright and the last updated date.
@@ -123,8 +124,8 @@ html_theme_options = {
 # The layout.html template in pydata-sphinx-theme removes the default
 # sidebar-nav-bs.html template.
 html_sidebars = {
-    "index": ["sidebar-nav-bs-alt"],
-    "**": ["sidebar-nav-bs-alt"],
+    "index": ["hv-sidebar-dropdown", "sidebar-nav-bs-alt"],
+    "**": ["hv-sidebar-dropdown", "sidebar-nav-bs-alt"],
 }
 
 # To be reused in a conf.py file to define the `copyright` string reused
