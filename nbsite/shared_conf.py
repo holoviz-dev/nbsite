@@ -24,24 +24,6 @@ def holoviz_icon_white(cur_file):
     return str(icon_path)
 
 
-def setup(app):
-    try:
-        from nbsite.paramdoc import param_formatter, param_skip
-        app.connect('autodoc-process-docstring', param_formatter)
-        app.connect('autodoc-skip-member', param_skip)
-    except ImportError:
-        print('no param_formatter (no param?)')
-
-    nbbuild.setup(app)
-    app.connect("builder-inited", remove_mystnb_static)
-
-def remove_mystnb_static(app):
-    # Ensure our myst_nb.css is loaded by removing myst_nb static_path
-    # from config
-    app.config.html_static_path = [
-        p for p in app.config.html_static_path if 'myst_nb' not in p
-    ]
-
 extensions = [
     'myst_nb',
     'sphinx_design',
@@ -208,3 +190,94 @@ def linkcode_resolve(domain, info):
         return f"{GITHUB_BASE_URL}{package}/blob/main/{package}/{fn}{linespec}"
     else:
         return f"{GITHUB_BASE_URL}{package}/blob/v{pver}/{package}/{fn}{linespec}"
+
+
+nbsite_hv_sidebar_dropdown = {
+    'dropdown_value': {
+        'href': 'https://holoviz.org',
+        'text': 'HoloViz.org',
+    },
+    'libraries': {
+        'panel': {
+            'text': 'Panel',
+            'url': 'https://param.holoviz.org',
+            'title': 'Assembling objects from many different libraries into a layout or app, whether in a Jupyter notebook or in a standalone servable dashboard',
+        },
+        'hvplot': {
+            'text': 'hvPlot',
+            'url': 'https://hvplot.holoviz.org',
+            'title': 'Quickly return interactive HoloViews, GeoViews, or Panel objects from Pandas, Xarray, or other data structures',
+        },
+        'holoviews': {
+            'text': 'HoloViews',
+            'url': 'https://holoviews.org',
+            'title': 'Declarative objects for instantly visualizable data, building Bokeh plots from convenient high-level specifications',
+        },
+        'geoviews': {
+            'text': 'GeoViews',
+            'url': 'https://geoviews.org',
+            'title': 'Visualizable geographic data that that can be mixed and matched with HoloViews objects',
+        },
+        'datashader': {
+            'text': 'Datashader',
+            'url': 'https://datashader.org',
+            'title': 'Rasterizing huge datasets quickly as fixed-size images',
+        },
+        'param': {
+            'text': 'Param',
+            'url': 'https://param.holoviz.org',
+            'title': 'Make your Python code clearer and more reliable by declaring Parameters',
+        },
+        'lumen': {
+            'text': 'Lumen',
+            'url': 'https://lumen.holoviz.org',
+            'title': 'Framework for visual analytics that allows users to build data-driven dashboards from a simple YAML specification',
+        },
+        'colorcet': {
+            'text': 'Colorcet',
+            'url': 'https://colorcet.holoviz.org',
+            'title': 'A wide range of perceptually uniform continuous colormaps and perceptually based categorical color sets for use with the other libraries',
+        },
+    },
+    'others': {
+        'examples': {
+            'text': 'Examples Gallery',
+            'url': 'https://examples.holoviz.org',
+            'title': ' Visualization-focused examples using HoloViz for specific topics ',
+        },
+        'blog': {
+            'text': 'Blog',
+            'url': 'https://blog.holoviz.org',
+            'title': 'HoloViz blog',
+        },
+    },
+}
+
+
+def remove_mystnb_static(app):
+    # Ensure our myst_nb.css is loaded by removing myst_nb static_path
+    # from config
+    app.config.html_static_path = [
+        p for p in app.config.html_static_path if 'myst_nb' not in p
+    ]
+
+
+def add_hv_sidebar_dropdown_context(app, pagename, templatename, context, doctree, *args) -> None:
+    # Inject it in the context to make it available to the template namespace.s
+    context['hv_sidebar_dropdown'] = app.config.nbsite_hv_sidebar_dropdown
+
+
+def setup(app):
+    try:
+        from nbsite.paramdoc import param_formatter, param_skip
+        app.connect('autodoc-process-docstring', param_formatter)
+        app.connect('autodoc-skip-member', param_skip)
+    except ImportError:
+        print('no param_formatter (no param?)')
+
+    nbbuild.setup(app)
+    app.connect("builder-inited", remove_mystnb_static)
+
+    # hv_sidebar_dropdown
+    app.add_config_value('nbsite_hv_sidebar_dropdown', {}, 'html')
+    app.connect("html-page-context", add_hv_sidebar_dropdown_context)

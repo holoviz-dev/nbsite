@@ -69,7 +69,6 @@ html_theme_options.update({
             "icon": "fab fa-discourse",
         },
     ],
-    "navbar_end": ["navbar-icon-links"],
     "pygments_light_style": "material",
     "pygments_dark_style": "material",
     'secondary_sidebar_items': [
