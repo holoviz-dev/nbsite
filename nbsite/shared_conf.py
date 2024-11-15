@@ -106,8 +106,8 @@ html_theme_options = {
 # The layout.html template in pydata-sphinx-theme removes the default
 # sidebar-nav-bs.html template.
 html_sidebars = {
-    "index": ["hv-sidebar-dropdown", "sidebar-nav-bs-alt"],
-    "**": ["hv-sidebar-dropdown", "sidebar-nav-bs-alt"],
+    "index": ["sidebar-nav-bs-alt", "hv-sidebar-dropdown"],
+    "**": ["sidebar-nav-bs-alt", "hv-sidebar-dropdown"],
 }
 
 # To be reused in a conf.py file to define the `copyright` string reused
