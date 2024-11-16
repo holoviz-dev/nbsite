@@ -1,0 +1,29 @@
+{% if hv_sidebar_dropdown %}
+<div class="hv-sb-dd">
+  <div class="btn-group">
+    {% if 'href' in hv_sidebar_dropdown['dropdown_value'] %}
+    <a href="{{ hv_sidebar_dropdown['dropdown_value']['href'] }}" class="btn hv-sb-dd-value" target="_blank">{{ hv_sidebar_dropdown['dropdown_value']['text'] }}<i class="fa fa-external-link hv-icon" aria-hidden="true"></i></a>
+    {% else %}
+    <span class="btn hv-sb-dd-value">{{ hv_sidebar_dropdown['dropdown_value']['text'] }}</span>
+    {% endif %}
+    <button type="button" class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+      <span class="visually-hidden"></span>
+    </button>
+    <ul class="dropdown-menu">
+      {% for project_name, project_opts in hv_sidebar_dropdown['libraries'].items() %}
+      {% if project_name | lower not in project | lower %}
+        <li><a class="dropdown-item" href="{{ project_opts['url'] }}" target="_blank" title="{{ project_opts['title'] }}">{{ project_opts['text'] }}<i class="fa fa-external-link hv-icon" aria-hidden="true"></i></a></li>
+      {% endif %}
+      {% endfor %}
+      {% if hv_sidebar_dropdown['others'] %}
+      <li><hr class="dropdown-divider"></li>
+      {% for project_name, project_opts in hv_sidebar_dropdown['others'].items() %}
+      {% if project_name | lower not in project | lower %}
+      <li><a class="dropdown-item" href="{{ project_opts['url'] }}" target="_blank" title="{{ project_opts['title'] }}">{{ project_opts['text'] }}<i class="fa fa-external-link hv-icon" aria-hidden="true"></i></a></li>
+      {% endif %}
+      {% endfor %}
+      {% endif %}
+    </ul>
+  </div>
+</div>
+{% endif %}
