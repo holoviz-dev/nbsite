@@ -68,7 +68,7 @@ setup_args = dict(
         'jinja2',
         'pillow',
         'portalocker',
-        'pydata-sphinx-theme >=0.15,<0.16',
+        'pydata-sphinx-theme >=0.15,<0.17',
         'myst-parser >=3',
         'sphinx-copybutton',
         'sphinx-design',
