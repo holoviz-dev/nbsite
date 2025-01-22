@@ -264,7 +264,7 @@ class PyodideDirective(Directive):
         Process execution loop to run in separate process that is used
         to evaluate code.
         """
-        async def loop():
+        async def event_loop():
             while True:
                 msg = pipe.recv()
                 if msg['type'] == 'close':
@@ -301,9 +301,11 @@ class PyodideDirective(Directive):
                         content = None
                     js, js_exports, js_modules, css, global_exports = extract_extensions(code)
                 pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_exports, js_modules, css, global_exports))
+            loop = asyncio.get_running_loop()
+            await loop.shutdown_default_executor()
             cur_task = asyncio.current_task()
             await asyncio.gather(*(t for t in asyncio.all_tasks() if t is not cur_task), return_exceptions=True)
-        asyncio.get_event_loop().run_until_complete(loop())
+        asyncio.get_event_loop().run_until_complete(event_loop())
         pipe.close()
 
     @classmethod
