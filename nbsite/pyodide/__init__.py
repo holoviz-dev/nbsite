@@ -301,11 +301,12 @@ class PyodideDirective(Directive):
                         content = None
                     js, js_exports, js_modules, css, global_exports = extract_extensions(code)
                 pipe.send((content, mime_type, stdout.getvalue(), stderr.getvalue(), js, js_exports, js_modules, css, global_exports))
-            loop = asyncio.get_running_loop()
-            await loop.shutdown_asyncgens()
-            await loop.shutdown_default_executor()
-            cur_task = asyncio.current_task()
-            await asyncio.gather(*(t for t in asyncio.all_tasks() if t is not cur_task), return_exceptions=True)
+
+            tasks = asyncio.all_tasks() - {asyncio.current_task()}
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+
         asyncio.get_event_loop().run_until_complete(event_loop())
         pipe.close()
 
