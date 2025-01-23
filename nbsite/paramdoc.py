@@ -25,7 +25,7 @@ def param_formatter(app, what, name, obj, options, lines):
         lines = ["start"]
 
     if what == 'class' and isinstance(obj, param.parameterized.ParameterizedMetaclass):
-
+        lines.extend(['Parameter Definitions', '~~~~~~~~~~~~~~~~~~~~~'])
         parameters = ['name']
         mro = obj.mro()[::-1]
         inherited = []
@@ -73,9 +73,9 @@ def param_formatter(app, what, name, obj, options, lines):
             params_str = params_str[:-2]
             ptype = pobj.__class__.__name__
             if params_str.lstrip():
-                lines.extend(["", "``%s`` = param.%s(%s)" % (child, ptype, params_str), "    %s" % doc])
+                lines.extend(["", "``%s = param.%s(%s)``" % (child, ptype, params_str), "    %s" % doc])
             else:
-                lines.extend(["", "``%s`` = param.%s()" % (child, ptype), "    %s" % doc])
+                lines.extend(["", "``%s = param.%s()``" % (child, ptype), "    %s" % doc])
 
 
 def param_skip(app, what, name, obj, skip, options):
@@ -86,3 +86,6 @@ def param_skip(app, what, name, obj, skip, options):
             (getattr(obj, '__qualname__', '').startswith('Parameterized.') and
              getattr(obj, '__class__', str).__name__ == 'function')
         )
+    elif what == 'module' and not skip and isinstance(obj, type) and issubclass(obj, param.Parameterized):
+        options['members'] = [member for member in dir(obj) if not member.startswith('_') and member not in obj.param]
+        return skip
