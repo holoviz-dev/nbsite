@@ -13,11 +13,11 @@ param.parameterized.docstring_describe_params = False
 IGNORED_ATTRS = [
     'precedence', 'check_on_set', 'instantiate', 'pickle_default_value',
     'watchers', 'compute_default_fn', 'doc', 'owner', 'per_instance',
-    'is_instance', 'name', 'time_fn', 'time_dependent'
+    'is_instance', 'name', 'time_fn', 'time_dependent', 'rx'
 ]
 
 # Default parameter attribute values (value not shown if it matches defaults)
-DEFAULT_VALUES = {'allow_None': False, 'readonly': False, 'constant': False}
+DEFAULT_VALUES = {'allow_None': False, 'readonly': False, 'constant': False, 'allow_refs': False, 'nested_refs': False}
 
 
 def param_formatter(app, what, name, obj, options, lines):
