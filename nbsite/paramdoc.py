@@ -25,7 +25,7 @@ def param_formatter(app, what, name, obj, options, lines):
         lines = ["start"]
 
     if what == 'class' and isinstance(obj, param.parameterized.ParameterizedMetaclass):
-        lines.extend(['Parameter Definitions', '~~~~~~~~~~~~~~~~~~~~~'])
+        lines.extend(['**Parameter Definitions**', '', '-------', ''])
         parameters = ['name']
         mro = obj.mro()[::-1]
         inherited = []
@@ -39,9 +39,7 @@ def param_formatter(app, what, name, obj, options, lines):
             parameters += cls_params
             cname = cls.__name__
             module = cls.__module__
-            inherited.extend(['', '    :class:`{module}.{name}`: {params}'.format(
-                name=cname, module=module, params=', '.join(cls_params))
-            ])
+            inherited.extend(['', f"    :class:`{module}.{cname}`: {', '.join(cls_params)}"])
         if inherited:
             lines.extend(["Parameters inherited from: "]+inherited)
 
@@ -73,10 +71,9 @@ def param_formatter(app, what, name, obj, options, lines):
             params_str = params_str[:-2]
             ptype = pobj.__class__.__name__
             if params_str.lstrip():
-                lines.extend(["", "``%s = param.%s(%s)``" % (child, ptype, params_str), "    %s" % doc])
+                lines.extend(["", f"``{child} = {ptype}({params_str})``", f"    {doc}"])
             else:
-                lines.extend(["", "``%s = param.%s()``" % (child, ptype), "    %s" % doc])
-
+                lines.extend(["", f"``{child} = {ptype}()``", f"    {doc}"])
 
 def param_skip(app, what, name, obj, skip, options):
     if what == 'class' and not skip:
@@ -87,5 +84,12 @@ def param_skip(app, what, name, obj, skip, options):
              getattr(obj, '__class__', str).__name__ == 'function')
         )
     elif what == 'module' and not skip and isinstance(obj, type) and issubclass(obj, param.Parameterized):
-        options['members'] = [member for member in dir(obj) if not member.startswith('_') and member not in obj.param]
+        # HACK: Sphinx incorrectly labels this as a module level discovery
+        #       We abuse this skip callback to exclude parameters and
+        #       include all methods
+        members = [member for member in dir(obj) if not member.startswith('_') and member not in obj.param]
+        if isinstance(options['members'], list):
+            options['members'] += members
+        else:
+            options['members'] = members
         return skip
