@@ -73,6 +73,7 @@ setup_args = dict(
         'sphinx-copybutton',
         'sphinx-design',
         'sphinxext-rediraffe',
+        'packaging',
     ],
     extras_require= {
         'refman':[
