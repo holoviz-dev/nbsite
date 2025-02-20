@@ -41,8 +41,10 @@ import sys
 import typing
 
 from contextlib import contextmanager
+from pathlib import Path
 
 import nbformat
+import sphinx
 
 from docutils.parsers.rst import Directive, directives
 from docutils.statemachine import string2lines
@@ -52,6 +54,7 @@ from nbconvert import NotebookExporter, PythonExporter
 from nbconvert.preprocessors import (
     CellExecutionError, ExecutePreprocessor, Preprocessor,
 )
+from packaging.version import Version
 from sphinx.util import logging
 
 from .cmd import _prepare_paths, hosts
@@ -475,6 +478,9 @@ def patch_project_doc2path(env, nb_path):
     # Overriding the doc2path Project method to directly return the
     # absolute notebook path.
     old_doc2path = env.project.doc2path
+
+    if Version(sphinx.__version__).release >= (8, 2, 0):
+        nb_path = Path(nb_path)
 
     def new_doc2path(docname: str, absolute: bool):
         return nb_path
