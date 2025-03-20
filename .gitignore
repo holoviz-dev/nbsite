@@ -27,3 +27,7 @@ site/builtdocs/
 site/.venv/
 
 build/
+
+# pixi
+.pixi
+pixi.lock

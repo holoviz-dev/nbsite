@@ -40,3 +40,9 @@ select = [
 ignore-words-list = "nd,doubleclick"
 skip = "site/examples/playground/notebook_directive/preexecuted.ipynb"
 write-changes = true
+
+[tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers", "--color=yes"]
+minversion = "7"
+xfail_strict = true
+log_cli_level = "INFO"
