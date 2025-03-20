@@ -27,6 +27,7 @@ site/builtdocs/
 site/.venv/
 
 build/
+dist
 
 # pixi
 .pixi
