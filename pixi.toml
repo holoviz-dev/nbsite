@@ -95,16 +95,25 @@ numpy = "*"
 
 [feature.test-core.dependencies]
 # Minimum dependencies required to run the test suite.
+myst-nb = "*"
+nbconvert = "*"
+param = "*"
 parameterized = "*"
+pydata-sphinx-theme = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-mpl = "*"
 sphinx = "*"
-myst_nb = "*"
+sphinx-copybutton = "*"
+sphinx-design = "*"
+sphinxext-rediraffe = "*"
 
 [feature.test-example.dependencies]
 # Dependencies required to run the examples notebooks.
+hvplot = "*"
 nbval = "*"
+panel = "*"
+plotly = "*"
 pytest-xdist = "*"
 
 [feature.test.dependencies]
@@ -134,7 +143,7 @@ MOZ_HEADLESS = "1"
 DISPLAY = ":99.0"
 
 [feature.doc.tasks]
-docs-build-sphinx = 'sphinx-build -b html doc builtdocs'
+docs-build-sphinx = 'sphinx-build -b html site/doc builtdocs'
 _docs-install = 'python -m pip install --no-deps --disable-pip-version-check -e .'
 # Depends on _docs-install instead of install as install
 # in the default environment
