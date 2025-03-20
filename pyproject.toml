@@ -46,3 +46,4 @@ addopts = ["--strict-config", "--strict-markers", "--color=yes"]
 minversion = "7"
 xfail_strict = true
 log_cli_level = "INFO"
+markers = ["slow: mark test as slow to run (deselect with '-m not slow')",]
