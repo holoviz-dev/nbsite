@@ -1,5 +1,6 @@
 import glob
 import os
+import posixpath
 import re
 import subprocess
 import sys
@@ -281,7 +282,7 @@ def generate_rst(
                 add_nblink(rst_file, host, org, repo, branch, examples, relpath)
                 rst_file.write('\n\n-------\n\n')
 
-            rst_file.write(".. notebook:: %s %s" % (project_name,os.path.relpath(paths['examples'],start=dirname(rst))+'/'+relpath+"\n"))
+            rst_file.write(".. notebook:: %s %s" % (project_name, posixpath.relpath(paths["examples"], start=dirname(rst)) + "/" + relpath + "\n"))
             rst_file.write("    :offset: %s\n" % offset)
             if disable_interactivity_warning:
                 rst_file.write("    :disable_interactivity_warning:\n")
