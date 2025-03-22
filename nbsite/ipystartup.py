@@ -2,9 +2,11 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-import matplotlib as mpl
-
-mpl.use('agg')
+try:
+    import matplotlib as mpl
+    mpl.use('agg')
+except ModuleNotFoundError:
+    pass
 
 try:
     import holoviews.plotting.bokeh  # noqa
