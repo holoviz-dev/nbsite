@@ -6,6 +6,7 @@ import sys
 
 from collections import ChainMap
 from os.path import dirname
+from pathlib import Path
 
 from sphinx.application import Sphinx
 
@@ -19,6 +20,7 @@ DEFAULT_SITE_ORDERING = [
     "FAQ",
     "API"
 ]
+SCRIPT_DIR = str(Path(__file__).parents[1] / "scripts")
 
 def init(project_root='', doc='doc', theme=''):
     """
@@ -44,10 +46,10 @@ hosts = {
 # maybe add task dependencies
 
 def fix_links(output, inspect_links):
-    args = ["nbsite_fix_links.py", output]
+    args = [sys.executable, "nbsite_fix_links.py", output]
     if inspect_links:
         args.append( "--inspect-links")
-    subprocess.check_call(args)
+    subprocess.check_call(args, cwd=SCRIPT_DIR)
 
 def build(what='html',
           output='builtdocs',
@@ -132,9 +134,9 @@ def build(what='html',
 
 def clean(output, dry_run=False):
     if dry_run:
-        subprocess.check_call(["nbsite_cleandisthtml.py",output])
+        subprocess.check_call([sys.executable, "nbsite_cleandisthtml.py", output], cwd=SCRIPT_DIR)
     else:
-        subprocess.check_call(["nbsite_cleandisthtml.py",output,'take_a_chance'])
+        subprocess.check_call([sys.executable, "nbsite_cleandisthtml.py", output, 'take_a_chance'], cwd=SCRIPT_DIR)
 
 def _prepare_paths(root,examples='',doc='',examples_assets=''):
     if root=='':
