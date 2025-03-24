@@ -145,10 +145,11 @@ DISPLAY = ":99.0"
 
 [feature.doc.tasks]
 _docs-build = "cd site && doit all_build"
-docs-clean = "cd site && doit clean --clean-dep all_build"
 _docs-setup = "cd site && bash -c 'python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt'"
 docs-serve = "cd site/builtdocs && python -m http.server 8000"
 docs-build = { depends-on = ["_docs-setup", "_docs-build"] }
+# Clean up the build artifacts after building the docs
+docs-clean = "cd site && doit clean --clean-dep all_build"
 
 # ================== BUILD ====================
 

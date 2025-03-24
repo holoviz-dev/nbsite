@@ -210,6 +210,12 @@ The documentation can be built with the command:
 pixi run docs-build
 ```
 
+After building the docs, you can clean up the build artifacts by running:
+
+```bash
+pixi run docs-clean
+```
+
 A development version of nbsite can be found [here](https://holoviz-dev.github.io/nbsite/). You can ask a maintainer if they want to make a dev release for your PR, but there is no guarantee they will say yes.
 
 ## Build
