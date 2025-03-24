@@ -322,7 +322,7 @@ class FixNotebookLinks(Preprocessor):
             directory, stem = os.path.split(nb_path_without_extension)
             match = re.match(r"\d+[ -_](.*)", stem)
             if match:
-                yield os.path.join(directory, match.group(1) + '.' + extension)
+                yield os.path.join(directory, match.group(1) + '.' + extension).replace("\\", "/")
 
 
     @classmethod
