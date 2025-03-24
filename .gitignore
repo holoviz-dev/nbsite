@@ -32,3 +32,6 @@ dist
 # pixi
 .pixi
 pixi.lock
+
+# mystnb
+jupyter_execute/
