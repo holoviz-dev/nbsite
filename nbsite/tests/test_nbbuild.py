@@ -102,7 +102,7 @@ class TestFixNotebookLinks:
 
             @staticmethod
             def _file_exists(file_path):
-                normalized_path = os.path.normpath(file_path)
+                normalized_path = os.path.normpath(file_path).replace("\\", "/")
                 # mock existence of certain files
                 return normalized_path in {
                     "/tmp/somepath/user_guide/first.rst",
