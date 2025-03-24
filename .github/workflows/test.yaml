@@ -187,7 +187,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           personal_token: ${{ secrets.ACCESS_TOKEN }}
-          external_repository: pyviz-dev/nbsite-dev
+          external_repository: holoviz-dev/nbsite-dev
           publish_dir: ./site/builtdocs
           force_orphan: true
       - name: clean up
