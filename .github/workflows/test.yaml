@@ -154,3 +154,46 @@ jobs:
       - name: check for failures
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: echo job failed && exit 1
+
+  build_docs:
+    name: Documentation
+    needs: [pre_commit]
+    runs-on: 'ubuntu-latest'
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      DESC: "Documentation build"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch unshallow
+        run: git fetch --prune --tags --unshallow -f
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: set up env
+        run: |
+          cd site
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+      - name: build docs
+        run: |
+          cd site
+          source .venv/bin/activate
+          doit all_build
+      - name: Deploy dev
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          personal_token: ${{ secrets.ACCESS_TOKEN }}
+          external_repository: pyviz-dev/nbsite-dev
+          publish_dir: ./site/builtdocs
+          force_orphan: true
+      - name: clean up
+        run: |
+          cd site
+          source .venv/bin/activate
+          doit clean --clean-dep all_build
+      - name: check no leftover
+        run: git diff --quiet || exit 1
