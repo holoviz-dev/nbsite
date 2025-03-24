@@ -88,8 +88,11 @@ lab = 'jupyter lab'
 [feature.example.dependencies]
 bokeh = "*"
 holoviews = "*"
+hvplot = "*"
 matplotlib = "*"
 numpy = "*"
+panel = "*"
+plotly = "*"
 
 # =================== TESTS ===================
 
