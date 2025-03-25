@@ -165,20 +165,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Fetch unshallow
         run: git fetch --prune --tags --unshallow -f
-      - uses: actions/setup-python@v5
+      - uses: holoviz-dev/holoviz_tasks/pixi_install@v0
         with:
-          python-version: '3.11'
-      - name: set up env
-        run: |
-          cd site
-          python -m venv .venv
-          source .venv/bin/activate
-          pip install -r requirements.txt
-      - name: build docs
-        run: |
-          cd site
-          source .venv/bin/activate
-          doit all_build
+          environments: docs
+      - name: Build docs
+        run: pixi run -e docs docs-build
       - name: Deploy dev
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -187,9 +178,7 @@ jobs:
           publish_dir: ./site/builtdocs
           force_orphan: true
       - name: clean up
-        run: |
-          cd site
-          source .venv/bin/activate
-          doit clean --clean-dep all_build
+        run: pixi run -e docs docs-clean
+
       - name: check no leftover
         run: git diff --quiet || exit 1
