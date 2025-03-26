@@ -179,9 +179,14 @@ def linkcode_resolve(domain, info):
     linespec = f"#L{lineno}-L{lineno + len(source) - 1}" if lineno else ""
 
     package = get_repo_dir()
+    package = package.lower().replace('-', '_')
+    try:
+        top_module = importlib.__import__(package)
+    except ModuleNotFoundError:
+        return
 
-    ppath = importlib.__import__(package).__file__
-    pver = importlib.__import__(package).__version__
+    ppath = top_module.__file__
+    pver = top_module.__version__
 
     fn = os.path.relpath(fn, start=os.path.dirname(ppath))
 

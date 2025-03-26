@@ -6,7 +6,6 @@ import subprocess
 import sys
 import tempfile
 
-import matplotlib.pyplot as plt
 from holoviews.core import Dimensioned, Store
 from holoviews.ipython.preprocessors import (OptsMagicProcessor,
                                              OutputMagicProcessor,
@@ -14,7 +13,11 @@ from holoviews.ipython.preprocessors import (OptsMagicProcessor,
 from holoviews.util.command import export_to_python
 from nbconvert.preprocessors import Preprocessor
 
-plt.switch_backend('agg')
+try:
+    import matplotlib.pyplot as plt
+    plt.switch_backend('agg')
+except ModuleNotFoundError:
+    pass
 
 def comment_out_magics(source):
     """
