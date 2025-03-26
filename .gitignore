@@ -35,3 +35,6 @@ pixi.lock
 
 # mystnb
 jupyter_execute/
+
+# version
+_version.py
