@@ -10,6 +10,7 @@ name = "nbsite"
 dynamic = ["version"]
 description = "Build a tested, sphinx-based website from notebooks."
 readme = "README.md"
+license = { text = "BSD" }
 requires-python = ">=3.9"
 authors = [
     { name = "HoloViz developers", email = "developers@holoviz.org" },
@@ -65,6 +66,9 @@ tests = [
     'pre-commit',
 ]
 
+[project.scripts]
+nbsite = "nbsite.scripts.conda:build"
+
 [project.urls]
 Documentation = "https://nbsite.holoviz.org/"
 Source = "https://github.com/holoviz-dev/nbsite"
@@ -99,7 +103,6 @@ select = [
     "F",
     "W",
 ]
-
 
 [tool.codespell]
 ignore-words-list = "nd,doubleclick"

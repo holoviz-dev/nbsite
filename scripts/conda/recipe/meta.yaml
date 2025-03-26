@@ -1,17 +1,18 @@
-{% set sdata = load_setup_py_data() %}
+{% set pyproject = load_file_data('../../../pyproject.toml', from_recipe_dir=True) %}
+{% set project = pyproject['project'] %}
 
 package:
-  name: nbsite
-  version: {{ sdata['version'] }}
+  name: {{ project["name"] }}
+  version: {{ VERSION }}
 
 source:
-  path: ../../../dist/{{ name }}-{{ version }}.tar.gz
+  url: ../../../dist/{{ project["name"] }}-{{ VERSION }}.tar.gz
 
 build:
   noarch: python
-  script: python setup.py install --single-version-externally-managed --record=record.txt
+  script: {{ PYTHON }} -m pip install --no-deps -vv .
   entry_points:
-    {% for group,epoints in sdata.get("entry_points",{}).items() %}
+    {% for group,epoints in project.get("entry_points",{}).items() %}
     {% for entry_point in epoints %}
     - {{ entry_point }}
     {% endfor %}
@@ -19,26 +20,25 @@ build:
 
 requirements:
   build:
-    - python {{ sdata['python_requires'] }}
-    {% for dep in sdata['extras_require']['build'] %}
+    - python {{ project['requires-python'] }}
+    {% for dep in pyproject['build-system']['requires'] %}
     - {{ dep }}
     {% endfor %}
   run:
-    - python {{ sdata['python_requires'] }}
-    {% for dep in sdata.get('install_requires',{}) %}
+    - python {{ project['requires-python'] }}
+    {% for dep in project.get('dependencies', []) %}
     - {{ dep }}
     {% endfor %}
 
 test:
   imports:
-    - nbsite
-  requires:
-    - pip
+    - {{ project["name"] }}
   commands:
     - pip check
-    - nbsite --help
+  requires:
+    - pip
 
 about:
-  home: {{ sdata['url'] }}
-  summary: {{ sdata['description'] }}
-  license: {{ sdata['license'] }}
+  home: {{ project['urls']['Documentation'] }}
+  summary: {{ project['description'] }}
+  license: {{ project['license']['text'] }}
