@@ -2,8 +2,75 @@
 requires = [
     "param >=1.7.0",
     "setuptools >=30.3.0",
+    "setuptools_scm >=6",
     "wheel"
 ]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nbsite"
+dynamic = ["version"]
+description = "Build a tested, sphinx-based website from notebooks."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "HoloViz developers", email = "developers@holoviz.org" },
+]
+maintainers = [
+    { name = "HoloViz developers", email = "developers@holoviz.org" },
+]
+classifiers = [
+        "License :: OSI Approved :: BSD License",
+        "Development Status :: 3 - Alpha",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Operating System :: OS Independent",
+        "Intended Audience :: Developers",
+        "Natural Language :: English",
+]
+
+dependencies = [
+    'param>=1.7.0',
+    'pyviz_comms',
+    'ipykernel',
+    'nbformat',
+    'nbconvert',
+    'jupyter_client',
+    'myst-nb>=1.1',
+    'sphinx-design',
+    'notebook',
+    'sphinx>=7',
+    'beautifulsoup4',
+    'jinja2',
+    'pillow',
+    'portalocker',
+    'pydata-sphinx-theme<0.17,>=0.15',
+    'myst-parser>=3',
+    'sphinx-copybutton',
+    'sphinx-design',
+    'sphinxext-rediraffe',
+    'packaging'
+]
+
+[project.optional-dependencies]
+refman = ['graphviz']
+gallery = [
+    'selenium',
+    'phantomjs',
+]
+tests = [
+    'flake8',
+    'pytest >=3.9.1',
+    'pre-commit',
+]
+
+[project.urls]
+Documentation = "https://nbsite.holoviz.org/"
+Source = "https://github.com/holoviz-dev/nbsite"
+BugTracker = "https://github.com/holoviz-dev/nbsite/issues"
 
 [tool.ruff]
 exclude = [
@@ -47,3 +114,12 @@ minversion = "7"
 xfail_strict = true
 log_cli_level = "INFO"
 markers = ["slow: mark test as slow to run (deselect with '-m not slow')",]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["nbsite"]
+
+[tool.setuptools_scm]
+version_file = "nbsite/_version.py"
