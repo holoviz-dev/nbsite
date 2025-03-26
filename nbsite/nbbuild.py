@@ -39,21 +39,18 @@ import shutil
 import string
 import sys
 import typing
-
 from contextlib import contextmanager
 from pathlib import Path
 
 import nbformat
 import sphinx
-
 from docutils.parsers.rst import Directive, directives
 from docutils.statemachine import string2lines
 from docutils.utils import new_document
 from myst_nb.sphinx_ import Parser
 from nbconvert import NotebookExporter, PythonExporter
-from nbconvert.preprocessors import (
-    CellExecutionError, ExecutePreprocessor, Preprocessor,
-)
+from nbconvert.preprocessors import (CellExecutionError, ExecutePreprocessor,
+                                     Preprocessor)
 from packaging.version import Version
 from sphinx.util import logging
 

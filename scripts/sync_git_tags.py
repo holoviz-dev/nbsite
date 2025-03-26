@@ -3,7 +3,6 @@ Script to sync tags from upstream repository to forked repository
 """
 
 import sys
-
 from subprocess import run
 
 

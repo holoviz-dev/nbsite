@@ -3,14 +3,12 @@ import json
 import logging
 import os
 import re
-
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from urllib.parse import urlparse
 
 import requests
 import sphinx.util
-
 from PIL import Image
 
 try:

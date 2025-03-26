@@ -9,7 +9,6 @@ import subprocess
 import sys
 
 import nbsite as _nbsite
-
 from nbsite import nbbuild
 from nbsite.util import base_version  # noqa
 
