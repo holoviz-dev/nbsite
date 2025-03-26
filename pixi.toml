@@ -4,30 +4,29 @@ channels = ["pyviz/label/dev", "conda-forge"]
 platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 
 [activation.env]
-MPLBACKEND = "Agg"
 PYTHONIOENCODING = "utf-8"
 
 [environments]
-default = ["py312", "required", "test-core", "test", "example", "test-example", "lint", "dev"]
+default = ["py312", "required", "test", "example", "test-example", "lint", "dev"]
 
 [environments.test-39]
-features = ["py39", "required", "test-core", "test", "example", "test-example"]
+features = ["py39", "required", "test", "example", "test-example"]
 no-default-feature = true
 
 [environments.test-310]
-features = ["py310", "required", "test-core", "test", "example", "test-example"]
+features = ["py310", "required", "test", "example", "test-example"]
 no-default-feature = true
 
 [environments.test-311]
-features = ["py311", "required", "test-core", "test", "example", "test-example"]
+features = ["py311", "required", "test", "example", "test-example"]
 no-default-feature = true
 
 [environments.test-312]
-features = ["py312", "required", "test-core", "test", "example", "test-example"]
+features = ["py312", "required", "test", "example", "test-example"]
 no-default-feature = true
 
-[environments.test-core]
-features = ["py313", "required", "test-core"]
+[environments.test-313]
+features = ["py313", "required", "test", "example", "test-example"]
 no-default-feature = true
 
 [environments.docs]
@@ -43,8 +42,27 @@ features = ["lint"]
 no-default-feature = true
 
 [feature.required.dependencies]
+beautifulsoup4 = "*"
+ipykernel = "*"
+jinja2 = "*"
+jupyter_client = "*"
+myst-nb = ">=1.1"
+myst-parser = '>=3'
+nbconvert = "*"
+nbformat = "*"
 nomkl = "*"
+notebook = "*"
+packaging = "*"
+param = '>=1.7.0'
+pillow = "*"
 pip = "*"
+portalocker = "*"
+pydata-sphinx-theme = '>=0.15,<0.17'
+pyviz_comms = "*"
+sphinx = '>=7'
+sphinx-copybutton = "*"
+sphinx-design = "*"
+sphinxext-rediraffe = "*"
 
 [feature.required.tasks]
 install = 'python -m pip install --no-deps --disable-pip-version-check -e .'
@@ -96,34 +114,18 @@ plotly = "*"
 
 # =================== TESTS ===================
 
-[feature.test-core.dependencies]
-# Minimum dependencies required to run the test suite.
-myst-nb = "*"
-nbconvert = "*"
-param = "*"
-parameterized = "*"
-pydata-sphinx-theme = "*"
-pytest = "*"
-sphinx = "*"
-sphinx-copybutton = "*"
-sphinx-design = "*"
-sphinxext-rediraffe = "*"
-
 [feature.test-example.dependencies]
 # Dependencies required to run the examples notebooks.
-hvplot = "*"
 nbval = "*"
-panel = "*"
-plotly = "*"
 pytest-xdist = "*"
 
 [feature.test.dependencies]
 # Minimum dependencies required to run the test suite.
-matplotlib = "*"
-bokeh = "*"
-packaging = "*"
+parameterized = "*"
+pytest = "*"
+pytest-cov = "*"
 
-[feature.test-core.tasks]
+[feature.test.tasks]
 test-unit = 'pytest nbsite/tests'
 
 [feature.test-example.tasks]
@@ -137,19 +139,24 @@ channels = [
     "pyviz/label/tooling_dev",
     "conda-forge",
 ]
-dependencies = { nbsite = ">=0.8.6", portalocker = "*" }
+
+[feature.doc.dependencies]
+bokeh = "*"
+doit = "*"
+matplotlib = "*"
+hvplot = "*"
+plotly = "*"
 
 [feature.doc.activation.env]
 MOZ_HEADLESS = "1"
 DISPLAY = ":99.0"
 
 [feature.doc.tasks]
-_docs-build = "cd site && doit all_build"
-_docs-setup = "cd site && bash -c 'python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt'"
-docs-serve = "cd site/builtdocs && python -m http.server 8000"
-docs-build = { depends-on = ["_docs-setup", "_docs-build"] }
+docs-build = {cmd="doit all_build", cwd="site"}
+# Visit http://localhost:8000 after running docs-serve
+docs-serve = {cmd="python -m http.server 8000", cwd="site/builtdocs"}
 # Clean up the build artifacts after building the docs
-docs-clean = "cd site && doit clean --clean-dep all_build"
+docs-clean = {cmd="doit clean --clean-dep all_build", cwd="site"}
 
 # ================== BUILD ====================
 
