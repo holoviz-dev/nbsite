@@ -141,11 +141,7 @@ channels = [
 ]
 
 [feature.doc.dependencies]
-bokeh = "*"
 doit = "*"
-matplotlib = "*"
-hvplot = "*"
-plotly = "*"
 
 [feature.doc.activation.env]
 MOZ_HEADLESS = "1"
@@ -153,8 +149,7 @@ DISPLAY = ":99.0"
 
 [feature.doc.tasks]
 docs-build = {cmd="doit all_build", cwd="site"}
-# Visit http://localhost:8000 after running docs-serve
-docs-serve = {cmd="python -m http.server 8000", cwd="site/builtdocs"}
+docs-serve = {cmd="python -m http.server 8000 --bind 127.0.0.1", cwd="site/builtdocs"}
 # Clean up the build artifacts after building the docs
 docs-clean = {cmd="doit clean --clean-dep all_build", cwd="site"}
 

@@ -65,6 +65,7 @@ jobs:
               - 'pixi.toml'
               - 'pyproject.toml'
               - '.github/workflows/test.yaml'
+              - 'scripts/nbsite_*.py'
       - name: Set matrix option
         run: |
           if [[ '${{ github.event_name }}' == 'workflow_dispatch' ]]; then

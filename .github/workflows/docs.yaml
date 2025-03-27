@@ -56,7 +56,7 @@ jobs:
         with:
           name: docs
           if-no-files-found: error
-          path: builtdocs
+          path: site/builtdocs
       - name: Set output
         id: vars
         run: |
@@ -79,7 +79,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: docs
-          path: builtdocs/
+          path: site/builtdocs/
       - name: Set output
         id: vars
         run: echo "tag=${{ needs.docs_build.outputs.tag }}" >> $GITHUB_OUTPUT
