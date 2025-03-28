@@ -107,7 +107,7 @@ lab = 'jupyter lab'
 bokeh = "*"
 holoviews = "*"
 hvplot = "*"
-matplotlib = "*"
+matplotlib-base = "*"
 numpy = "*"
 panel = "*"
 plotly = "*"
@@ -121,7 +121,6 @@ pytest-xdist = "*"
 
 [feature.test.dependencies]
 # Minimum dependencies required to run the test suite.
-parameterized = "*"
 pytest = "*"
 pytest-cov = "*"
 

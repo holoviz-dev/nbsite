@@ -65,7 +65,6 @@ jobs:
               - 'pixi.toml'
               - 'pyproject.toml'
               - '.github/workflows/test.yaml'
-              - 'scripts/nbsite_*.py'
       - name: Set matrix option
         run: |
           if [[ '${{ github.event_name }}' == 'workflow_dispatch' ]]; then
@@ -118,7 +117,7 @@ jobs:
           environments: ${{ matrix.environment }}
       - name: Test Unit
         run: |
-          pixi run -e ${{ matrix.environment }} test-unit
+          pixi run -e ${{ matrix.environment }} test-unit $COV
       - name: Test Examples
         run: |
           pixi run -e ${{ matrix.environment }} test-example
@@ -150,6 +149,7 @@ jobs:
       - name: Build docs
         run: pixi run -e docs docs-build
       - name: Deploy dev
+        if: ${{ github.event.repository.fork == false }}
         uses: peaceiris/actions-gh-pages@v4
         with:
           personal_token: ${{ secrets.ACCESS_TOKEN }}
@@ -158,6 +158,5 @@ jobs:
           force_orphan: true
       - name: clean up
         run: pixi run -e docs docs-clean
-
       - name: check no leftover
         run: git diff --quiet || exit 1

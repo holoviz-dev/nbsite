@@ -70,7 +70,7 @@ def task_build_site():
 
     return {
         'actions': [
-            'nbsite build --what html --doc doc --examples examples --output ../site/builtdocs',
+            'nbsite build --what html --doc doc --examples examples --output builtdocs',
         ],
         'clean': [
             'rm -rf builtdocs/',

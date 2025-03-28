@@ -64,7 +64,6 @@ gallery = [
     'phantomjs',
 ]
 tests = [
-    'flake8',
     'pytest >=3.9.1',
     'pre-commit',
 ]
@@ -122,12 +121,6 @@ multi_line_output = 5
 combine_as_imports = true
 lines_between_types = 1
 include_trailing_comma = true
-
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.data-files]
-scripts = ["scripts/*.py"]
 
 [tool.setuptools.packages.find]
 include = ["nbsite"]
