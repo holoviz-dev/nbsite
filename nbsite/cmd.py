@@ -1,15 +1,14 @@
 import glob
 import os
 import re
-import subprocess
 import sys
 from collections import ChainMap
 from os.path import dirname
-from pathlib import Path
 
 from sphinx.application import Sphinx
 
 from .util import copy_files
+from .scripts import fix_links, clean_dist_html
 
 DEFAULT_SITE_ORDERING = [
     "Introduction",
@@ -19,7 +18,6 @@ DEFAULT_SITE_ORDERING = [
     "FAQ",
     "API"
 ]
-SCRIPT_DIR = str(Path(__file__).parents[1] / "scripts")
 
 def init(project_root='', doc='doc', theme=''):
     """
@@ -41,14 +39,6 @@ hosts = {
     'GitHub': 'https://raw.githubusercontent.com'
 }
 
-# TODO: clean up these fns + related arg parsing: parameterize, and
-# maybe add task dependencies
-
-def fix_links(output, inspect_links):
-    args = [sys.executable, "nbsite_fix_links.py", output]
-    if inspect_links:
-        args.append( "--inspect-links")
-    subprocess.check_call(args, cwd=SCRIPT_DIR)
 
 def build(what='html',
           output='builtdocs',
@@ -129,13 +119,7 @@ def build(what='html',
     if not clean_dry_run:
         print("Call `nbsite build` with `--clean-dry-run` to not actually delete files.")
 
-    clean(output, clean_dry_run)
-
-def clean(output, dry_run=False):
-    if dry_run:
-        subprocess.check_call([sys.executable, "nbsite_cleandisthtml.py", output], cwd=SCRIPT_DIR)
-    else:
-        subprocess.check_call([sys.executable, "nbsite_cleandisthtml.py", output, 'take_a_chance'], cwd=SCRIPT_DIR)
+    clean_dist_html(output, clean_dry_run)
 
 def _prepare_paths(root,examples='',doc='',examples_assets=''):
     if root=='':
