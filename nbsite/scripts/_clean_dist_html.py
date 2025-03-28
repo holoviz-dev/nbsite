@@ -36,7 +36,7 @@ def clean_dist_html(output, dry_run):
             else:
                 print("removing", folder)
                 shutil.rmtree(d)
-        except:
+        except Exception:
             pass
 
     for path in IGetFiles(htmldir):

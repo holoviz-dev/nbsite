@@ -7,8 +7,8 @@ from os.path import dirname
 
 from sphinx.application import Sphinx
 
+from .scripts import clean_dist_html, fix_links
 from .util import copy_files
-from .scripts import fix_links, clean_dist_html
 
 DEFAULT_SITE_ORDERING = [
     "Introduction",

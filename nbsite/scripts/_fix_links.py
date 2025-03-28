@@ -6,11 +6,11 @@ extension.
 import os
 import re
 import warnings
-
-from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from pathlib import Path
+
+from bs4 import BeautifulSoup
 
 # TODO: holoviews specific links e.g. to reference manual...doc & generalize
 
