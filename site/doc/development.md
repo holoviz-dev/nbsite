@@ -172,7 +172,7 @@ pixi run test-unit
 :::{admonition} Advanced usage
 :class: tip
 
-The task is available in the following environments: `test-39`, `test-310`, `test-311`, `test-312`, and `test-core`. Where the first ones have the same environments except for different Python versions, and `test-core` only has a core set of dependencies.
+The task is available in the following environments: `test-39`, `test-310`, `test-311`, `test-312`, and `test-313`. Where they all have the same environments except for different Python versions.
 
 You can run the task in a specific environment with the `-e` flag. For example, to run the `test-unit` task in the `test-39` environment, you can run:
 
@@ -185,17 +185,17 @@ pixi run -e test-39 test-unit
 :::{admonition} Advanced usage
 :class: tip
 
-Currently, an editable install needs to be run in each environment. So, if you want to install in the `test-core` environment, you can add `--environment` / `-e` to the command:
+Currently, an editable install needs to be run in each environment. So, if you want to install in the `test-312` environment for example, you can add `--environment` / `-e` to the command:
 
 ```bash
-pixi run -e test-core install
+pixi run -e test-312 install
 ```
 
 :::
 
 ### Example tests
 
-nbsite's documentation consists mainly of Jupyter Notebooks. The example tests execute all the notebooks and fail if an error is raised. Example tests are possible thanks to [nbval](https://nbval.readthedocs.io/) and can be found in the `doc/` folder.
+nbsite's documentation consists mainly of Jupyter Notebooks. The example tests execute all the notebooks and fail if an error is raised. Example tests are possible thanks to [nbval](https://nbval.readthedocs.io/) and can be found in the `site/doc/` folder.
 Example tests can be run with the following command:
 
 ```bash
