@@ -7,6 +7,10 @@ import os
 import re
 import warnings
 
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
+from pathlib import Path
+
 from bs4 import BeautifulSoup
 
 # TODO: holoviews specific links e.g. to reference manual...doc & generalize
@@ -65,14 +69,15 @@ def find_autolinkable():
             'containers': filter_available(all_containers, 'containers')}
 
 
-autolinkable = find_autolinkable()
 
 def component_links(text, path):
+    autolinkable = find_autolinkable()
+
     if ('user_guide' in path) or ('getting_started' in path):
         for clstype, listing in autolinkable.items():
             for (clsname, replacement) in list(listing):
                 try:
-                    text, count = re.subn('<code>\s*{clsname}\s*</code>*'.format(clsname=clsname),replacement, text)
+                    text, count = re.subn(r'<code>\s*{clsname}\s*</code>*'.format(clsname=clsname),replacement, text)
                 except Exception as e:
                     print(str(e))
     return text
@@ -126,19 +131,8 @@ def cleanup_links(path, inspect_links=False):
     with open(path, 'w', encoding='utf-8') as f:
         f.write(str(soup))
 
-if __name__ == '__main__':
-    import argparse
-
-    from concurrent.futures import ThreadPoolExecutor
-    from functools import partial
-    from pathlib import Path
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('build_dir', help="Build Directory")
-    parser.add_argument('--inspect-links', action='store_true', help="Whether or not to print out all the links on the website")
-    args = parser.parse_args()
-
-    files = Path(args.build_dir).rglob("*.html")
+def fix_links(build_dir, inspect_links=False):
+    files = Path(build_dir).rglob("*.html")
     with ThreadPoolExecutor() as executor:
-        func = partial(cleanup_links, inspect_links=args.inspect_links)
+        func = partial(cleanup_links, inspect_links=inspect_links)
         executor.map(func, files)

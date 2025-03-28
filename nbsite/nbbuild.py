@@ -230,7 +230,7 @@ class FixNotebookLinks(Preprocessor):
 
             target_relpath = cls._get_sourcefile(rootdir, nb_filepath)
             if not target_relpath:
-                logger.warn('Source file for "%s" not found (path relative to "%s")', nb_filepath, rootdir)
+                logger.warning('Source file for "%s" not found (path relative to "%s")', nb_filepath, rootdir)
                 continue
 
             new_link = cls._create_target_link(nb_link, target_relpath)
@@ -322,7 +322,7 @@ class FixNotebookLinks(Preprocessor):
             directory, stem = os.path.split(nb_path_without_extension)
             match = re.match(r"\d+[ -_](.*)", stem)
             if match:
-                yield os.path.join(directory, match.group(1) + '.' + extension)
+                yield os.path.join(directory, match.group(1) + '.' + extension).replace("\\", "/")
 
 
     @classmethod

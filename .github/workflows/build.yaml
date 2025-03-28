@@ -19,73 +19,136 @@ on:
   schedule:
     - cron: '0 20 * * SUN'
 
+env:
+  PYTHON_VERSION: "3.9"
+  PACKAGE: "nbsite"
+
+defaults:
+  run:
+    shell: bash -e {0}
+
 jobs:
+  waiting_room:
+    name: Waiting Room
+    runs-on: ubuntu-latest
+    needs: [conda_build, pip_install]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    environment:
+      name: publish
+    steps:
+      - run: echo "All builds have finished, have been approved, and ready to publish"
+
+  pixi_lock:
+    name: Pixi lock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: holoviz-dev/holoviz_tasks/pixi_lock@v0
+
   conda_build:
     name: Build Conda Packages
+    needs: [pixi_lock]
     runs-on: 'ubuntu-latest'
-    defaults:
-      run:
-        shell: bash -l {0}
     env:
-      CHANS_DEV: "-c pyviz/label/dev -c conda-forge"
-      PKG_TEST_PYTHON: "--test-python=py39"
-      PYTHON_VERSION: "3.9"
-      CHANS: "-c pyviz"
       CONDA_UPLOAD_TOKEN: ${{ secrets.CONDA_UPLOAD_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Fetch unshallow
-        run: git fetch --prune --tags --unshallow -f
+      - uses: holoviz-dev/holoviz_tasks/pixi_install@v0
+        with:
+          environments: "build"
+          download-data: false
+          install: false
+      - name: conda build
+        run: pixi run -e build build-conda
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: conda
+          path: dist/*.tar.bz2
+          if-no-files-found: error
+
+  conda-publish:
+    name: Publish Conda
+    runs-on: ubuntu-latest
+    needs: [conda_build, waiting_room]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: conda
+          path: dist/
+      - name: Set environment variables
+        run: |
+          echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+          echo "CONDA_FILE=$(ls dist/*.tar.bz2)" >> $GITHUB_ENV
       - uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: "latest"
-          python-version: "3.9"
-      - name: Set output
-        id: vars
-        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+          channels: "conda-forge"
       - name: conda setup
         run: |
-          conda config --set always_yes True
-          conda install -c pyviz "pyctdev>=0.5"
-          doit ecosystem=conda ecosystem_setup
-          conda install -c conda-forge conda-build param
-      - name: conda build
-        run: |
-          conda build conda.recipe/ -c pyviz/label/dev -c conda-forge
+          conda install -y anaconda-client
       - name: conda dev upload
-        if: (github.event_name == 'push' && (contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc')))
+        if: contains(env.TAG, 'a') || contains(env.TAG, 'b') || contains(env.TAG, 'rc')
         run: |
-          doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev --label tooling_dev
+          anaconda --token ${{ secrets.CONDA_UPLOAD_TOKEN }} upload --user pyviz --label=dev $CONDA_FILE
       - name: conda main upload
-        if: (github.event_name == 'push' && !(contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc')))
+        if: (!(contains(env.TAG, 'a') || contains(env.TAG, 'b') || contains(env.TAG, 'rc')))
         run: |
-          doit ecosystem=conda package_upload --token=$CONDA_UPLOAD_TOKEN --label=dev --label=main --label tooling_dev
+          anaconda --token ${{ secrets.CONDA_UPLOAD_TOKEN }} upload --user pyviz --label=dev --label=main $CONDA_FILE
+
   pip_build:
-    name: Build PyPI Packages
+    name: Build PyPI
+    needs: [pixi_lock]
     runs-on: 'ubuntu-latest'
-    defaults:
-      run:
-        shell: bash -l {0}
-    env:
-      PKG_TEST_PYTHON: "--test-python=py39"
     steps:
-      - uses: actions/checkout@v4
-      - name: Fetch unshallow
-        run: git fetch --prune --tags --unshallow -f
+      - uses: holoviz-dev/holoviz_tasks/pixi_install@v0
+        with:
+          environments: "build"
+          download-data: false
+          install: false
+      - name: Build package
+        run: pixi run -e build build-pip
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pip
+          path: dist/
+          if-no-files-found: error
+
+  pip_install:
+    name: Install PyPI
+    runs-on: "ubuntu-latest"
+    needs: [pip_build]
+    steps:
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
-      - name: env setup
-        run: |
-          pip install pyctdev
-          doit ecosystem_setup
-      - name: pip build
-        run: |
-          doit package_build $PKG_TEST_PYTHON --test-group=installed --sdist-install-build-deps
-      - name: Publish package to PyPI
-        if: github.event_name == 'push'
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: pip
+          path: dist/
+      - name: Install package
+        run: python -m pip install dist/*.whl
+      - name: Import package
+        run: python -c "import $PACKAGE; print($PACKAGE._version.__version__)"
+
+  pip_publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [pip_build, waiting_room]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pip
+          path: dist/
+      - name: Publish to PyPi
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: ${{ secrets.PPU }}
           password: ${{ secrets.PPP }}
-          packages_dir: dist/
+          packages-dir: dist/
