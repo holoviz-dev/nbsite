@@ -1,7 +1,9 @@
 import inspect
+
 from functools import partial
 
 import param
+
 from param.parameterized import label_formatter
 
 param.parameterized.docstring_signature = False

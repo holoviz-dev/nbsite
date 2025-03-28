@@ -7,9 +7,9 @@ import sys
 import tempfile
 
 from holoviews.core import Dimensioned, Store
-from holoviews.ipython.preprocessors import (OptsMagicProcessor,
-                                             OutputMagicProcessor,
-                                             StripMagicsProcessor)
+from holoviews.ipython.preprocessors import (
+    OptsMagicProcessor, OutputMagicProcessor, StripMagicsProcessor,
+)
 from holoviews.util.command import export_to_python
 from nbconvert.preprocessors import Preprocessor
 

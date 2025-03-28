@@ -7,14 +7,18 @@ import pathlib
 import sys
 import traceback as tb
 import warnings
+
 from collections import defaultdict
 from html import escape
 from multiprocessing import Pipe, get_context
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import (
+    Any, Dict, List, Tuple,
+)
 
 import param
 import portalocker
+
 from bokeh.document import Document
 from bokeh.embed.bundle import _bundle_extensions
 from bokeh.embed.util import standalone_docs_json_and_render_items
@@ -24,13 +28,11 @@ from docutils.parsers.rst import Directive, roles
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader
 from packaging.version import Version
-from panel.config import config
-from panel.config import panel_extension as extension
+from panel.config import config, panel_extension as extension
 from panel.io.convert import BOKEH_VERSION
 from panel.io.mime_render import exec_with_return, format_mime
 from panel.io.resources import CDN_DIST, Resources, set_resource_mode
-from panel.pane import HoloViews, Interactive
-from panel.pane import panel as as_panel
+from panel.pane import HoloViews, Interactive, panel as as_panel
 from panel.reactive import ReactiveHTML
 from panel.viewable import Viewable, Viewer
 from sphinx.application import Sphinx
