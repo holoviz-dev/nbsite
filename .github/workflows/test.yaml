@@ -150,7 +150,7 @@ jobs:
       - name: Build docs
         run: pixi run -e docs docs-build
       - name: Deploy dev
-        if: ${{ github.event.repository.fork == false }}
+        if: ${{ github.event.repository.fork == false && github.event.pull_request.head.repo.fork == false }}
         uses: peaceiris/actions-gh-pages@v4
         with:
           personal_token: ${{ secrets.ACCESS_TOKEN }}
