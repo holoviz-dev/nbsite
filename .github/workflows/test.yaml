@@ -36,6 +36,7 @@ defaults:
 env:
   DISPLAY: ":99.0"
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  COV: "--cov=./nbsite --cov-report=xml"
 
 jobs:
   pre_commit:
