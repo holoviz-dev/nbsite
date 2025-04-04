@@ -6,11 +6,6 @@ import subprocess
 import sys
 import tempfile
 
-from holoviews.core import Dimensioned, Store
-from holoviews.ipython.preprocessors import (
-    OptsMagicProcessor, OutputMagicProcessor, StripMagicsProcessor,
-)
-from holoviews.util.command import export_to_python
 from nbconvert.preprocessors import Preprocessor
 
 try:
@@ -127,6 +122,9 @@ class StripServableSemicolonsProcessor(Preprocessor):
 
 def thumbnail(obj, basename):
     import os
+
+    from holoviews.core import Dimensioned, Store
+
     if isinstance(obj, Dimensioned) and not os.path.isfile(basename+'.png'):
         Store.renderers[Store.current_backend].save(obj, basename, fmt='png')
     elif 'panel' in sys.modules:
@@ -163,6 +161,11 @@ def execute(code, cwd, env):
     return proc.returncode
 
 def notebook_thumbnail(filename, subpath):
+    from holoviews.ipython.preprocessors import (
+        OptsMagicProcessor, OutputMagicProcessor, StripMagicsProcessor,
+    )
+    from holoviews.util.command import export_to_python
+
     basename = os.path.splitext(os.path.basename(filename))[0]
     dir_path = os.path.abspath(os.path.join(subpath, 'thumbnails'))
     absdirpath= os.path.abspath(os.path.join('.', dir_path))
