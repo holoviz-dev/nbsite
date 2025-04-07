@@ -33,7 +33,7 @@ from panel.io.convert import BOKEH_VERSION
 from panel.io.mime_render import exec_with_return, format_mime
 from panel.io.resources import CDN_DIST, Resources, set_resource_mode
 from panel.pane import HoloViews, Interactive, panel as as_panel
-from panel.reactive import ReactiveHTML
+from panel.reactive import ReactiveCustomBase
 from panel.viewable import Viewable, Viewer
 from sphinx.application import Sphinx
 
@@ -127,11 +127,12 @@ def extract_extensions(code: str) -> List[str]:
                     dict(zip(model.__javascript_module_exports__,
                              model.__javascript_modules__))
                 )
-        for model in param.concrete_descendents(ReactiveHTML).values():
+        for model in param.concrete_descendents(ReactiveCustomBase).values():
             if not model._loaded():
                 continue
             js += getattr(model, '__javascript__', []) or []
             css += getattr(model, '__css__', []) or []
+            css += [c for c in getattr(model, '_bundle_css', []) or [] if c.startswith('https://')]
     if config.design and hasattr(config.design, 'resolve_resources'):
         design_resources = config.design().resolve_resources(
             cdn=True, include_theme=True
