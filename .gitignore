@@ -27,3 +27,14 @@ site/builtdocs/
 site/.venv/
 
 build/
+dist
+
+# pixi
+.pixi
+pixi.lock
+
+# mystnb
+jupyter_execute/
+
+# version
+_version.py

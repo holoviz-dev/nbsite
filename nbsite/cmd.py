@@ -1,7 +1,6 @@
 import glob
 import os
 import re
-import subprocess
 import sys
 
 from collections import ChainMap
@@ -9,6 +8,7 @@ from os.path import dirname
 
 from sphinx.application import Sphinx
 
+from .scripts import clean_dist_html, fix_links
 from .util import copy_files
 
 DEFAULT_SITE_ORDERING = [
@@ -40,14 +40,6 @@ hosts = {
     'GitHub': 'https://raw.githubusercontent.com'
 }
 
-# TODO: clean up these fns + related arg parsing: parameterize, and
-# maybe add task dependencies
-
-def fix_links(output, inspect_links):
-    args = ["nbsite_fix_links.py", output]
-    if inspect_links:
-        args.append( "--inspect-links")
-    subprocess.check_call(args)
 
 def build(what='html',
           output='builtdocs',
@@ -128,13 +120,7 @@ def build(what='html',
     if not clean_dry_run:
         print("Call `nbsite build` with `--clean-dry-run` to not actually delete files.")
 
-    clean(output, clean_dry_run)
-
-def clean(output, dry_run=False):
-    if dry_run:
-        subprocess.check_call(["nbsite_cleandisthtml.py",output])
-    else:
-        subprocess.check_call(["nbsite_cleandisthtml.py",output,'take_a_chance'])
+    clean_dist_html(output, clean_dry_run)
 
 def _prepare_paths(root,examples='',doc='',examples_assets=''):
     if root=='':
@@ -281,7 +267,9 @@ def generate_rst(
                 add_nblink(rst_file, host, org, repo, branch, examples, relpath)
                 rst_file.write('\n\n-------\n\n')
 
-            rst_file.write(".. notebook:: %s %s" % (project_name,os.path.relpath(paths['examples'],start=dirname(rst))+'/'+relpath+"\n"))
+            rst_file.write(
+                ".. notebook:: %s %s" % (project_name, os.path.relpath(paths["examples"], start=dirname(rst)).replace("\\", "/") + "/" + relpath + "\n"),
+            )
             rst_file.write("    :offset: %s\n" % offset)
             if disable_interactivity_warning:
                 rst_file.write("    :disable_interactivity_warning:\n")
