@@ -131,8 +131,10 @@ def extract_extensions(code: str) -> List[str]:
             if not model._loaded():
                 continue
             js += getattr(model, '__javascript__', []) or []
-            css += getattr(model, '__css__', []) or []
-            css += [c for c in getattr(model, '_bundle_css', []) or [] if c.startswith('https://')]
+            model_css = (getattr(model, '__css__', []) or []) + (getattr(model, '_bundle_css', []) or [])
+            for c in model_css:
+                if c.startswith('https://') and c not in css:
+                    css.append(c)
     if config.design and hasattr(config.design, 'resolve_resources'):
         design_resources = config.design().resolve_resources(
             cdn=True, include_theme=True
