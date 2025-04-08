@@ -98,8 +98,13 @@ class ExecutePreprocessor1000(ExecutePreprocessor):
     def kc(self, v):
         self._kc = v
         if v is not None and self._ipython_startup is not None:
-            msg_id = self._kc.execute( # noqa: a mess
-                self._ipython_startup,silent=False,store_history=False,allow_stdin=False,stop_on_error=True)
+            self._kc.execute(
+                self._ipython_startup,
+                silent=False,
+                store_history=False,
+                allow_stdin=False,
+                stop_on_error=True,
+            )
 
 
     def handle_comm_msg(self, outs, msg, cell_index):
