@@ -1,9 +1,6 @@
 [build-system]
-requires = [
-    "setuptools >=30.3.0",
-    "setuptools_scm >=6",
-]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 name = "nbsite"
@@ -72,6 +69,16 @@ tests = [
 Documentation = "https://nbsite.holoviz.org/"
 Source = "https://github.com/holoviz-dev/nbsite"
 BugTracker = "https://github.com/holoviz-dev/nbsite/issues"
+
+[tool.hatch.version]
+source = "vcs"
+raw-options = { version_scheme = "no-guess-dev" }
+
+[tool.hatch.build.targets]
+include = ["nbsite"]
+
+[tool.hatch.build.hooks.vcs]
+version-file = "nbsite/_version.py"
 
 [tool.ruff]
 exclude = [

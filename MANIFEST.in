@@ -1,9 +1,0 @@
-include LICENSE.txt
-include README.md
-include nbsite/.version
-include nbsite/pyodide/site.webmanifest
-graft nbsite/_shared_static
-graft nbsite/_shared_templates
-graft nbsite/templates
-recursive-include nbsite/pyodide *.js
-recursive-include nbsite/pyodide *.css
