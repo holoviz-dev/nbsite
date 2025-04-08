@@ -74,9 +74,6 @@ BugTracker = "https://github.com/holoviz-dev/nbsite/issues"
 source = "vcs"
 raw-options = { version_scheme = "no-guess-dev" }
 
-[tool.hatch.build.targets]
-include = ["nbsite"]
-
 [tool.hatch.build.hooks.vcs]
 version-file = "nbsite/_version.py"
 
@@ -128,9 +125,3 @@ multi_line_output = 5
 combine_as_imports = true
 lines_between_types = 1
 include_trailing_comma = true
-
-[tool.setuptools.packages.find]
-include = ["nbsite"]
-
-[tool.setuptools_scm]
-version_file = "nbsite/_version.py"
