@@ -25,7 +25,7 @@ def param_formatter(app, what, name, obj, options, lines):
         lines = ["start"]
 
     if what == 'class' and isinstance(obj, param.parameterized.ParameterizedMetaclass):
-        lines.extend(['**Parameter Definitions**', '', '-------', ''])
+        lines.extend(['', '**Parameter Definitions**', '', '-------', ''])
         parameters = ['name']
         mro = obj.mro()[::-1]
         inherited = []
