@@ -104,3 +104,5 @@ html_css_files += [
 
 # Override the Sphinx default title that appends `documentation`
 html_title = f'{project} v{version}'
+
+nb_interactivity_warning_per_file = True
