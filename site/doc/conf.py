@@ -106,3 +106,6 @@ html_css_files += [
 html_title = f'{project} v{version}'
 
 nb_interactivity_warning_per_file = True
+
+# Disable notebook execution
+# nb_execution_mode = "off"

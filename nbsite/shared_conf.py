@@ -37,6 +37,8 @@ extensions = [
     'sphinx.ext.inheritance_diagram',
     'sphinx_copybutton',
     'sphinxext.rediraffe',
+    # To validate the configuration of versioned sites
+    'nbsite.validate_versioned',
 ]
 
 # Default theme is the PyData Sphinx Theme

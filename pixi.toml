@@ -59,6 +59,7 @@ pip = "*"
 portalocker = "*"
 pydata-sphinx-theme = '>=0.15,<0.17'
 pyviz_comms = "*"
+requests = "*"
 sphinx = '>=7'
 sphinx-copybutton = "*"
 sphinx-design = "*"
