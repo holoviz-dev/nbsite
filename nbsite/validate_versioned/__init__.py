@@ -1,5 +1,10 @@
 """
-validate_versioned extension validates the configuration of versioned sites.
+validate_versioned extension to support versioned sites.
+
+- Checks html_baseurl is set
+- Creates a sitemap.xml file in the conf dir
+- Checks a robots.txt file is available
+
 """
 import itertools
 import json
@@ -17,13 +22,13 @@ from .. import __version__ as nbs_version
 
 logger = logging.getLogger(__name__)
 
-def check_for_switcher_key(app):
-    theme_opts = app.config.html_theme_options
-    if (
-        isinstance(theme_opts, dict)
-        and 'switcher' in theme_opts
-        and not app.config.html_baseurl
-    ):
+def check_for_html_baseurl(app):
+    """
+    html_baseurl should be set for Sphinx to add to each page's head:
+    <link rel="canonical" href="<html_baseurl>/<path/to/page.html>" />
+    Useful for SEO purposes.
+    """
+    if  not app.config.html_baseurl:
         logger.warning(
             "html_baseurl must be set when the site is versioned. For example: "
             "`html_baseurl = 'https://hvplot.holoviz.org/en/docs/latest/'`"
@@ -31,15 +36,12 @@ def check_for_switcher_key(app):
 
 
 def check_for_robots(app):
-    theme_opts = app.config.html_theme_options
-    if (
-        isinstance(theme_opts, dict)
-        and 'switcher' not in theme_opts
-    ):
-        return
+    """
+    Make a head request to check whether robots.txt is available.
+    """
     html_baseurl = app.config.html_baseurl
     if not html_baseurl:
-        # check_for_switcher_key already handles warning here.
+        # check_for_html_baseurl already handles warning here.
         return
     url = urlparse(html_baseurl)
     robots = urljoin(url.scheme + "://" + url.netloc, "robots.txt")
@@ -83,6 +85,9 @@ def changefreqs_generator():
 
 
 def indent_xml(elem, level=0):
+    """
+    Utility to pretty format an XML element.
+    """
     i = "\n" + level * "  "
     if len(elem):
         if not elem.text or not elem.text.strip():
@@ -107,12 +112,6 @@ def build_sitemap(app):
 
     Does not include the dev version.
     """
-    theme_opts = app.config.html_theme_options
-    if (
-        isinstance(theme_opts, dict)
-        and 'switcher' not in theme_opts
-    ):
-        return
     confdir = Path(app.confdir)
     switcher_path = confdir / '_static' / 'switcher.json'
     if not switcher_path.exists():
@@ -156,10 +155,24 @@ def build_sitemap(app):
     tree.write(confdir / "sitemap.xml", encoding="utf-8", xml_declaration=True)
 
 
+def validate_versioned(app):
+    if not app.config.validate_versioned:
+        return
+    theme_opts = app.config.html_theme_options
+    # Detect whether versioning is enabled.
+    if (
+        isinstance(theme_opts, dict)
+        and 'switcher' not in theme_opts
+    ):
+        return
+    check_for_html_baseurl(app)
+    check_for_robots(app)
+    build_sitemap(app)
+
+
 def setup(app):
-    app.connect('builder-inited', check_for_switcher_key)
-    app.connect('builder-inited', check_for_robots)
-    app.connect('builder-inited', build_sitemap)
+    app.add_config_value("validate_versioned", True, "html")
+    app.connect('builder-inited', validate_versioned)
     return {
         "version": nbs_version,
         "parallel_read_safe": True,

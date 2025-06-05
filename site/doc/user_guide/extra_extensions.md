@@ -15,4 +15,8 @@ It is enabled by default and can be configured with:
 
 ## `validate_versioned`
 
-Adding this extension will validate the configuration of versioned sites.
+Adding this extension is helpful to support versioned sites:
+
+- Checks html_baseurl is set
+- Creates a sitemap.xml file in the conf dir
+- Checks a robots.txt file is available
