@@ -2,9 +2,8 @@
 validate_versioned extension to support versioned sites.
 
 - Checks html_baseurl is set
-- Creates a sitemap.xml file in the conf dir
-- Checks a robots.txt file is available
-
+- Creates a sitemap.xml file in a subdirectory of the docs source
+- Creates a robots.txt file in a subdirectory of the docs source
 """
 import itertools
 import json
@@ -13,14 +12,21 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
 
-import requests
-
 from packaging import version
 from sphinx.util import logging
 
 from .. import __version__ as nbs_version
 
 logger = logging.getLogger(__name__)
+
+
+OUTPUT_DIR = "_nbsite_versioned"
+
+
+def domain_from_baseurl(html_baseurl: str) -> str:
+    url = urlparse(html_baseurl)
+    return url.scheme + "://" + url.netloc
+
 
 def check_for_html_baseurl(app):
     """
@@ -33,21 +39,6 @@ def check_for_html_baseurl(app):
             "html_baseurl must be set when the site is versioned. For example: "
             "`html_baseurl = 'https://hvplot.holoviz.org/en/docs/latest/'`"
         )
-
-
-def check_for_robots(app):
-    """
-    Make a head request to check whether robots.txt is available.
-    """
-    html_baseurl = app.config.html_baseurl
-    if not html_baseurl:
-        # check_for_html_baseurl already handles warning here.
-        return
-    url = urlparse(html_baseurl)
-    robots = urljoin(url.scheme + "://" + url.netloc, "robots.txt")
-    resp = requests.head(robots)
-    if not resp.ok:
-        logger.warning(f"robots.txt file not found at {robots}, please add one.")
 
 
 def priorities_generator():
@@ -103,7 +94,20 @@ def indent_xml(elem, level=0):
             elem.tail = i
 
 
-def build_sitemap(app):
+def get_switcher_data(app):
+    switcher_path = Path(app.confdir, '_static', 'switcher.json')
+    if not switcher_path.exists():
+        raise FileNotFoundError(
+            "switcher.json not found in _static directory, sitemap.xml "
+            "cannot be built."
+        )
+
+    with open(switcher_path) as f:
+        switcher_data = json.load(f)
+    return switcher_data
+
+
+def build_sitemap(app, our_dir):
     """
     Build a sitemap.xml file, inspired by readthedocs.
 
@@ -112,17 +116,11 @@ def build_sitemap(app):
 
     Does not include the dev version.
     """
-    confdir = Path(app.confdir)
-    switcher_path = confdir / '_static' / 'switcher.json'
-    if not switcher_path.exists():
-        logger.warning(
-            "switcher.json not found in _static directory, sitemap.xml "
-            "cannot be built."
-        )
+    try:
+        switcher_data = get_switcher_data(app)
+    except FileNotFoundError as e:
+        logger.warning(str(e))
         return
-
-    with open(switcher_path) as f:
-        switcher_data = json.load(f)
 
     switcher_data =  [data for data in switcher_data if data.get('version') != 'dev']
     switcher_data = sorted(
@@ -152,11 +150,36 @@ def build_sitemap(app):
 
     indent_xml(urlset)
     tree = ET.ElementTree(urlset)
-    tree.write(confdir / "sitemap.xml", encoding="utf-8", xml_declaration=True)
+    out_path = Path(our_dir, "sitemap.xml")
+    tree.write(out_path, encoding="utf-8", xml_declaration=True)
+    logger.info(f"sitemap.txt written at {out_path}")
 
 
-def validate_versioned(app):
+def build_robots(app, our_dir):
+    """
+    Build a robots.txt file, that disallows all paths except /en/docs/latest.
+    """
+    html_baseurl = app.config.html_baseurl
+    if not html_baseurl:
+        # check_for_html_baseurl already handles warning here.
+        return
+    sitemap_url = urljoin(domain_from_baseurl(html_baseurl), "sitemap.xml")
+
+    out_path = Path(our_dir, "robots.txt")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write("# Generated automatically by nbsite\n")
+        f.write("User-agent: *\n")
+        f.write("Disallow: /\n")
+        f.write("Allow: /en/docs/latest/\n")
+        f.write(f"Sitemap: {sitemap_url}\n")
+    logger.info(f"robots.txt written at {out_path}")
+
+
+def validate_versioned(app, exc):
     if not app.config.validate_versioned:
+        return
+    if exc:
+        logger.debug("Exception, skipping validate_versioned")
         return
     theme_opts = app.config.html_theme_options
     # Detect whether versioning is enabled.
@@ -166,13 +189,16 @@ def validate_versioned(app):
     ):
         return
     check_for_html_baseurl(app)
-    check_for_robots(app)
-    build_sitemap(app)
+    out_dir = Path(app.srcdir, OUTPUT_DIR)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    build_sitemap(app, out_dir)
+    build_robots(app, out_dir)
+    (out_dir / ".gitignore").write_text("*")
 
 
 def setup(app):
     app.add_config_value("validate_versioned", True, "html")
-    app.connect('builder-inited', validate_versioned)
+    app.connect('build-finished', validate_versioned)
     return {
         "version": nbs_version,
         "parallel_read_safe": True,

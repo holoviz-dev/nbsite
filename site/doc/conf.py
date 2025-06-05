@@ -107,4 +107,5 @@ html_title = f'{project} v{version}'
 
 nb_interactivity_warning_per_file = True
 
-nb_execution_mode = "off"
+# Disable notebook execution
+# nb_execution_mode = "off"

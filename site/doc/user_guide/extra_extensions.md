@@ -18,5 +18,5 @@ It is enabled by default and can be configured with:
 Adding this extension is helpful to support versioned sites:
 
 - Checks html_baseurl is set
-- Creates a sitemap.xml file in the conf dir
-- Checks a robots.txt file is available
+- Creates a sitemap.xml file in a subdirectory of the docs source
+- Creates a robots.txt file in a subdirectory of the docs source
