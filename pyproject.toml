@@ -48,7 +48,8 @@ dependencies = [
     'sphinx-copybutton',
     'sphinx-design',
     'sphinxext-rediraffe',
-    'packaging'
+    'packaging',
+    'requests'
 ]
 
 [project.scripts]

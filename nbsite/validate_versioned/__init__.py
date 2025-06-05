@@ -6,6 +6,9 @@ import json
 import xml.etree.ElementTree as ET
 
 from pathlib import Path
+from urllib.parse import urljoin, urlparse
+
+import requests
 
 from packaging import version
 from sphinx.util import logging
@@ -25,6 +28,25 @@ def check_for_switcher_key(app):
             "html_baseurl must be set when the site is versioned. For example: "
             "`html_baseurl = 'https://hvplot.holoviz.org/en/docs/latest/'`"
         )
+
+
+def check_for_robots(app):
+    theme_opts = app.config.html_theme_options
+    if (
+        isinstance(theme_opts, dict)
+        and 'switcher' not in theme_opts
+    ):
+        return
+    html_baseurl = app.config.html_baseurl
+    if not html_baseurl:
+        # check_for_switcher_key already handles warning here.
+        return
+    url = urlparse(html_baseurl)
+    robots = urljoin(url.scheme + "://" + url.netloc, "robots.txt")
+    resp = requests.head(robots)
+    if not resp.ok:
+        logger.warning(f"robots.txt file not found at {robots}, please add one.")
+
 
 def priorities_generator():
     """
@@ -88,7 +110,7 @@ def build_sitemap(app):
     theme_opts = app.config.html_theme_options
     if (
         isinstance(theme_opts, dict)
-        and 'switcher' not in app.config.html_theme_options
+        and 'switcher' not in theme_opts
     ):
         return
     confdir = Path(app.confdir)
@@ -136,6 +158,7 @@ def build_sitemap(app):
 
 def setup(app):
     app.connect('builder-inited', check_for_switcher_key)
+    app.connect('builder-inited', check_for_robots)
     app.connect('builder-inited', build_sitemap)
     return {
         "version": nbs_version,
