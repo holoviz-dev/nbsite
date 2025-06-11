@@ -7,6 +7,7 @@ validate_versioned extension to support versioned sites.
 """
 import itertools
 import json
+import shutil
 import xml.etree.ElementTree as ET
 
 from pathlib import Path
@@ -34,7 +35,7 @@ def check_for_html_baseurl(app):
     <link rel="canonical" href="<html_baseurl>/<path/to/page.html>" />
     Useful for SEO purposes.
     """
-    if  not app.config.html_baseurl:
+    if not app.config.html_baseurl:
         logger.warning(
             "html_baseurl must be set when the site is versioned. For example: "
             "`html_baseurl = 'https://hvplot.holoviz.org/en/docs/latest/'`"
@@ -175,6 +176,16 @@ def build_robots(app, our_dir):
     logger.info(f"robots.txt written at {out_path}")
 
 
+def build_404(out_dir):
+    file_404 = Path(__file__).parent / "404.html"
+    if not file_404.exists():
+        logger.warning("Missing 404.html file")
+        return
+    out_path = out_dir / "404.html"
+    shutil.copyfile(file_404, out_path)
+    logger.info(f"robots.txt written at {out_path}")
+
+
 def validate_versioned(app, exc):
     if not app.config.validate_versioned:
         return
@@ -193,6 +204,7 @@ def validate_versioned(app, exc):
     out_dir.mkdir(parents=True, exist_ok=True)
     build_sitemap(app, out_dir)
     build_robots(app, out_dir)
+    build_404(out_dir)
     (out_dir / ".gitignore").write_text("*")
 
 
