@@ -9,7 +9,7 @@ from functools import partial
 from urllib.parse import urlparse
 
 import requests
-import sphinx.util
+import sphinx.util.logging
 
 from PIL import Image
 
