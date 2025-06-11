@@ -220,7 +220,7 @@ class SiteValidator:
         paths = ["/bad/", "/bad", "/bad.html", "/bad.xyz"]
 
         for path in paths:
-            self.check_response(path, 404, "File not found")
+            self.check_response(path, 404, "Sorry, we couldn't find the page you're looking for")
 
     def run_all_tests(self):
         """Run all standard tests."""
