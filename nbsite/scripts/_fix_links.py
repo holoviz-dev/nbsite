@@ -96,7 +96,7 @@ def cleanup_links(path, inspect_links=False):
 
     text = component_links(text, path)
     soup = BeautifulSoup(text, features="html.parser")
-    for a in soup.findAll('a'):
+    for a in soup.find_all('a'):
         href = a.get('href', '')
         if '.ipynb' in href and 'http' not in href:
  #           for k, v in LINK_REPLACEMENTS.items():
@@ -117,7 +117,8 @@ def cleanup_links(path, inspect_links=False):
 
         if inspect_links and 'http' in a['href']:
             print(a['href'])
-    for img in soup.findAll('img'):
+
+    for img in soup.find_all('img'):
         src = img.get('src', '')
         if 'http' not in src and 'assets' in src:
             try_path = os.path.join(os.path.dirname(path), src)
@@ -132,7 +133,8 @@ def cleanup_links(path, inspect_links=False):
         f.write(str(soup))
 
 def fix_links(build_dir, inspect_links=False):
-    files = Path(build_dir).rglob("*.html")
+    files = map(os.fspath, Path(build_dir).rglob("*.html"))
     with ThreadPoolExecutor() as executor:
         func = partial(cleanup_links, inspect_links=inspect_links)
-        executor.map(func, files)
+        # list to force execution and raise potential exception
+        list(executor.map(func, files))
