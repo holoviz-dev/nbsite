@@ -183,7 +183,7 @@ def build_404(out_dir):
         return
     out_path = out_dir / "404.html"
     shutil.copyfile(file_404, out_path)
-    logger.info(f"robots.txt written at {out_path}")
+    logger.info(f"404.html written at {out_path}")
 
 
 def validate_versioned(app, exc):
