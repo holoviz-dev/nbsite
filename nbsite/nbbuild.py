@@ -197,9 +197,9 @@ class FixNotebookLinks(Preprocessor):
     # Regex for matching markdown notebook links.
     # Example input "[sometext](../../somepath/subject.ipynb#spam)""
     nb_regex = re.compile((
-        r"(\[[^\]]+\]\()"       # Group 1: [text](
-        r"([^)\s]+\.ipynb)"     # Group 2: .ipynb path only
-        r"((?:#[^)\s]*)?\))"    # Group 3: optional #fragment and closing )
+                r"(\[.+?\]\()"   # "[sometext]("
+                r"(.+?\.ipynb)"  # "../../somepath/subject.ipynb"
+                r"(#*?.*?\))"    # "#spam)"
     ))
 
     def __init__(self, nb_path: str, **kwargs):
