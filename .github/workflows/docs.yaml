@@ -17,6 +17,9 @@ on:
         - dryrun
         required: true
         default: dryrun
+      version:
+        description: 'Version tag X.X.X (required if target is main)'
+        required: false
   schedule:
     - cron: '0 20 * * SUN'
 
@@ -45,7 +48,15 @@ jobs:
     env:
       DISPLAY: ":99.0"
       GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
+      VERSION: ${{ inputs.version }}
     steps:
+      - name: Validate version
+        if: ${{ inputs.target == 'main' }}
+        run: |
+          if [[ -z "$VERSION" || ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ 'version' is required and must match format X.X.X (e.g. 0.11.1) when target is 'main'"
+            exit 1
+          fi
       - uses: holoviz-dev/holoviz_tasks/pixi_install@v0
         with:
           environments: docs
@@ -57,11 +68,6 @@ jobs:
           name: docs
           if-no-files-found: error
           path: site/builtdocs
-      - name: Set output
-        id: vars
-        run: |
-          echo "Deploying from ref %{GITHUB_REF#refs/*/}"
-          echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
       - name: report failure
         if: failure()
         run: cat /tmp/sphinx-*.log | tail -n 100
@@ -80,26 +86,18 @@ jobs:
         with:
           name: docs
           path: site/builtdocs/
-      - name: Set output
+      - name: Set and echo git ref
         id: vars
-        run: echo "tag=${{ needs.docs_build.outputs.tag }}" >> $GITHUB_OUTPUT
-      - name: Deploy dev
-        if: |
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'dev') ||
-          (github.event_name == 'push' && (contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc')))
-        uses: peaceiris/actions-gh-pages@v4
+        run: |
+          echo "Deploying from ref ${GITHUB_REF#refs/*/}"
+          echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+      - uses: holoviz-dev/holoviz_tasks/docs-publish@docs_publish
         with:
-          personal_token: ${{ secrets.ACCESS_TOKEN }}
-          external_repository: holoviz-dev/nbsite-dev
-          publish_dir: ./site/builtdocs
-          force_orphan: true
-      - name: Deploy main
-        if: |
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'main') ||
-          (github.event_name == 'push' && !(contains(steps.vars.outputs.tag, 'a') || contains(steps.vars.outputs.tag, 'b') || contains(steps.vars.outputs.tag, 'rc')))
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site/builtdocs
-          cname: nbsite.holoviz.org
-          force_orphan: true
+          s3-url: s3://nbsite.holoviz.org
+          s3-cloudfront-id: E13QSRL36ILGWH
+          s3-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          s3-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          version: ${{ inputs.version }}
+          sitemap-path: ./site/doc/_nbsite_versioned/sitemap.xml
+          robots-path: ./site/doc/_nbsite_versioned/robots.txt
+          error-404-path: ./site/doc/_nbsite_versioned/404.html
