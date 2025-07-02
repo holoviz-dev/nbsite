@@ -1,0 +1,469 @@
+
+<!DOCTYPE html>
+
+<html data-content_root="../../" data-theme="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="../../site.webmanifest" rel="manifest"/>
+<title>HoloViz outputs — nbsite v0.9.0a9</title>
+<script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+<!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+<noscript>
+<style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+</noscript>
+<!-- Loaded before other Sphinx assets -->
+<link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet"/>
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet"/>
+<link href="../../_static/pygments.css?v=03e43079" rel="stylesheet" type="text/css"/>
+<link href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/graphviz.css?v=4ae1632d" rel="stylesheet" type="text/css"/>
+<link href="../../_static/copybutton.css?v=76b2166b" rel="stylesheet" type="text/css"/>
+<link href="../../_static/runbutton.css?v=81e8930d" rel="stylesheet" type="text/css"/>
+<link href="../../_static/sphinx-design.min.css?v=95c83b7e" rel="stylesheet" type="text/css"/>
+<link href="../../_static/nbsite.css?v=d9d93254" rel="stylesheet" type="text/css"/>
+<link href="../../_static/notebook.css?v=19946987" rel="stylesheet" type="text/css"/>
+<link href="../../_static/gallery.css?v=0a3248cd" rel="stylesheet" type="text/css"/>
+<link href="../../_static/alert.css?v=c26666be" rel="stylesheet" type="text/css"/>
+<link href="../../_static/dataframe.css?v=a0f274c1" rel="stylesheet" type="text/css"/>
+<link href="../../_static/scroller.css?v=2dcde208" rel="stylesheet" type="text/css"/>
+<link href="../../_static/hv-sidebar-dropdown.css?v=3e2b0152" rel="stylesheet" type="text/css"/>
+<link href="../../_static/css/custom.css?v=9dce1963" rel="stylesheet" type="text/css"/>
+<!-- So that users can add custom icons -->
+<script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+<!-- Pre-loaded scripts that we'll load fully later -->
+<link as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" rel="preload"/>
+<link as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" rel="preload"/>
+<script src="../../_static/documentation_options.js?v=ec633783"></script>
+<script src="../../_static/doctools.js?v=9bcbadda"></script>
+<script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+<script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../../_static/copybutton.js?v=f281be69"></script>
+<script src="../../_static/run_cell.js?v=da6c9fe8"></script>
+<script src="../../_static/WorkerHandler.js"></script>
+<script src="../../_static/design-tabs.js?v=f930bc37"></script>
+<script src="../../_static/ServiceHandler.js"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.7.3.min.js"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.7.3.min.js"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.7.3.min.js"></script>
+<script src="https://cdn.holoviz.org/panel/1.7.2/dist/panel.min.js"></script>
+<script>
+    window.goatcounter = {
+        path: function(p) { return location.host + p }
+    }
+</script>
+<script async="async" data-goatcounter="https://holoviz.goatcounter.com/count" src="../../_static/js/goatcounter.js?v=f53f84b8"></script>
+<script src="https://cdn.holoviz.org/panel/1.7.2/dist/bundled/reactiveesm/es-module-shims@^1.10.0/dist/es-module-shims.min.js"></script>
+<script src="https://cdn.holoviz.org/panel/1.7.2/dist/bundled/reactiveesm/es-module-shims@^1.10.0/dist/es-module-shims.min.js"></script>
+<script src="https://cdn.holoviz.org/panel/1.7.2/dist/bundled/reactiveesm/es-module-shims@^1.10.0/dist/es-module-shims.min.js"></script>
+<script>DOCUMENTATION_OPTIONS.pagename = 'playground/pyodide/holoviz';</script>
+<link href="../../_static/favicon.ico" rel="icon"/>
+<link href="../../genindex.html" rel="index" title="Index"/>
+<link href="../../search.html" rel="search" title="Search"/>
+<link href="../example_gallery/index.html" rel="next" title="Gallery Title"/>
+<link href="index.html" rel="prev" title="Pyodide"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="en" name="docsearch:language"/>
+<meta content="0.9.0a9" name="docsearch:version"/>
+<meta content="2025-07-02" name="docbuild:last-update"/>
+</head>
+<body data-bs-root-margin="0px 0px -60%" data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-default-mode="light" data-offset="180">
+<div class="skip-link d-print-none" id="pst-skip-link"><a href="#main-content">Skip to main content</a></div>
+<div id="pst-scroll-pixel-helper"></div>
+<button class="btn rounded-pill" id="pst-back-to-top" type="button">
+<i class="fa-solid fa-arrow-up"></i>Back to top</button>
+<dialog id="pst-search-dialog">
+<form action="../../search.html" class="bd-search d-flex align-items-center" method="get">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Search the docs ..." autocapitalize="off" autocomplete="off" autocorrect="off" class="form-control" name="q" placeholder="Search the docs ..." spellcheck="false" type="search"/>
+<span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+</dialog>
+<div class="pst-async-banner-revealer d-none">
+<aside aria-label="Version warning" class="d-none d-print-none" id="bd-header-version-warning"></aside>
+</div>
+<header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+<button aria-label="Site navigation" class="pst-navbar-icon sidebar-toggle primary-toggle">
+<span class="fa-solid fa-bars"></span>
+</button>
+<div class="col-lg-3 navbar-header-items__start">
+<div class="navbar-item">
+<a class="navbar-brand logo" href="../../index.html">
+<img alt="nbsite v0.9.0a9 - Home" class="logo__image only-light" src="../../_static/nbsite-logo.png"/>
+<img alt="nbsite v0.9.0a9 - Home" class="logo__image only-dark pst-js-only" src="../../_static/nbsite-logo.png"/>
+</a></div>
+</div>
+<div class="col-lg-9 navbar-header-items">
+<div class="me-auto navbar-header-items__center">
+<div class="navbar-item">
+<nav>
+<ul class="bd-navbar-elements navbar-nav">
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+<li class="nav-item current active">
+<a class="nav-link nav-internal" href="../index.html">
+    PlayGround
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../../development.html">
+    Developers
+  </a>
+</li>
+</ul>
+</nav></div>
+</div>
+<div class="navbar-header-items__end">
+<div class="navbar-item navbar-persistent--container">
+<button aria-label="Search" class="btn search-button-field search-button__button pst-js-only" data-bs-placement="bottom" data-bs-toggle="tooltip" title="Search">
+<i class="fa-solid fa-magnifying-glass"></i>
+<span class="search-button__default-text">Search</span>
+<span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+</div>
+<div class="navbar-item">
+<button aria-label="Color mode" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" data-bs-placement="bottom" data-bs-title="Color mode" data-bs-toggle="tooltip">
+<i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+<i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+<i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+</button></div>
+<div class="navbar-item"><ul aria-label="Icon Links" class="navbar-icon-links">
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://github.com/holoviz-dev/nbsite" rel="noopener" target="_blank" title="GitHub"><i aria-hidden="true" class="fa-brands fa-square-github fa-lg"></i>
+<span class="sr-only">GitHub</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://discourse.holoviz.org/" rel="noopener" target="_blank" title="Discourse"><i aria-hidden="true" class="fab fa-discourse fa-lg"></i>
+<span class="sr-only">Discourse</span></a>
+</li>
+</ul></div>
+</div>
+</div>
+<div class="navbar-persistent--mobile">
+<button aria-label="Search" class="btn search-button-field search-button__button pst-js-only" data-bs-placement="bottom" data-bs-toggle="tooltip" title="Search">
+<i class="fa-solid fa-magnifying-glass"></i>
+<span class="search-button__default-text">Search</span>
+<span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+</div>
+<button aria-label="On this page" class="pst-navbar-icon sidebar-toggle secondary-toggle">
+<span class="fa-solid fa-outdent"></span>
+</button>
+</div>
+</header>
+<div class="bd-container">
+<div class="bd-container__inner bd-page-width">
+<dialog id="pst-primary-sidebar-modal"></dialog>
+<div class="bd-sidebar-primary bd-sidebar" id="pst-primary-sidebar">
+<div class="sidebar-header-items sidebar-primary__section">
+<div class="sidebar-header-items__center">
+<div class="navbar-item">
+<nav>
+<ul class="bd-navbar-elements navbar-nav">
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+<li class="nav-item current active">
+<a class="nav-link nav-internal" href="../index.html">
+    PlayGround
+  </a>
+</li>
+<li class="nav-item">
+<a class="nav-link nav-internal" href="../../development.html">
+    Developers
+  </a>
+</li>
+</ul>
+</nav></div>
+</div>
+<div class="sidebar-header-items__end">
+<div class="navbar-item">
+<button aria-label="Color mode" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" data-bs-placement="bottom" data-bs-title="Color mode" data-bs-toggle="tooltip">
+<i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+<i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+<i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+</button></div>
+<div class="navbar-item"><ul aria-label="Icon Links" class="navbar-icon-links">
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://github.com/holoviz-dev/nbsite" rel="noopener" target="_blank" title="GitHub"><i aria-hidden="true" class="fa-brands fa-square-github fa-lg"></i>
+<span class="sr-only">GitHub</span></a>
+</li>
+<li class="nav-item">
+<a class="nav-link pst-navbar-icon" data-bs-placement="bottom" data-bs-toggle="tooltip" href="https://discourse.holoviz.org/" rel="noopener" target="_blank" title="Discourse"><i aria-hidden="true" class="fab fa-discourse fa-lg"></i>
+<span class="sr-only">Discourse</span></a>
+</li>
+</ul></div>
+</div>
+</div>
+<div class="sidebar-primary-items__start sidebar-primary__section">
+<div class="sidebar-primary-item"><!-- Adapted from sidebar-nav-bs.html (1.15.2) with the following changes
+
+  - Commented out the tag that adds the "Section Navigation" title
+  - Call generate_toctree_html with startdepth=0
+
+Please update this file when required when bumping the max pin of pydata-sphinx-theme.
+-->
+<nav aria-label="Section Navigation" class="bd-docs-nav bd-links">
+<!-- <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p> -->
+<div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">FOR USERS</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../user_guide/index.html">User Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../user_guide/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../user_guide/gallery.html">Gallery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../user_guide/param_doc.html">Param reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../user_guide/extra_extensions.html">Sphinx extensions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">PlayGround</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html">Intro</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../markdown/index.html">MyST-Markdown</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../markdown/index.html">Intro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../markdown/example.html">Examples</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../rst/index.html">RST</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../rst/index.html">Index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rst/example.html">Example</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../notebook_directive/index.html">NotebookDirective</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../notebook_directive/index.html">Intro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../notebook_directive/example.html">Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../notebook_directive/example2.html">Example2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../notebook_directive/holoviz.html">HoloViz</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../notebook_directive/preexecuted.html">Pre-executed</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../mystmdnb/index.html">Text Notebook</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../mystmdnb/index.html">Intro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mystmdnb/holoviz.html">HoloViz outputs</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../mystnb/index.html">MyST Notebook</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../mystnb/index.html">Intro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mystnb/holoviz.html">HoloViz</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Pyodide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html">Intro</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">HoloViz outputs</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../example_gallery/index.html">Gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../example_gallery/section1/index.html">Section1</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../example_gallery/section1/thing1.html">Thing1</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../example_gallery/section2/index.html">Section2</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../example_gallery/section2/thing2.html">Thing2</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../gallery_backends/index.html">Gallery with backends</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/index.html">API</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">FOR DEVELOPERS</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Developers</a></li>
+</ul>
+</div>
+</nav></div>
+<div class="sidebar-primary-item">
+<div class="hv-sb-dd">
+<div class="btn-group">
+<a class="btn hv-sb-dd-value" href="https://holoviz.org" target="_blank">HoloViz.org<i aria-hidden="true" class="fa fa-external-link hv-icon"></i></a>
+<button aria-expanded="false" class="btn dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" type="button">
+<span class="visually-hidden"></span>
+</button>
+<ul class="dropdown-menu">
+<li><a class="dropdown-item" href="https://param.holoviz.org" target="_blank" title="Assembling objects from many different libraries into a layout or app, whether in a Jupyter notebook or in a standalone servable dashboard">Panel<i aria-hidden="true" class="fa fa-external-link hv-icon"></i></a></li>
+<li><a class="dropdown-item" href="https://hvplot.holoviz.org" target="_blank" title="Quickly return interactive HoloViews, GeoViews, or Panel objects from Pandas, Xarray, or other data structures">hvPlot<i aria-hidden="true" class="fa fa-external-link hv-icon"></i></a></li>
+<li><a class="dropdown-item" href="https://holoviews.org" target="_blank" title="Declarative objects for instantly visualizable data, building Bokeh plots from convenient high-level specifications">HoloViews<i aria-hidden="true" class="fa fa-external-link hv-icon"></i></a></li>
+<li><a class="dropdown-item" href="https://geoviews.org" target="_blank" title="Visualizable geographic data that that can be mixed and matched with HoloViews objects">GeoViews<i aria-hidden="true" class="fa fa-external-link hv-icon"></i></a></li>
+<li><a class="dropdown-item" href="https://datashader.org" target="_blank" title="Rasterizing huge datasets quickly as fixed-size images">Datashader<i aria-hidden="true" class="fa fa-external-link hv-icon"></i></a></li>
+<li><a class="dropdown-item" href="https://param.holoviz.org" target="_blank" title="Make your Python code clearer and more reliable by declaring Parameters">Param<i aria-hidden="true" class="fa fa-external-link hv-icon"></i></a></li>
+<li><a class="dropdown-item" href="https://lumen.holoviz.org" target="_blank" title="Framework for visual analytics that allows users to build data-driven dashboards from a simple YAML specification">Lumen<i aria-hidden="true" class="fa fa-external-link hv-icon"></i></a></li>
+<li><a class="dropdown-item" href="https://colorcet.holoviz.org" target="_blank" title="A wide range of perceptually uniform continuous colormaps and perceptually based categorical color sets for use with the other libraries">Colorcet<i aria-hidden="true" class="fa fa-external-link hv-icon"></i></a></li>
+<li><hr class="dropdown-divider"/></li>
+<li><a class="dropdown-item" href="https://examples.holoviz.org" target="_blank" title=" Visualization-focused examples using HoloViz for specific topics ">Examples Gallery<i aria-hidden="true" class="fa fa-external-link hv-icon"></i></a></li>
+<li><a class="dropdown-item" href="https://blog.holoviz.org" target="_blank" title="HoloViz blog">Blog<i aria-hidden="true" class="fa fa-external-link hv-icon"></i></a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sidebar-primary-items__end sidebar-primary__section">
+<div class="sidebar-primary-item">
+<div class="flat" data-ea-manual="true" data-ea-publisher="readthedocs" data-ea-type="readthedocs-sidebar" id="ethical-ad-placement">
+</div></div>
+</div>
+</div>
+<main class="bd-main" id="main-content" role="main">
+<div class="bd-content">
+<div class="bd-article-container">
+<div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+<div class="header-article-items__start">
+<div class="header-article-item">
+<nav aria-label="Breadcrumb" class="d-print-none">
+<ul class="bd-breadcrumbs">
+<li class="breadcrumb-item breadcrumb-home">
+<a aria-label="Home" class="nav-link" href="../../index.html">
+<i class="fa-solid fa-home"></i>
+</a>
+</li>
+<li class="breadcrumb-item"><a class="nav-link" href="../index.html">NBSite Playground</a></li>
+<li class="breadcrumb-item"><a class="nav-link" href="index.html">Pyodide</a></li>
+<li aria-current="page" class="breadcrumb-item active"><span class="ellipsis">HoloViz outputs</span></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+<div id="searchbox"></div>
+<article class="bd-article">
+<section id="holoviz-outputs">
+<h1>HoloViz outputs<a class="headerlink" href="#holoviz-outputs" title="Link to this heading">#</a></h1>
+<section id="holoviews">
+<h2>HoloViews<a class="headerlink" href="#holoviews" title="Link to this heading">#</a></h2>
+<div class="pyodide highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">holoviews</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">hv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">hv</span><span class="o">.</span><span class="n">extension</span><span class="p">(</span><span class="s1">'bokeh'</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'x'</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="s1">'y'</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">]})</span>
+
+<span class="n">hv</span><span class="o">.</span><span class="n">Curve</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">kdims</span><span class="o">=</span><span class="s1">'x'</span><span class="p">,</span> <span class="n">vdims</span><span class="o">=</span><span class="s1">'y'</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="pyodide-stdout" id="stdout-codecell0-py"></pre><pre class="pyodide-stderr" id="stderr-codecell0-py"></pre><div class="pyodide-output embedded" id="output-codecell0-py"></div>
+<script>
+              async function embed_bokeh_0 () {
+                if (window.Bokeh && window.Bokeh.Panel) {
+                  await Bokeh.embed.embed_item({"target_id": "output-codecell0-py", "root_id": "p1004", "doc": {"version": "3.7.3", "title": "Panel Application", "roots": [{"type": "object", "name": "Row", "id": "p1004", "attributes": {"name": "Row00257", "stylesheets": ["\n:host(.pn-loading):before, .pn-loading:before {\n  background-color: #c3c3c3;\n  mask-size: auto calc(min(50%, 400px));\n  -webkit-mask-size: auto calc(min(50%, 400px));\n}", {"type": "object", "name": "ImportedStyleSheet", "id": "p1059", "attributes": {"url": "https://cdn.holoviz.org/panel/1.7.2/dist/css/loading.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1060", "attributes": {"url": "https://cdn.holoviz.org/panel/1.7.2/dist/css/listpanel.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1057", "attributes": {"url": "https://cdn.holoviz.org/panel/1.7.2/dist/bundled/theme/default.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1058", "attributes": {"url": "https://cdn.holoviz.org/panel/1.7.2/dist/bundled/theme/native.css"}}], "margin": 0, "align": "start", "children": [{"type": "object", "name": "Figure", "id": "p1011", "attributes": {"width": 300, "height": 300, "margin": [5, 10], "sizing_mode": "fixed", "align": "start", "x_range": {"type": "object", "name": "Range1d", "id": "p1005", "attributes": {"name": "x", "tags": [[["x", null]], []], "end": 20.0, "reset_start": 0.0, "reset_end": 20.0}}, "y_range": {"type": "object", "name": "Range1d", "id": "p1006", "attributes": {"name": "y", "tags": [[["y", null]], {"type": "map", "entries": [["invert_yaxis", false], ["autorange", false]]}], "start": 0.19999999999999996, "end": 9.8, "reset_start": 0.19999999999999996, "reset_end": 9.8}}, "x_scale": {"type": "object", "name": "LinearScale", "id": "p1021"}, "y_scale": {"type": "object", "name": "LinearScale", "id": "p1022"}, "title": {"type": "object", "name": "Title", "id": "p1014", "attributes": {"text_color": "black", "text_font_size": "12pt"}}, "renderers": [{"type": "object", "name": "GlyphRenderer", "id": "p1053", "attributes": {"data_source": {"type": "object", "name": "ColumnDataSource", "id": "p1044", "attributes": {"selected": {"type": "object", "name": "Selection", "id": "p1045", "attributes": {"indices": [], "line_indices": []}}, "selection_policy": {"type": "object", "name": "UnionRenderers", "id": "p1046"}, "data": {"type": "map", "entries": [["x", {"type": "ndarray", "array": {"type": "bytes", "data": "AAAAAAoAAAAUAAAA"}, "shape": [3], "dtype": "int32", "order": "little"}], ["y", {"type": "ndarray", "array": {"type": "bytes", "data": "BQAAAAEAAAAJAAAA"}, "shape": [3], "dtype": "int32", "order": "little"}]]}}}, "view": {"type": "object", "name": "CDSView", "id": "p1054", "attributes": {"filter": {"type": "object", "name": "AllIndices", "id": "p1055"}}}, "glyph": {"type": "object", "name": "Line", "id": "p1050", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "line_color": "#30a2da", "line_width": 2}}, "selection_glyph": {"type": "object", "name": "Line", "id": "p1056", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "line_color": "#30a2da", "line_width": 2}}, "nonselection_glyph": {"type": "object", "name": "Line", "id": "p1051", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "line_color": "#30a2da", "line_alpha": 0.1, "line_width": 2}}, "muted_glyph": {"type": "object", "name": "Line", "id": "p1052", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "line_color": "#30a2da", "line_alpha": 0.2, "line_width": 2}}}}], "toolbar": {"type": "object", "name": "Toolbar", "id": "p1020", "attributes": {"tools": [{"type": "object", "name": "WheelZoomTool", "id": "p1010", "attributes": {"tags": ["hv_created"], "renderers": "auto", "zoom_together": "none"}}, {"type": "object", "name": "SaveTool", "id": "p1033"}, {"type": "object", "name": "PanTool", "id": "p1034"}, {"type": "object", "name": "BoxZoomTool", "id": "p1035", "attributes": {"dimensions": "both", "overlay": {"type": "object", "name": "BoxAnnotation", "id": "p1036", "attributes": {"syncable": false, "line_color": "black", "line_alpha": 1.0, "line_width": 2, "line_dash": [4, 4], "fill_color": "lightgrey", "fill_alpha": 0.5, "level": "overlay", "visible": false, "left": {"type": "number", "value": "nan"}, "right": {"type": "number", "value": "nan"}, "top": {"type": "number", "value": "nan"}, "bottom": {"type": "number", "value": "nan"}, "left_units": "canvas", "right_units": "canvas", "top_units": "canvas", "bottom_units": "canvas", "handles": {"type": "object", "name": "BoxInteractionHandles", "id": "p1042", "attributes": {"all": {"type": "object", "name": "AreaVisuals", "id": "p1041", "attributes": {"fill_color": "white", "hover_fill_color": "lightgray"}}}}}}}}, {"type": "object", "name": "ResetTool", "id": "p1043"}], "active_drag": {"id": "p1034"}, "active_scroll": {"id": "p1010"}}}, "left": [{"type": "object", "name": "LinearAxis", "id": "p1028", "attributes": {"ticker": {"type": "object", "name": "BasicTicker", "id": "p1029", "attributes": {"mantissas": [1, 2, 5]}}, "formatter": {"type": "object", "name": "BasicTickFormatter", "id": "p1030"}, "axis_label": "y", "major_label_policy": {"type": "object", "name": "AllLabels", "id": "p1031"}}}], "below": [{"type": "object", "name": "LinearAxis", "id": "p1023", "attributes": {"ticker": {"type": "object", "name": "BasicTicker", "id": "p1024", "attributes": {"mantissas": [1, 2, 5]}}, "formatter": {"type": "object", "name": "BasicTickFormatter", "id": "p1025"}, "axis_label": "x", "major_label_policy": {"type": "object", "name": "AllLabels", "id": "p1026"}}}], "center": [{"type": "object", "name": "Grid", "id": "p1027", "attributes": {"axis": {"id": "p1023"}, "grid_line_color": null}}, {"type": "object", "name": "Grid", "id": "p1032", "attributes": {"dimension": 1, "axis": {"id": "p1028"}, "grid_line_color": null}}], "min_border_top": 10, "min_border_bottom": 10, "min_border_left": 10, "min_border_right": 10, "output_backend": "webgl"}}]}}, {"type": "object", "name": "panel.models.location.Location", "id": "p1061", "attributes": {"name": "location", "reload": false}}], "defs": [{"type": "model", "name": "ReactiveHTML1"}, {"type": "model", "name": "FlexBox1", "properties": [{"name": "align_content", "kind": "Any", "default": "flex-start"}, {"name": "align_items", "kind": "Any", "default": "flex-start"}, {"name": "flex_direction", "kind": "Any", "default": "row"}, {"name": "flex_wrap", "kind": "Any", "default": "wrap"}, {"name": "gap", "kind": "Any", "default": ""}, {"name": "justify_content", "kind": "Any", "default": "flex-start"}]}, {"type": "model", "name": "FloatPanel1", "properties": [{"name": "config", "kind": "Any", "default": {"type": "map"}}, {"name": "contained", "kind": "Any", "default": true}, {"name": "position", "kind": "Any", "default": "right-top"}, {"name": "offsetx", "kind": "Any", "default": null}, {"name": "offsety", "kind": "Any", "default": null}, {"name": "theme", "kind": "Any", "default": "primary"}, {"name": "status", "kind": "Any", "default": "normalized"}]}, {"type": "model", "name": "GridStack1", "properties": [{"name": "ncols", "kind": "Any", "default": null}, {"name": "nrows", "kind": "Any", "default": null}, {"name": "allow_resize", "kind": "Any", "default": true}, {"name": "allow_drag", "kind": "Any", "default": true}, {"name": "state", "kind": "Any", "default": []}]}, {"type": "model", "name": "drag1", "properties": [{"name": "slider_width", "kind": "Any", "default": 5}, {"name": "slider_color", "kind": "Any", "default": "black"}, {"name": "value", "kind": "Any", "default": 50}]}, {"type": "model", "name": "click1", "properties": [{"name": "terminal_output", "kind": "Any", "default": ""}, {"name": "debug_name", "kind": "Any", "default": ""}, {"name": "clears", "kind": "Any", "default": 0}]}, {"type": "model", "name": "ReactiveESM1", "properties": [{"name": "esm_constants", "kind": "Any", "default": {"type": "map"}}]}, {"type": "model", "name": "JSComponent1", "properties": [{"name": "esm_constants", "kind": "Any", "default": {"type": "map"}}]}, {"type": "model", "name": "ReactComponent1", "properties": [{"name": "use_shadow_dom", "kind": "Any", "default": true}, {"name": "esm_constants", "kind": "Any", "default": {"type": "map"}}]}, {"type": "model", "name": "AnyWidgetComponent1", "properties": [{"name": "use_shadow_dom", "kind": "Any", "default": true}, {"name": "esm_constants", "kind": "Any", "default": {"type": "map"}}]}, {"type": "model", "name": "FastWrapper1", "properties": [{"name": "object", "kind": "Any", "default": null}, {"name": "style", "kind": "Any", "default": null}]}, {"type": "model", "name": "NotificationArea1", "properties": [{"name": "js_events", "kind": "Any", "default": {"type": "map"}}, {"name": "max_notifications", "kind": "Any", "default": 5}, {"name": "notifications", "kind": "Any", "default": []}, {"name": "position", "kind": "Any", "default": "bottom-right"}, {"name": "_clear", "kind": "Any", "default": 0}, {"name": "types", "kind": "Any", "default": [{"type": "map", "entries": [["type", "warning"], ["background", "#ffc107"], ["icon", {"type": "map", "entries": [["className", "fas fa-exclamation-triangle"], ["tagName", "i"], ["color", "white"]]}]]}, {"type": "map", "entries": [["type", "info"], ["background", "#007bff"], ["icon", {"type": "map", "entries": [["className", "fas fa-info-circle"], ["tagName", "i"], ["color", "white"]]}]]}]}]}, {"type": "model", "name": "Notification", "properties": [{"name": "background", "kind": "Any", "default": null}, {"name": "duration", "kind": "Any", "default": 3000}, {"name": "icon", "kind": "Any", "default": null}, {"name": "message", "kind": "Any", "default": ""}, {"name": "notification_type", "kind": "Any", "default": null}, {"name": "_rendered", "kind": "Any", "default": false}, {"name": "_destroyed", "kind": "Any", "default": false}]}, {"type": "model", "name": "TemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "BootstrapTemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "TemplateEditor1", "properties": [{"name": "layout", "kind": "Any", "default": []}]}, {"type": "model", "name": "MaterialTemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "request_value1", "properties": [{"name": "fill", "kind": "Any", "default": "none"}, {"name": "_synced", "kind": "Any", "default": null}, {"name": "_request_sync", "kind": "Any", "default": 0}]}, {"type": "model", "name": "holoviews.plotting.bokeh.raster.HoverModel", "properties": [{"name": "xy", "kind": "Any", "default": null}, {"name": "data", "kind": "Any", "default": null}]}]}, "version": "3.7.3"})
+                } else {
+                   setTimeout(embed_bokeh_0, 200)
+                }
+              };
+              embed_bokeh_0()
+            </script>
+<p>TODO: Matplotlib + Plotly</p>
+</section>
+<section id="hvplot">
+<h2>hvPlot<a class="headerlink" href="#hvplot" title="Link to this heading">#</a></h2>
+<div class="pyodide highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">hvplot.pandas</span>  <span class="c1"># noqa</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">hvplot</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">'x'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">'y'</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="pyodide-stdout" id="stdout-codecell1-py"></pre><pre class="pyodide-stderr" id="stderr-codecell1-py"></pre><div class="pyodide-output embedded" id="output-codecell1-py"></div>
+<script>
+              async function embed_bokeh_1 () {
+                if (window.Bokeh && window.Bokeh.Panel) {
+                  await Bokeh.embed.embed_item({"target_id": "output-codecell1-py", "root_id": "p1064", "doc": {"version": "3.7.3", "title": "Panel Application", "roots": [{"type": "object", "name": "Row", "id": "p1064", "attributes": {"name": "Row00298", "stylesheets": ["\n:host(.pn-loading):before, .pn-loading:before {\n  background-color: #c3c3c3;\n  mask-size: auto calc(min(50%, 400px));\n  -webkit-mask-size: auto calc(min(50%, 400px));\n}", {"type": "object", "name": "ImportedStyleSheet", "id": "p1120", "attributes": {"url": "https://cdn.holoviz.org/panel/1.7.2/dist/css/loading.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1121", "attributes": {"url": "https://cdn.holoviz.org/panel/1.7.2/dist/css/listpanel.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1118", "attributes": {"url": "https://cdn.holoviz.org/panel/1.7.2/dist/bundled/theme/default.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1119", "attributes": {"url": "https://cdn.holoviz.org/panel/1.7.2/dist/bundled/theme/native.css"}}], "margin": 0, "align": "start", "children": [{"type": "object", "name": "Figure", "id": "p1072", "attributes": {"width": 700, "height": 300, "margin": [5, 10], "sizing_mode": "fixed", "align": "start", "x_range": {"type": "object", "name": "Range1d", "id": "p1065", "attributes": {"name": "x", "tags": [[["x", null]], []], "start": -0.8571428571428572, "end": 20.857142857142858, "reset_start": -0.8571428571428572, "reset_end": 20.857142857142858}}, "y_range": {"type": "object", "name": "Range1d", "id": "p1066", "attributes": {"name": "y", "tags": [[["y", null]], {"type": "map", "entries": [["invert_yaxis", false], ["autorange", false]]}], "start": 0.19999999999999996, "end": 9.8, "reset_start": 0.19999999999999996, "reset_end": 9.8}}, "x_scale": {"type": "object", "name": "LinearScale", "id": "p1082"}, "y_scale": {"type": "object", "name": "LinearScale", "id": "p1083"}, "title": {"type": "object", "name": "Title", "id": "p1075", "attributes": {"text_color": "black", "text_font_size": "12pt"}}, "renderers": [{"type": "object", "name": "GlyphRenderer", "id": "p1114", "attributes": {"data_source": {"type": "object", "name": "ColumnDataSource", "id": "p1105", "attributes": {"selected": {"type": "object", "name": "Selection", "id": "p1106", "attributes": {"indices": [], "line_indices": []}}, "selection_policy": {"type": "object", "name": "UnionRenderers", "id": "p1107"}, "data": {"type": "map", "entries": [["x", {"type": "ndarray", "array": {"type": "bytes", "data": "AAAAAAoAAAAUAAAA"}, "shape": [3], "dtype": "int32", "order": "little"}], ["y", {"type": "ndarray", "array": {"type": "bytes", "data": "BQAAAAEAAAAJAAAA"}, "shape": [3], "dtype": "int32", "order": "little"}]]}}}, "view": {"type": "object", "name": "CDSView", "id": "p1115", "attributes": {"filter": {"type": "object", "name": "AllIndices", "id": "p1116"}}}, "glyph": {"type": "object", "name": "Scatter", "id": "p1111", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "size": {"type": "value", "value": 5.477225575051661}, "line_color": {"type": "value", "value": "#30a2da"}, "fill_color": {"type": "value", "value": "#30a2da"}, "hatch_color": {"type": "value", "value": "#30a2da"}}}, "selection_glyph": {"type": "object", "name": "Scatter", "id": "p1117", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "size": {"type": "value", "value": 5.477225575051661}, "angle": {"type": "value", "value": 0.0}, "line_color": {"type": "value", "value": "#30a2da"}, "line_alpha": {"type": "value", "value": 1.0}, "line_width": {"type": "value", "value": 1}, "line_join": {"type": "value", "value": "bevel"}, "line_cap": {"type": "value", "value": "butt"}, "line_dash": {"type": "value", "value": []}, "line_dash_offset": {"type": "value", "value": 0}, "fill_color": {"type": "value", "value": "#30a2da"}, "fill_alpha": {"type": "value", "value": 1.0}, "hatch_color": {"type": "value", "value": "#30a2da"}, "hatch_alpha": {"type": "value", "value": 1.0}, "hatch_scale": {"type": "value", "value": 12.0}, "hatch_pattern": {"type": "value", "value": null}, "hatch_weight": {"type": "value", "value": 1.0}, "marker": {"type": "value", "value": "circle"}}}, "nonselection_glyph": {"type": "object", "name": "Scatter", "id": "p1112", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "size": {"type": "value", "value": 5.477225575051661}, "line_color": {"type": "value", "value": "#30a2da"}, "line_alpha": {"type": "value", "value": 0.1}, "fill_color": {"type": "value", "value": "#30a2da"}, "fill_alpha": {"type": "value", "value": 0.1}, "hatch_color": {"type": "value", "value": "#30a2da"}, "hatch_alpha": {"type": "value", "value": 0.1}}}, "muted_glyph": {"type": "object", "name": "Scatter", "id": "p1113", "attributes": {"tags": ["apply_ranges"], "x": {"type": "field", "field": "x"}, "y": {"type": "field", "field": "y"}, "size": {"type": "value", "value": 5.477225575051661}, "line_color": {"type": "value", "value": "#30a2da"}, "line_alpha": {"type": "value", "value": 0.2}, "fill_color": {"type": "value", "value": "#30a2da"}, "fill_alpha": {"type": "value", "value": 0.2}, "hatch_color": {"type": "value", "value": "#30a2da"}, "hatch_alpha": {"type": "value", "value": 0.2}}}}}], "toolbar": {"type": "object", "name": "Toolbar", "id": "p1081", "attributes": {"tools": [{"type": "object", "name": "WheelZoomTool", "id": "p1070", "attributes": {"tags": ["hv_created"], "renderers": "auto", "zoom_together": "none"}}, {"type": "object", "name": "HoverTool", "id": "p1071", "attributes": {"tags": ["hv_created"], "renderers": [{"id": "p1114"}], "tooltips": [["x", "@{x}"], ["y", "@{y}"]]}}, {"type": "object", "name": "SaveTool", "id": "p1094"}, {"type": "object", "name": "PanTool", "id": "p1095"}, {"type": "object", "name": "BoxZoomTool", "id": "p1096", "attributes": {"dimensions": "both", "overlay": {"type": "object", "name": "BoxAnnotation", "id": "p1097", "attributes": {"syncable": false, "line_color": "black", "line_alpha": 1.0, "line_width": 2, "line_dash": [4, 4], "fill_color": "lightgrey", "fill_alpha": 0.5, "level": "overlay", "visible": false, "left": {"type": "number", "value": "nan"}, "right": {"type": "number", "value": "nan"}, "top": {"type": "number", "value": "nan"}, "bottom": {"type": "number", "value": "nan"}, "left_units": "canvas", "right_units": "canvas", "top_units": "canvas", "bottom_units": "canvas", "handles": {"type": "object", "name": "BoxInteractionHandles", "id": "p1103", "attributes": {"all": {"type": "object", "name": "AreaVisuals", "id": "p1102", "attributes": {"fill_color": "white", "hover_fill_color": "lightgray"}}}}}}}}, {"type": "object", "name": "ResetTool", "id": "p1104"}], "active_drag": {"id": "p1095"}, "active_scroll": {"id": "p1070"}}}, "left": [{"type": "object", "name": "LinearAxis", "id": "p1089", "attributes": {"ticker": {"type": "object", "name": "BasicTicker", "id": "p1090", "attributes": {"mantissas": [1, 2, 5]}}, "formatter": {"type": "object", "name": "BasicTickFormatter", "id": "p1091"}, "axis_label": "y", "major_label_policy": {"type": "object", "name": "AllLabels", "id": "p1092"}}}], "below": [{"type": "object", "name": "LinearAxis", "id": "p1084", "attributes": {"ticker": {"type": "object", "name": "BasicTicker", "id": "p1085", "attributes": {"mantissas": [1, 2, 5]}}, "formatter": {"type": "object", "name": "BasicTickFormatter", "id": "p1086"}, "axis_label": "x", "major_label_policy": {"type": "object", "name": "AllLabels", "id": "p1087"}}}], "center": [{"type": "object", "name": "Grid", "id": "p1088", "attributes": {"axis": {"id": "p1084"}, "grid_line_color": null}}, {"type": "object", "name": "Grid", "id": "p1093", "attributes": {"dimension": 1, "axis": {"id": "p1089"}, "grid_line_color": null}}], "min_border_top": 10, "min_border_bottom": 10, "min_border_left": 10, "min_border_right": 10, "output_backend": "webgl"}}]}}, {"type": "object", "name": "panel.models.location.Location", "id": "p1122", "attributes": {"name": "location", "reload": false}}], "defs": [{"type": "model", "name": "ReactiveHTML1"}, {"type": "model", "name": "FlexBox1", "properties": [{"name": "align_content", "kind": "Any", "default": "flex-start"}, {"name": "align_items", "kind": "Any", "default": "flex-start"}, {"name": "flex_direction", "kind": "Any", "default": "row"}, {"name": "flex_wrap", "kind": "Any", "default": "wrap"}, {"name": "gap", "kind": "Any", "default": ""}, {"name": "justify_content", "kind": "Any", "default": "flex-start"}]}, {"type": "model", "name": "FloatPanel1", "properties": [{"name": "config", "kind": "Any", "default": {"type": "map"}}, {"name": "contained", "kind": "Any", "default": true}, {"name": "position", "kind": "Any", "default": "right-top"}, {"name": "offsetx", "kind": "Any", "default": null}, {"name": "offsety", "kind": "Any", "default": null}, {"name": "theme", "kind": "Any", "default": "primary"}, {"name": "status", "kind": "Any", "default": "normalized"}]}, {"type": "model", "name": "GridStack1", "properties": [{"name": "ncols", "kind": "Any", "default": null}, {"name": "nrows", "kind": "Any", "default": null}, {"name": "allow_resize", "kind": "Any", "default": true}, {"name": "allow_drag", "kind": "Any", "default": true}, {"name": "state", "kind": "Any", "default": []}]}, {"type": "model", "name": "drag1", "properties": [{"name": "slider_width", "kind": "Any", "default": 5}, {"name": "slider_color", "kind": "Any", "default": "black"}, {"name": "value", "kind": "Any", "default": 50}]}, {"type": "model", "name": "click1", "properties": [{"name": "terminal_output", "kind": "Any", "default": ""}, {"name": "debug_name", "kind": "Any", "default": ""}, {"name": "clears", "kind": "Any", "default": 0}]}, {"type": "model", "name": "ReactiveESM1", "properties": [{"name": "esm_constants", "kind": "Any", "default": {"type": "map"}}]}, {"type": "model", "name": "JSComponent1", "properties": [{"name": "esm_constants", "kind": "Any", "default": {"type": "map"}}]}, {"type": "model", "name": "ReactComponent1", "properties": [{"name": "use_shadow_dom", "kind": "Any", "default": true}, {"name": "esm_constants", "kind": "Any", "default": {"type": "map"}}]}, {"type": "model", "name": "AnyWidgetComponent1", "properties": [{"name": "use_shadow_dom", "kind": "Any", "default": true}, {"name": "esm_constants", "kind": "Any", "default": {"type": "map"}}]}, {"type": "model", "name": "FastWrapper1", "properties": [{"name": "object", "kind": "Any", "default": null}, {"name": "style", "kind": "Any", "default": null}]}, {"type": "model", "name": "NotificationArea1", "properties": [{"name": "js_events", "kind": "Any", "default": {"type": "map"}}, {"name": "max_notifications", "kind": "Any", "default": 5}, {"name": "notifications", "kind": "Any", "default": []}, {"name": "position", "kind": "Any", "default": "bottom-right"}, {"name": "_clear", "kind": "Any", "default": 0}, {"name": "types", "kind": "Any", "default": [{"type": "map", "entries": [["type", "warning"], ["background", "#ffc107"], ["icon", {"type": "map", "entries": [["className", "fas fa-exclamation-triangle"], ["tagName", "i"], ["color", "white"]]}]]}, {"type": "map", "entries": [["type", "info"], ["background", "#007bff"], ["icon", {"type": "map", "entries": [["className", "fas fa-info-circle"], ["tagName", "i"], ["color", "white"]]}]]}]}]}, {"type": "model", "name": "Notification", "properties": [{"name": "background", "kind": "Any", "default": null}, {"name": "duration", "kind": "Any", "default": 3000}, {"name": "icon", "kind": "Any", "default": null}, {"name": "message", "kind": "Any", "default": ""}, {"name": "notification_type", "kind": "Any", "default": null}, {"name": "_rendered", "kind": "Any", "default": false}, {"name": "_destroyed", "kind": "Any", "default": false}]}, {"type": "model", "name": "TemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "BootstrapTemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "TemplateEditor1", "properties": [{"name": "layout", "kind": "Any", "default": []}]}, {"type": "model", "name": "MaterialTemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "request_value1", "properties": [{"name": "fill", "kind": "Any", "default": "none"}, {"name": "_synced", "kind": "Any", "default": null}, {"name": "_request_sync", "kind": "Any", "default": 0}]}, {"type": "model", "name": "holoviews.plotting.bokeh.raster.HoverModel", "properties": [{"name": "xy", "kind": "Any", "default": null}, {"name": "data", "kind": "Any", "default": null}]}]}, "version": "3.7.3"})
+                } else {
+                   setTimeout(embed_bokeh_1, 200)
+                }
+              };
+              embed_bokeh_1()
+            </script>
+<p>TODO: Matplotlib + Plotly</p>
+</section>
+<section id="panel">
+<h2>Panel<a class="headerlink" href="#panel" title="Link to this heading">#</a></h2>
+<div class="pyodide highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">panel</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pn</span>
+
+<span class="n">pn</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">IntInput</span><span class="p">()</span>
+</pre></div>
+</div>
+<pre class="pyodide-stdout" id="stdout-codecell2-py"></pre><pre class="pyodide-stderr" id="stderr-codecell2-py"></pre><div class="pyodide-output embedded" id="output-codecell2-py"></div>
+<script>
+              async function embed_bokeh_2 () {
+                if (window.Bokeh && window.Bokeh.Panel) {
+                  await Bokeh.embed.embed_item({"target_id": "output-codecell2-py", "root_id": "p1128", "doc": {"version": "3.7.3", "title": "Panel Application", "roots": [{"type": "object", "name": "Spinner", "id": "p1128", "attributes": {"stylesheets": ["\n:host(.pn-loading):before, .pn-loading:before {\n  background-color: #c3c3c3;\n  mask-size: auto calc(min(50%, 400px));\n  -webkit-mask-size: auto calc(min(50%, 400px));\n}", {"type": "object", "name": "ImportedStyleSheet", "id": "p1127", "attributes": {"url": "https://cdn.holoviz.org/panel/1.7.2/dist/css/loading.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1125", "attributes": {"url": "https://cdn.holoviz.org/panel/1.7.2/dist/bundled/theme/default.css"}}, {"type": "object", "name": "ImportedStyleSheet", "id": "p1126", "attributes": {"url": "https://cdn.holoviz.org/panel/1.7.2/dist/bundled/theme/native.css"}}], "width": 300, "min_width": 300, "margin": [5, 10], "align": "start", "value": 0, "placeholder": "0", "mode": "int"}}, {"type": "object", "name": "panel.models.location.Location", "id": "p1129", "attributes": {"name": "location", "reload": false}}], "defs": [{"type": "model", "name": "ReactiveHTML1"}, {"type": "model", "name": "FlexBox1", "properties": [{"name": "align_content", "kind": "Any", "default": "flex-start"}, {"name": "align_items", "kind": "Any", "default": "flex-start"}, {"name": "flex_direction", "kind": "Any", "default": "row"}, {"name": "flex_wrap", "kind": "Any", "default": "wrap"}, {"name": "gap", "kind": "Any", "default": ""}, {"name": "justify_content", "kind": "Any", "default": "flex-start"}]}, {"type": "model", "name": "FloatPanel1", "properties": [{"name": "config", "kind": "Any", "default": {"type": "map"}}, {"name": "contained", "kind": "Any", "default": true}, {"name": "position", "kind": "Any", "default": "right-top"}, {"name": "offsetx", "kind": "Any", "default": null}, {"name": "offsety", "kind": "Any", "default": null}, {"name": "theme", "kind": "Any", "default": "primary"}, {"name": "status", "kind": "Any", "default": "normalized"}]}, {"type": "model", "name": "GridStack1", "properties": [{"name": "ncols", "kind": "Any", "default": null}, {"name": "nrows", "kind": "Any", "default": null}, {"name": "allow_resize", "kind": "Any", "default": true}, {"name": "allow_drag", "kind": "Any", "default": true}, {"name": "state", "kind": "Any", "default": []}]}, {"type": "model", "name": "drag1", "properties": [{"name": "slider_width", "kind": "Any", "default": 5}, {"name": "slider_color", "kind": "Any", "default": "black"}, {"name": "value", "kind": "Any", "default": 50}]}, {"type": "model", "name": "click1", "properties": [{"name": "terminal_output", "kind": "Any", "default": ""}, {"name": "debug_name", "kind": "Any", "default": ""}, {"name": "clears", "kind": "Any", "default": 0}]}, {"type": "model", "name": "ReactiveESM1", "properties": [{"name": "esm_constants", "kind": "Any", "default": {"type": "map"}}]}, {"type": "model", "name": "JSComponent1", "properties": [{"name": "esm_constants", "kind": "Any", "default": {"type": "map"}}]}, {"type": "model", "name": "ReactComponent1", "properties": [{"name": "use_shadow_dom", "kind": "Any", "default": true}, {"name": "esm_constants", "kind": "Any", "default": {"type": "map"}}]}, {"type": "model", "name": "AnyWidgetComponent1", "properties": [{"name": "use_shadow_dom", "kind": "Any", "default": true}, {"name": "esm_constants", "kind": "Any", "default": {"type": "map"}}]}, {"type": "model", "name": "FastWrapper1", "properties": [{"name": "object", "kind": "Any", "default": null}, {"name": "style", "kind": "Any", "default": null}]}, {"type": "model", "name": "NotificationArea1", "properties": [{"name": "js_events", "kind": "Any", "default": {"type": "map"}}, {"name": "max_notifications", "kind": "Any", "default": 5}, {"name": "notifications", "kind": "Any", "default": []}, {"name": "position", "kind": "Any", "default": "bottom-right"}, {"name": "_clear", "kind": "Any", "default": 0}, {"name": "types", "kind": "Any", "default": [{"type": "map", "entries": [["type", "warning"], ["background", "#ffc107"], ["icon", {"type": "map", "entries": [["className", "fas fa-exclamation-triangle"], ["tagName", "i"], ["color", "white"]]}]]}, {"type": "map", "entries": [["type", "info"], ["background", "#007bff"], ["icon", {"type": "map", "entries": [["className", "fas fa-info-circle"], ["tagName", "i"], ["color", "white"]]}]]}]}]}, {"type": "model", "name": "Notification", "properties": [{"name": "background", "kind": "Any", "default": null}, {"name": "duration", "kind": "Any", "default": 3000}, {"name": "icon", "kind": "Any", "default": null}, {"name": "message", "kind": "Any", "default": ""}, {"name": "notification_type", "kind": "Any", "default": null}, {"name": "_rendered", "kind": "Any", "default": false}, {"name": "_destroyed", "kind": "Any", "default": false}]}, {"type": "model", "name": "TemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "BootstrapTemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "TemplateEditor1", "properties": [{"name": "layout", "kind": "Any", "default": []}]}, {"type": "model", "name": "MaterialTemplateActions1", "properties": [{"name": "open_modal", "kind": "Any", "default": 0}, {"name": "close_modal", "kind": "Any", "default": 0}]}, {"type": "model", "name": "request_value1", "properties": [{"name": "fill", "kind": "Any", "default": "none"}, {"name": "_synced", "kind": "Any", "default": null}, {"name": "_request_sync", "kind": "Any", "default": 0}]}, {"type": "model", "name": "holoviews.plotting.bokeh.raster.HoverModel", "properties": [{"name": "xy", "kind": "Any", "default": null}, {"name": "data", "kind": "Any", "default": null}]}]}, "version": "3.7.3"})
+                } else {
+                   setTimeout(embed_bokeh_2, 200)
+                }
+              };
+              embed_bokeh_2()
+            </script>
+</section>
+</section>
+</article>
+<footer class="prev-next-footer d-print-none">
+<div class="prev-next-area">
+<a class="left-prev" href="index.html" title="previous page">
+<i class="fa-solid fa-angle-left"></i>
+<div class="prev-next-info">
+<p class="prev-next-subtitle">previous</p>
+<p class="prev-next-title">Pyodide</p>
+</div>
+</a>
+<a class="right-next" href="../example_gallery/index.html" title="next page">
+<div class="prev-next-info">
+<p class="prev-next-subtitle">next</p>
+<p class="prev-next-title">Gallery Title</p>
+</div>
+<i class="fa-solid fa-angle-right"></i>
+</a>
+</div>
+</footer>
+</div>
+<dialog id="pst-secondary-sidebar-modal"></dialog>
+<div class="bd-sidebar-secondary bd-toc" id="pst-secondary-sidebar"><div class="sidebar-secondary-items sidebar-secondary__inner">
+<div class="sidebar-secondary-item"><div class="github-star-badge">
+<a href="https://github.com/holoviz/holoviews">
+<img alt="Support us with a star on GitHub" src="https://img.shields.io/github/stars/holoviz/holoviews?style=social&amp;label=Star%20on%20%20GitHub%E2%AD%90"/>
+</a>
+</div></div>
+</div></div>
+</div>
+<footer class="bd-footer-content">
+</footer>
+</main>
+</div>
+</div>
+<!-- Scripts loaded after <body> so the DOM is not blocked -->
+<script defer="" src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer="" src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+<footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+<div class="footer-items__start">
+<div class="footer-item"><p class="nbsite-copyright-last-updated">
+<span class="copyright">
+            © Copyright 2018 HoloViz Developers.
+    </span>
+<span class="last-updated">Last updated on 2025-07-02.</span><br/>
+</p></div>
+</div>
+<div class="footer-items__end">
+<div class="footer-item">
+<p class="theme-version">
+<!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+</div>
+</div>
+</footer>
+</body>
+</html>
