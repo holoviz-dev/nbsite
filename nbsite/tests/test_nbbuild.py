@@ -35,6 +35,11 @@ class TestFixNotebookLinks:
                 "foo [a](../foo/b.ipynb#spam) bar.",
                 [("[a](../foo/b.ipynb#spam)", "../foo/b.ipynb")],
             ),
+            # Case: Multiple links only one .ipynb
+            (
+                "[HoloViews](https://holoviews.org) ([Interactivity](3_Interactivity.ipynb)).",
+                [("[Interactivity](3_Interactivity.ipynb)", "3_Interactivity.ipynb")],
+            ),
         ],
     )
     def test_extract_links(self, markdowntext, expected_output):
