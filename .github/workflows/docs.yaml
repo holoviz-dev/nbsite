@@ -49,6 +49,8 @@ jobs:
       DISPLAY: ":99.0"
       GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
       VERSION: ${{ inputs.version }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     steps:
       - name: Validate version
         if: ${{ inputs.target == 'main' }}
@@ -71,20 +73,6 @@ jobs:
       - name: report failure
         if: failure()
         run: cat /tmp/sphinx-*.log | tail -n 100
-
-  docs_publish:
-    name: Publish Documentation
-    runs-on: "ubuntu-latest"
-    needs: [build_docs]
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: docs
-          path: site/builtdocs/
       - name: Set and echo git ref
         id: vars
         run: |
