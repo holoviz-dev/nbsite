@@ -99,6 +99,6 @@ jobs:
           version: ${{ inputs.version }}
           build-path: ./site/builtdocs/
           switcher-path: ./site/builtdocs/_static/switcher.json
-          sitemap-path: ./site/doc/_nbsite_versioned/sitemap.xml
-          robots-path: ./site/doc/_nbsite_versioned/robots.txt
-          error-404-path: ./site/doc/_nbsite_versioned/404.html
+          sitemap-path: ./site/builtdocs/_nbsite_versioned/sitemap.xml
+          robots-path: ./site/builtdocs/_nbsite_versioned/robots.txt
+          error-404-path: ./site/builtdocs/_nbsite_versioned/404.html

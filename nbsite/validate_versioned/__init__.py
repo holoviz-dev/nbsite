@@ -200,12 +200,11 @@ def validate_versioned(app, exc):
     ):
         return
     check_for_html_baseurl(app)
-    out_dir = Path(app.srcdir, OUTPUT_DIR)
+    out_dir = Path(app.outdir, OUTPUT_DIR)
     out_dir.mkdir(parents=True, exist_ok=True)
     build_sitemap(app, out_dir)
     build_robots(app, out_dir)
     build_404(out_dir)
-    (out_dir / ".gitignore").write_text("*")
 
 
 def setup(app):
