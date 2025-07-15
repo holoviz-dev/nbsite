@@ -1,12 +1,12 @@
 [
   {
-    "version": "dev",
-    "url": "https://nbsite.holoviz.org/en/docs/dev/"
-  },
-  {
     "name": "0.8.7 (latest)",
     "version": "0.8.7",
     "url": "https://nbsite.holoviz.org/en/docs/latest/",
     "preferred": true
+  },
+  {
+    "version": "dev",
+    "url": "https://nbsite.holoviz.org/en/docs/dev/"
   }
 ]
