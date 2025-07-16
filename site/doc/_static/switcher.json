@@ -1,0 +1,12 @@
+[
+  {
+    "name": "0.9.0 (latest)",
+    "version": "0.9.0",
+    "url": "https://nbsite.holoviz.org/en/docs/latest/",
+    "preferred": true
+  },
+  {
+    "version": "dev",
+    "url": "https://nbsite.holoviz.org/en/docs/dev/"
+  }
+]

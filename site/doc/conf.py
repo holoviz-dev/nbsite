@@ -11,6 +11,8 @@ import nbsite
 
 version = release = base_version(nbsite.__version__)
 
+html_baseurl = 'https://nbsite.holoviz.org/en/docs/latest/'
+
 html_theme = 'pydata_sphinx_theme'
 
 extensions += [
@@ -59,8 +61,15 @@ nbsite_analytics = {
     'goatcounter_holoviz': True,
 }
 
+switcher_version = (
+    os.getenv('VERSION') or 'dev'
+    if any(pr in nbsite.__version__ for pr in ('a', 'b', 'rc', 'dev'))
+    else version
+)
+
 # Configure the theme
 html_theme_options.update({
+    "navbar_start": ["navbar-logo", "version-switcher"],
     "github_url": "https://github.com/holoviz-dev/nbsite",
     "icon_links": [
         {
@@ -74,6 +83,11 @@ html_theme_options.update({
     'secondary_sidebar_items': [
         "github-stars-button"
     ],
+    "switcher": {
+        "json_url": "https://nbsite.holoviz.org/switcher.json",
+        "version_match": switcher_version,
+    },
+    'show_version_warning_banner': True,
 })
 
 # Extra config for the theme
