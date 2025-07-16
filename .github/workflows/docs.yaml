@@ -90,7 +90,7 @@ jobs:
         run: |
           echo "Deploying from ref ${GITHUB_REF#refs/*/}"
           echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
-      - uses: holoviz-dev/holoviz_tasks/docs-publish@docs_publish
+      - uses: holoviz-dev/holoviz_tasks/docs-publish@v0
         with:
           s3-url: s3://nbsite.holoviz.org
           s3-cloudfront-id: E2L666PQUSAVUF
