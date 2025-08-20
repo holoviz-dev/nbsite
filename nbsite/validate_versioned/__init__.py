@@ -171,6 +171,7 @@ def build_robots(app, our_dir):
         f.write("# Generated automatically by nbsite\n")
         f.write("User-agent: *\n")
         f.write("Disallow: /\n")
+        f.write("Allow: /$\n")
         f.write("Allow: /en/docs/latest/\n")
         f.write(f"Sitemap: {sitemap_url}\n")
     logger.info(f"robots.txt written at {out_path}")
