@@ -191,13 +191,6 @@ DEFAULT_GALLERY_CONF = {
             'intro': 'Sample intro',
             'title': 'A sample gallery title',
             'sections': [],
-            'skip': False,
-            'orphans': [],
-            'description': None,
-            'labels': [],
-            'within_subsection_order': None,
-            'deployment_urls': [],
-            'card_title_below': False,
         }
     },
     'host': 'GitHub',  # set this to assets to have download happen from assets
