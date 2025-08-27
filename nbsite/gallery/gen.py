@@ -10,6 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from urllib.parse import urlparse
 
+import nbformat
 import requests
 import sphinx.util.logging
 
@@ -209,7 +210,8 @@ DEFAULT_GALLERY_CONF = {
     'within_subsection_order': None,
     'nblink': 'both',  # use this to control the position of the nblink
     'github_ref': 'main',  # branch or tag
-    'jupyterlite_url': None
+    'jupyterlite_url': None,
+    'titles_from_files': False,
 }
 
 def get_deployed_url(deployment_urls, basename):
@@ -651,6 +653,7 @@ def generate_gallery(app, page):
     content = gallery_conf['galleries'][page]
     backends = content.get('backends', gallery_conf.get('backends', []))
     titles = content.get('titles', {})
+    titles_from_files = content.get('titles_from_files', gallery_conf['titles_from_files'])
     normalize = content.get('normalize_titles', True)
 
     # Get directories
@@ -810,6 +813,22 @@ def generate_gallery(app, page):
                         rel='../..' if backend else '..',
                         title=backend.title() if backend else None
                     )
+                if titles_from_files:
+                    for file in files:
+                        basename = pathlib.Path(file).stem
+                        with open(file, "r") as f:
+                            notebook = nbformat.read(f, as_version=4)
+                        first_cell = notebook.cells[0]
+                        if first_cell and first_cell["cell_type"] == "markdown":
+                            try:
+                                title = first_cell['source'].split('\n')[0].split("#")[1].strip()
+                                titles[basename] = title
+                            except Exception as e:
+                                logger.error(
+                                    f'Failed at getting the title from the notebook heading with: {e}\n\n'
+                                    f'From notebook: {file}\n'
+                                    f'From content: {first_cell["source"]}'
+                                )
 
             sorted_files = sorted(files, key=subsection_order)
             with ThreadPoolExecutor() as ex:

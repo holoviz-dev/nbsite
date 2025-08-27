@@ -59,6 +59,7 @@ nbsite_gallery_conf = {
                 'section2',
             ],
             'no_image_thumb': True,
+            'titles_from_files': True,
         },
         'playground/gallery_backends': {
             'title': 'Gallery with backends',
