@@ -212,6 +212,7 @@ DEFAULT_GALLERY_CONF = {
     'github_ref': 'main',  # branch or tag
     'jupyterlite_url': None,
     'titles_from_files': False,
+    'grid_no_columns': (2, 2, 4, 5),
 }
 
 def get_deployed_url(deployment_urls, basename):
@@ -655,6 +656,7 @@ def generate_gallery(app, page):
     titles = content.get('titles', {})
     titles_from_files = content.get('titles_from_files', gallery_conf['titles_from_files'])
     normalize = content.get('normalize_titles', True)
+    grid_no_columns = content.get('grid_no_columns', gallery_conf['grid_no_columns'])
 
     # Get directories
     doc_dir = app.builder.srcdir
@@ -755,7 +757,9 @@ def generate_gallery(app, page):
         if description:
             gallery_rst += description + '\n\n'
 
-        gallery_rst += '.. grid:: 2 2 4 5\n    :gutter: 3\n    :margin: 0\n'
+        if isinstance(grid_no_columns, (tuple, list)):
+            grid_no_columns = " ".join(str(s) for s in grid_no_columns)
+        gallery_rst += f'.. grid:: {grid_no_columns}\n    :gutter: 3\n    :margin: 0\n'
 
         thumb_extension = 'png'
 
