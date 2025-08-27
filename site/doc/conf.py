@@ -47,7 +47,8 @@ nbsite_gallery_conf = {
             'sections': [
                 'section1',
                 'section2',
-            ]
+            ],
+            'thumbnail_url': 'https://assets.holoviz.org/nbsite/thumbnails',
         },
         'playground/example_gallery2': {
             'title': 'Gallery Title 2',
@@ -56,7 +57,8 @@ nbsite_gallery_conf = {
             'sections': [
                 'section1',
                 'section2',
-            ]
+            ],
+            'no_image_thumb': True,
         },
         'playground/gallery_backends': {
             'title': 'Gallery with backends',

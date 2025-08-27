@@ -2,7 +2,9 @@ import glob
 import json
 import logging
 import os
+import pathlib
 import re
+import shutil
 
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
@@ -251,6 +253,8 @@ def get_nblink_md(
         else:
             text += f'[Download this {ftype}](</assets/{path}/{basename})'
     return text
+
+NO_IMAGE_THUMB = pathlib.Path(__file__).parent / "no_image.png"
 
 def get_nblink_rst(
     host, deployed_file, jupyterlite_url, download_as,
@@ -674,12 +678,13 @@ def generate_gallery(app, page):
 
     extensions = content.get('extensions', gallery_conf['default_extensions'])
     sort_fn = gallery_conf['within_subsection_order']
-    thumbnail_url = gallery_conf['thumbnail_url']
+    thumbnail_url = content.get('thumbnail_url', gallery_conf['thumbnail_url'])
     download = gallery_conf['enable_download']
     script_prefix = gallery_conf['script_prefix']
     only_use_existing = gallery_conf['only_use_existing']
     inline = gallery_conf['inline']
     card_title_below = content.get('card_title_below', False)
+    no_image_thumb = content.get('no_image_thumb', False)
 
     if sort_fn is None:
         sort_fn = lambda key: titles.get(key, key)
@@ -808,7 +813,7 @@ def generate_gallery(app, page):
 
             sorted_files = sorted(files, key=subsection_order)
             with ThreadPoolExecutor() as ex:
-                func = partial(_download_image, page, thumbnail_url, download, backend, section, dest_dir)
+                func = partial(_download_image, page, thumbnail_url, download, backend, section, dest_dir, no_image_thumb)
                 futures = ex.map(func, sorted_files)
 
             for f, (thumb_extension, extension, basename, retcode, verb) in zip(sorted_files, futures):
@@ -881,7 +886,7 @@ def generate_gallery(app, page):
         f.write(gallery_rst)
 
 
-def _download_image(page, thumbnail_url, download, backend, section, dest_dir, f):
+def _download_image(page, thumbnail_url, download, backend, section, dest_dir, no_image_thumb, f):
     extension = f.split('.')[-1]
     basename = os.path.basename(f)[:-(len(extension)+1)]
 
@@ -938,6 +943,10 @@ def _download_image(page, thumbnail_url, download, backend, section, dest_dir, f
         if not retcode:
             with open(thumb_path, 'wb') as thumb_f:
                 thumb_f.write(thumb_req.content)
+
+    if retcode and no_image_thumb:
+        shutil.copy2(NO_IMAGE_THUMB, thumb_path)
+        retcode = 0
     return thumb_extension, extension, basename, retcode, verb
 
 
