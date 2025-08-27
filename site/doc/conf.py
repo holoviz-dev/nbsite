@@ -49,6 +49,15 @@ nbsite_gallery_conf = {
                 'section2',
             ]
         },
+        'playground/example_gallery2': {
+            'title': 'Gallery Title 2',
+            'intro': 'Card title in the description',
+            'card_title_below': True,
+            'sections': [
+                'section1',
+                'section2',
+            ]
+        },
         'playground/gallery_backends': {
             'title': 'Gallery with backends',
             'intro': 'This is a gallery with "backends:',

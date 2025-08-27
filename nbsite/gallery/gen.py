@@ -123,7 +123,7 @@ guide and for more detailed documentation our `User Guide
 <../user_guide/index.html>`_.
 """
 
-THUMBNAIL_TEMPLATE = """
+THUMBNAIL_TEMPLATE_LABEL_IN_TITLE = """
     .. grid-item-card:: {label}
         :link: {link}
         :link-type: doc
@@ -132,6 +132,19 @@ THUMBNAIL_TEMPLATE = """
 
         .. image:: /{thumbnail}
             :alt: {label}
+"""
+
+THUMBNAIL_TEMPLATE_LABEL_IN_DESC = """
+    .. grid-item-card::
+        :link: {link}
+        :link-type: doc
+        :class-card: {backend_prefix}example
+        :shadow: md
+
+        .. image:: /{thumbnail}
+            :alt: {label}
+
+        {label}
 """
 
 IFRAME_TEMPLATE = """
@@ -184,6 +197,7 @@ DEFAULT_GALLERY_CONF = {
             'labels': [],
             'within_subsection_order': None,
             'deployment_urls': [],
+            'card_title_below': False,
         }
     },
     'host': 'GitHub',  # set this to assets to have download happen from assets
@@ -577,7 +591,7 @@ def generate_section_index(section, items, dest_dir, rel='..', title=None):
 def _normalize_label(string):
     return ' '.join([s[0].upper()+s[1:] for s in string.split('_')])
 
-def _thumbnail_div(thumb_path, section, backend, fname, normalize=True, title=None):
+def _thumbnail_div(thumb_path, section, backend, fname, normalize=True, title=None, card_title_below=False):
     """Generates RST to place a thumbnail in a gallery"""
     if title is not None:
         label = title
@@ -600,7 +614,12 @@ def _thumbnail_div(thumb_path, section, backend, fname, normalize=True, title=No
 
     link = f'{section_path}/{fname}'
 
-    return THUMBNAIL_TEMPLATE.format(
+    if card_title_below:
+        tpl = THUMBNAIL_TEMPLATE_LABEL_IN_DESC
+    else:
+        tpl = THUMBNAIL_TEMPLATE_LABEL_IN_TITLE
+
+    return tpl.format(
         backend_prefix=backend+'-', thumbnail=thumb_path,
         label=label, link=link,
     )
@@ -667,6 +686,7 @@ def generate_gallery(app, page):
     script_prefix = gallery_conf['script_prefix']
     only_use_existing = gallery_conf['only_use_existing']
     inline = gallery_conf['inline']
+    card_title_below = content.get('card_title_below', False)
 
     if sort_fn is None:
         sort_fn = lambda key: titles.get(key, key)
@@ -840,7 +860,7 @@ def generate_gallery(app, page):
                         link = f'{section_path}/{basename}'
                     else:
                         link = basename
-                    this_entry = THUMBNAIL_TEMPLATE.format(
+                    this_entry = THUMBNAIL_TEMPLATE_LABEL_IN_TITLE.format(
                         backend_prefix=backend+'-', thumbnail=logo_path,
                         label=label, link=link,
                     )
@@ -853,7 +873,8 @@ def generate_gallery(app, page):
                         resize_pad(os.path.join(doc_dir, thumb_path))
                     this_entry = _thumbnail_div(
                         thumb_path, section, backend, basename,
-                        normalize, titles.get(basename)
+                        normalize, titles.get(basename),
+                        card_title_below=card_title_below,
                     )
 
                 gallery_rst += this_entry
