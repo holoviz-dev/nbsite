@@ -56,7 +56,10 @@ nbsite_gallery_conf = {
             'card_title_below': True,
             'sections': [
                 'section1',
-                'section2',
+                {
+                    'path': 'section-2',
+                    'title': 'Renamed as Section 2',
+                },
             ],
             'no_image_thumb': True,
             'titles_from_files': True,
