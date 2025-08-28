@@ -47,7 +47,23 @@ nbsite_gallery_conf = {
             'sections': [
                 'section1',
                 'section2',
-            ]
+            ],
+            'thumbnail_url': 'https://assets.holoviz.org/nbsite/thumbnails',
+        },
+        'playground/example_gallery2': {
+            'title': 'Gallery Title 2',
+            'intro': 'Card title in the description',
+            'card_title_below': True,
+            'sections': [
+                'section1',
+                {
+                    'path': 'section-2',
+                    'title': 'Renamed as Section 2',
+                },
+            ],
+            'no_image_thumb': True,
+            'titles_from_files': True,
+            'grid_no_columns': (2, 2, 4, 4),
         },
         'playground/gallery_backends': {
             'title': 'Gallery with backends',

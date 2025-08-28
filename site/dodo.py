@@ -1,3 +1,5 @@
+import shutil
+
 from pathlib import Path
 from pydoc import importfile
 
@@ -49,6 +51,13 @@ def task_build_site():
                         f.unlink(missing_ok=True)
                     for f in section.glob('*.ipynb'):
                         f.unlink(missing_ok=True)
+                # Thumbnails are pulled from S3
+                if gallery == 'playground/example_gallery':
+                    shutil.rmtree(gallery_dir)
+                # no_image thumbnails for section1 of this gallery
+                if gallery == 'playground/example_gallery2':
+                    shutil.rmtree(gallery_dir / 'section1')
+
         if hasattr(conf_module, 'nbsite_gallery_inlined_conf'):
             gallery = conf_module.nbsite_gallery_inlined_conf['path']
             gallery_dir = Path('doc') / gallery

@@ -2,12 +2,15 @@ import glob
 import json
 import logging
 import os
+import pathlib
 import re
+import shutil
 
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from urllib.parse import urlparse
 
+import nbformat
 import requests
 import sphinx.util.logging
 
@@ -123,7 +126,7 @@ guide and for more detailed documentation our `User Guide
 <../user_guide/index.html>`_.
 """
 
-THUMBNAIL_TEMPLATE = """
+THUMBNAIL_TEMPLATE_LABEL_IN_TITLE = """
     .. grid-item-card:: {label}
         :link: {link}
         :link-type: doc
@@ -132,6 +135,19 @@ THUMBNAIL_TEMPLATE = """
 
         .. image:: /{thumbnail}
             :alt: {label}
+"""
+
+THUMBNAIL_TEMPLATE_LABEL_IN_DESC = """
+    .. grid-item-card::
+        :link: {link}
+        :link-type: doc
+        :class-card: {backend_prefix}example
+        :shadow: md
+
+        .. image:: /{thumbnail}
+            :alt: {label}
+
+        {label}
 """
 
 IFRAME_TEMPLATE = """
@@ -194,7 +210,9 @@ DEFAULT_GALLERY_CONF = {
     'within_subsection_order': None,
     'nblink': 'both',  # use this to control the position of the nblink
     'github_ref': 'main',  # branch or tag
-    'jupyterlite_url': None
+    'jupyterlite_url': None,
+    'titles_from_files': False,
+    'grid_no_columns': (2, 2, 4, 5),
 }
 
 def get_deployed_url(deployment_urls, basename):
@@ -238,6 +256,8 @@ def get_nblink_md(
         else:
             text += f'[Download this {ftype}](</assets/{path}/{basename})'
     return text
+
+NO_IMAGE_THUMB = pathlib.Path(__file__).parent / "no_image.png"
 
 def get_nblink_rst(
     host, deployed_file, jupyterlite_url, download_as,
@@ -571,7 +591,7 @@ def generate_section_index(section, items, dest_dir, rel='..', title=None):
 def _normalize_label(string):
     return ' '.join([s[0].upper()+s[1:] for s in string.split('_')])
 
-def _thumbnail_div(thumb_path, section, backend, fname, normalize=True, title=None):
+def _thumbnail_div(thumb_path, section, backend, fname, normalize=True, title=None, card_title_below=False):
     """Generates RST to place a thumbnail in a gallery"""
     if title is not None:
         label = title
@@ -594,7 +614,12 @@ def _thumbnail_div(thumb_path, section, backend, fname, normalize=True, title=No
 
     link = f'{section_path}/{fname}'
 
-    return THUMBNAIL_TEMPLATE.format(
+    if card_title_below:
+        tpl = THUMBNAIL_TEMPLATE_LABEL_IN_DESC
+    else:
+        tpl = THUMBNAIL_TEMPLATE_LABEL_IN_TITLE
+
+    return tpl.format(
         backend_prefix=backend+'-', thumbnail=thumb_path,
         label=label, link=link,
     )
@@ -629,7 +654,9 @@ def generate_gallery(app, page):
     content = gallery_conf['galleries'][page]
     backends = content.get('backends', gallery_conf.get('backends', []))
     titles = content.get('titles', {})
+    titles_from_files = content.get('titles_from_files', gallery_conf['titles_from_files'])
     normalize = content.get('normalize_titles', True)
+    grid_no_columns = content.get('grid_no_columns', gallery_conf['grid_no_columns'])
 
     # Get directories
     doc_dir = app.builder.srcdir
@@ -656,11 +683,13 @@ def generate_gallery(app, page):
 
     extensions = content.get('extensions', gallery_conf['default_extensions'])
     sort_fn = gallery_conf['within_subsection_order']
-    thumbnail_url = gallery_conf['thumbnail_url']
+    thumbnail_url = content.get('thumbnail_url', gallery_conf['thumbnail_url'])
     download = gallery_conf['enable_download']
     script_prefix = gallery_conf['script_prefix']
     only_use_existing = gallery_conf['only_use_existing']
     inline = gallery_conf['inline']
+    card_title_below = content.get('card_title_below', False)
+    no_image_thumb = content.get('no_image_thumb', False)
 
     if sort_fn is None:
         sort_fn = lambda key: titles.get(key, key)
@@ -728,7 +757,9 @@ def generate_gallery(app, page):
         if description:
             gallery_rst += description + '\n\n'
 
-        gallery_rst += '.. grid:: 2 2 4 5\n    :gutter: 3\n    :margin: 0\n'
+        if isinstance(grid_no_columns, (tuple, list)):
+            grid_no_columns = " ".join(str(s) for s in grid_no_columns)
+        gallery_rst += f'.. grid:: {grid_no_columns}\n    :gutter: 3\n    :margin: 0\n'
 
         thumb_extension = 'png'
 
@@ -786,10 +817,26 @@ def generate_gallery(app, page):
                         rel='../..' if backend else '..',
                         title=backend.title() if backend else None
                     )
+                if titles_from_files:
+                    for file in files:
+                        basename = pathlib.Path(file).stem
+                        with open(file, "r") as f:
+                            notebook = nbformat.read(f, as_version=4)
+                        first_cell = notebook.cells[0]
+                        if first_cell and first_cell["cell_type"] == "markdown":
+                            try:
+                                title = first_cell['source'].split('\n')[0].split("#")[1].strip()
+                                titles[basename] = title
+                            except Exception as e:
+                                logger.error(
+                                    f'Failed at getting the title from the notebook heading with: {e}\n\n'
+                                    f'From notebook: {file}\n'
+                                    f'From content: {first_cell["source"]}'
+                                )
 
             sorted_files = sorted(files, key=subsection_order)
             with ThreadPoolExecutor() as ex:
-                func = partial(_download_image, page, thumbnail_url, download, backend, section, dest_dir)
+                func = partial(_download_image, page, thumbnail_url, download, backend, section, dest_dir, no_image_thumb)
                 futures = ex.map(func, sorted_files)
 
             for f, (thumb_extension, extension, basename, retcode, verb) in zip(sorted_files, futures):
@@ -834,7 +881,7 @@ def generate_gallery(app, page):
                         link = f'{section_path}/{basename}'
                     else:
                         link = basename
-                    this_entry = THUMBNAIL_TEMPLATE.format(
+                    this_entry = THUMBNAIL_TEMPLATE_LABEL_IN_TITLE.format(
                         backend_prefix=backend+'-', thumbnail=logo_path,
                         label=label, link=link,
                     )
@@ -847,7 +894,8 @@ def generate_gallery(app, page):
                         resize_pad(os.path.join(doc_dir, thumb_path))
                     this_entry = _thumbnail_div(
                         thumb_path, section, backend, basename,
-                        normalize, titles.get(basename)
+                        normalize, titles.get(basename),
+                        card_title_below=card_title_below,
                     )
 
                 gallery_rst += this_entry
@@ -861,7 +909,7 @@ def generate_gallery(app, page):
         f.write(gallery_rst)
 
 
-def _download_image(page, thumbnail_url, download, backend, section, dest_dir, f):
+def _download_image(page, thumbnail_url, download, backend, section, dest_dir, no_image_thumb, f):
     extension = f.split('.')[-1]
     basename = os.path.basename(f)[:-(len(extension)+1)]
 
@@ -918,6 +966,10 @@ def _download_image(page, thumbnail_url, download, backend, section, dest_dir, f
         if not retcode:
             with open(thumb_path, 'wb') as thumb_f:
                 thumb_f.write(thumb_req.content)
+
+    if retcode and no_image_thumb:
+        shutil.copy2(NO_IMAGE_THUMB, thumb_path)
+        retcode = 0
     return thumb_extension, extension, basename, retcode, verb
 
 

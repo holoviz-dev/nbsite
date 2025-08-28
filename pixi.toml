@@ -148,7 +148,8 @@ MOZ_HEADLESS = "1"
 DISPLAY = ":99.0"
 
 [feature.doc.tasks]
-docs-build = {cmd="doit all_build", cwd="site"}
+_install-dummy = {cmd="pip install -e ./dummy_package", cwd="site"}
+docs-build = {cmd="doit all_build", cwd="site", depends-on = ["_install-dummy"]}
 docs-serve = {cmd="python -m http.server 8000 --bind 127.0.0.1", cwd="site/builtdocs"}
 # Clean up the build artifacts after building the docs
 docs-clean = {cmd="doit clean --clean-dep all_build", cwd="site"}
