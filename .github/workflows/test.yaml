@@ -160,4 +160,4 @@ jobs:
       - name: clean up
         run: pixi run -e docs docs-clean
       - name: check no leftover
-        run: git diff --quiet || exit 1
+        run: git diff --quiet || (git diff --name-only && exit 1)
