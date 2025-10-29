@@ -1,4 +1,4 @@
-[project]
+[workspace]
 name = "nbsite"
 channels = ["pyviz/label/dev", "conda-forge"]
 platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
@@ -43,7 +43,7 @@ no-default-feature = true
 
 [feature.required.dependencies]
 beautifulsoup4 = "*"
-ipykernel = "*"
+ipykernel = "<7.0.0"  # Temp pin
 jinja2 = "*"
 jupyter_client = "*"
 myst-nb = ">=1.1"
@@ -64,6 +64,7 @@ sphinx = '>=7'
 sphinx-copybutton = "*"
 sphinx-design = "*"
 sphinxext-rediraffe = "*"
+psutil = "!=7.1.*"
 
 [feature.required.tasks]
 install = 'python -m pip install --no-deps --disable-pip-version-check -e .'
