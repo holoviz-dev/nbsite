@@ -36,7 +36,6 @@ dependencies = [
     'nbconvert',
     'jupyter_client',
     'myst-nb>=1.1',
-    'sphinx-design',
     'notebook',
     'sphinx>=7',
     'beautifulsoup4',
@@ -49,7 +48,8 @@ dependencies = [
     'sphinx-design',
     'sphinxext-rediraffe',
     'packaging',
-    'requests'
+    'requests',
+    'ipykernel <7.0',  # Temp. dependency
 ]
 
 [project.scripts]
