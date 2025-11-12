@@ -43,7 +43,7 @@ no-default-feature = true
 
 [feature.required.dependencies]
 beautifulsoup4 = "*"
-ipykernel = "<7.0.0"  # Temp pin
+ipykernel = "*"
 jinja2 = "*"
 jupyter_client = "*"
 myst-nb = ">=1.1"
