@@ -160,6 +160,7 @@ docs-clean = {cmd="doit clean --clean-dep all_build", cwd="site"}
 [feature.build.dependencies]
 python-build = "*"
 conda-build = "*"
+conda-libmamba-solver = "!=25.11.0"
 
 [feature.build.tasks]
 build-conda = 'bash scripts/conda/build.sh'
