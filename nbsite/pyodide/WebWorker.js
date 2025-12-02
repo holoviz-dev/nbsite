@@ -56,7 +56,7 @@ async function loadApplication(cell_id, path) {
       id: cell_id
     });
     await self.pyodide.runPythonAsync(`
-      await micropip.install('${pkg}', keep_going=True);
+      await micropip.install('${pkg}', keep_going=True, reinstall=True);
     `);
   }
   console.log("Packages loaded!");
