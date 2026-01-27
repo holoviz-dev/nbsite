@@ -3,6 +3,7 @@ import inspect
 from functools import partial
 
 import param
+import sphinx
 
 from param.parameterized import label_formatter
 
@@ -88,8 +89,14 @@ def param_skip(app, what, name, obj, skip, options):
         #       We abuse this skip callback to exclude parameters and
         #       include all methods
         members = [member for member in dir(obj) if not member.startswith('_') and member not in obj.param]
-        if isinstance(options['members'], list):
-            options['members'] += members
+        if sphinx.version_info >= (9, 0, 0):
+            if isinstance(options.members, list):
+                options.members += members
+            else:
+                options.members = members
         else:
-            options['members'] = members
+            if isinstance(options['members'], list):
+                options['members'] += members
+            else:
+                options['members'] = members
         return skip

@@ -49,6 +49,7 @@ import sphinx
 from docutils.parsers.rst import Directive, directives
 from docutils.statemachine import string2lines
 from docutils.utils import new_document
+from myst_nb import __version__ as _myst_version
 from myst_nb.sphinx_ import Parser
 from nbconvert import NotebookExporter, PythonExporter
 from nbconvert.preprocessors import (
@@ -66,6 +67,9 @@ if typing.TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 NOTEBOOK_VERSION = 4
+
+_MYST_VERSION = Version(_myst_version).release
+_SPHINX_VERSION = sphinx.version_info[:3]
 
 interactivity_warning_binder = (
     'This web page was generated from a Jupyter notebook and not all '
@@ -511,7 +515,13 @@ def render_notebook(nb_path, document, preprocessors=[]):
     sio = io.StringIO(json.dumps(ntbk))
 
     parser = Parser()
-    parser.env = env
+    if _SPHINX_VERSION >= (9, 0, 0):
+        # Next release of myst_nb, will lookup document.settings.env automatic
+        # https://github.com/executablebooks/MyST-NB/pull/706
+        if _MYST_VERSION <= (1, 3, 0):
+            parser._env = env
+    else:
+        parser.env = env
 
     with disable_execution(env), patch_project_doc2path(env, nb_path):
         parser.parse(sio.read(), doc)
