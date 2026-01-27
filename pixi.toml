@@ -64,7 +64,6 @@ sphinx = '>=7'
 sphinx-copybutton = "*"
 sphinx-design = "*"
 sphinxext-rediraffe = "*"
-psutil = "!=7.1.*"
 
 [feature.required.tasks]
 install = 'python -m pip install --no-deps --disable-pip-version-check -e .'
