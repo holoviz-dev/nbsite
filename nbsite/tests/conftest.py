@@ -8,5 +8,5 @@ if sys.platform == "win32":
 
 with suppress(ImportError):
     # If we don't import here it will crash test on macOS in multiprocessing
-    # started happening in 7.1+
+    # https://github.com/giampaolo/psutil/issues/2713
     import psutil  # noqa: F401
