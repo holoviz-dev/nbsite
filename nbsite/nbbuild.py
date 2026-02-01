@@ -102,6 +102,9 @@ class ExecutePreprocessor1000(ExecutePreprocessor):
     def kc(self, v):
         self._kc = v
         if v is not None and self._ipython_startup is not None:
+            # Ensure kernel is running and ready to receive execute_request messages.
+            # This is important for ipykernel >= 7
+            self._kc.kernel_info()
             self._kc.execute(
                 self._ipython_startup,
                 silent=False,
