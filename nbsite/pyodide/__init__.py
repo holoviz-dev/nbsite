@@ -89,6 +89,7 @@ DEFAULT_PYODIDE_CONF = {
         f'https://cdn.bokeh.org/bokeh/{bk_prefix}/bokeh-{BOKEH_VERSION}.min.js',
         f'https://cdn.bokeh.org/bokeh/{bk_prefix}/bokeh-widgets-{BOKEH_VERSION}.min.js',
         f'https://cdn.bokeh.org/bokeh/{bk_prefix}/bokeh-tables-{BOKEH_VERSION}.min.js',
+        f'https://cdn.bokeh.org/bokeh/{bk_prefix}/bokeh-mathjax-{BOKEH_VERSION}.min.js',
         f'{CDN_DIST}panel.min.js'
     ],
     'extra_css': [],
