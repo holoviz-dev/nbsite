@@ -49,7 +49,6 @@ dependencies = [
     'sphinxext-rediraffe',
     'packaging',
     'requests',
-    'ipykernel <7.0',  # Temp. dependency
 ]
 
 [project.scripts]
