@@ -141,6 +141,32 @@ structure should look like this:
      'title': 'Section A', 'within_subsection_order': lambda key: key}
 ```
 
+Sections may also define explicit external link cards using an `items`
+list. In this mode each item must define `title` and `url`, and may
+optionally define `thumbnail` and `description`:
+
+```
+{
+    'path': 'community',
+    'title': 'Community Projects',
+    'items': [
+        {
+            'title': 'PyHDX',
+            'url': 'https://github.com/Jhsmit/PyHDX',
+            'thumbnail': 'https://assets.holoviz.org/panel/gallery/community/pyhdx.png',
+            'description': 'Extract H/D exchange kinetics from HDX-MS data sets.'
+        },
+        {
+            'title': 'Another Project',
+            'url': 'https://example.org'
+        }
+    ]
+}
+```
+
+When `thumbnail` is omitted, `nbsite.gallery` resolves it using the
+normal thumbnail lookup/download workflow.
+
 The most important parts of the declaration provide the `path` and
 `title` of the subsection. The `skip` key declares whether the
 examples in the subsection should actually be executed, which is
