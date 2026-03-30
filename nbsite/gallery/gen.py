@@ -8,7 +8,7 @@ import shutil
 
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import nbformat
 import requests
@@ -148,6 +148,15 @@ THUMBNAIL_TEMPLATE_LABEL_IN_DESC = """
             :alt: {label}
 
         {label}
+"""
+
+EXTERNAL_THUMBNAIL_TEMPLATE = """
+    .. grid-item-card:: {label}
+        :img-top: {thumbnail}
+        :link: {link}
+        :link-type: url
+        :shadow: md
+{description_block}
 """
 
 IFRAME_TEMPLATE = """
@@ -624,6 +633,112 @@ def _thumbnail_div(thumb_path, section, backend, fname, normalize=True, title=No
         label=label, link=link,
     )
 
+def _is_url(path):
+    parsed = urlparse(path)
+    return bool(parsed.scheme and parsed.netloc)
+
+
+def _slugify_title(title):
+    slug = re.sub(r'[^a-zA-Z0-9]+', '_', str(title)).strip('_')
+    return slug.lower() or "item"
+
+
+def _external_thumbnail_div(thumb_path, title, link, description=None):
+    # Keep remote thumbnails as absolute URLs while local files use root-relative paths.
+    if not _is_url(thumb_path):
+        thumb_path = "/" + thumb_path.replace(os.sep, "/").lstrip("/")
+    description_block = ""
+    if description:
+        description_block = f"\n        {description}\n"
+    return EXTERNAL_THUMBNAIL_TEMPLATE.format(
+        thumbnail=thumb_path,
+        label=title,
+        link=link,
+        description_block=description_block,
+    )
+
+
+def _resolve_thumbnail(thumb_url_base, dest_dir, basename, download, no_image_thumb):
+    """
+    Resolve thumbnail by preferring local files, then downloading, then fallback image.
+    """
+    thumb_dir = os.path.join(dest_dir, "thumbnails")
+    os.makedirs(thumb_dir, exist_ok=True)
+    thumb_path = os.path.join(thumb_dir, f"{basename}.png")
+    gif_thumb_path = thumb_path[:-4] + ".gif"
+
+    retcode = 1
+    thumb_extension = "png"
+    verb = "Failed to resolve"
+
+    if os.path.isfile(thumb_path):
+        verb = "Used existing"
+        retcode = 0
+    if os.path.isfile(gif_thumb_path):
+        verb = "Used existing"
+        retcode = 0
+        thumb_path = gif_thumb_path
+        thumb_extension = "gif"
+
+    if download and retcode:
+        png_url = f"{thumb_url_base}.png"
+        try:
+            thumb_req = requests.get(png_url)
+        except Exception:
+            thumb_req = requests.get(png_url, verify=False)
+
+        if thumb_req.ok:
+            retcode = 0
+            verb = "Successfully downloaded"
+        else:
+            gif_url = f"{thumb_url_base}.gif"
+            try:
+                thumb_req = requests.get(gif_url)
+            except Exception:
+                thumb_req = requests.get(gif_url, verify=False)
+            if thumb_req.ok:
+                thumb_extension = "gif"
+                thumb_path = gif_thumb_path
+                retcode = 0
+                verb = "Successfully downloaded"
+
+        if not retcode:
+            with open(thumb_path, "wb") as thumb_f:
+                thumb_f.write(thumb_req.content)
+
+    if retcode and no_image_thumb:
+        shutil.copy2(NO_IMAGE_THUMB, thumb_path)
+        retcode = 0
+        verb = "Used fallback"
+
+    return retcode, thumb_path, thumb_extension, verb
+
+
+def _download_external_item_image(
+    item,
+    page,
+    section,
+    thumbnail_url,
+    download,
+    dest_dir,
+    no_image_thumb,
+):
+    title = item.get("title", "")
+    basename = _slugify_title(title)
+    url_components = [thumbnail_url, page]
+    if section:
+        url_components.append(section)
+    url_components.append(quote(basename))
+    thumb_url_base = "/".join(url_components).replace("/./", "/")
+    retcode, thumb_path, thumb_extension, _ = _resolve_thumbnail(
+        thumb_url_base=thumb_url_base,
+        dest_dir=dest_dir,
+        basename=basename,
+        download=download,
+        no_image_thumb=no_image_thumb,
+    )
+    return retcode, thumb_path, thumb_extension
+
 
 def resize_pad(im_pth, desired_size=500):
     im = Image.open(im_pth)
@@ -710,18 +825,21 @@ def generate_gallery(app, page):
     toc = '\n\n.. toctree::\n   :glob:\n   :hidden:\n\n'
     section_backends = None
     for section in sections:
+        section_items = None
         if isinstance(section, dict):
             section_backends = section.get('backends', backends)
             skip = section.get('skip', content.get('skip', False))
             orphans = section.get('orphans', content.get('orphans', []))
-            heading = section.get('title', section['path'])
+            section_items = section.get('items')
+            path = section.get('path', '')
+            heading = section.get('title', path.replace('_', ' ').title())
             description = section.get('description', None)
             labels = section.get('labels', [])
             subsection_order = section.get('within_subsection_order', sort_fn)
             deployment_urls = section.get('deployment_urls', [])
-            section = section['path']
+            section = path
         else:
-            heading = section.title()
+            heading = section.replace('_', ' ').title()
             skip = content.get('skip', False)
             orphans = content.get('orphans', [])
             section_backends = backends
@@ -729,11 +847,14 @@ def generate_gallery(app, page):
             description = None
             labels = []
             deployment_urls = []
+            section_items = None
+
+        has_external_items = isinstance(section_items, list) and len(section_items) > 0
 
         # Add section toctree
-        if section:
+        if section and not has_external_items:
             toc += f'   {section}/index\n'
-        else:
+        elif not section:
             gallery_rst += f'.. toctree::\n   :glob:\n   :hidden:\n\n   {heading}\n   *\n\n'
 
         if heading:
@@ -773,9 +894,53 @@ def generate_gallery(app, page):
             os.makedirs(dest_path)
         except Exception:
             pass
-        if section and section_backends:
+        if section and section_backends and not has_external_items:
             backend_items = [f'{item}/index' for item in section_backends]
             generate_section_index(heading, backend_items, dest_path)
+
+        if has_external_items:
+            for item in section_items:
+                if not isinstance(item, dict):
+                    logger.warning(
+                        "Skipping non-dictionary gallery item in section %s: %r",
+                        heading,
+                        item,
+                    )
+                    continue
+                item_title = item.get("title")
+                item_url = item.get("url")
+                if not item_title or not item_url:
+                    logger.warning(
+                        "Skipping gallery item without required title/url in section %s: %r",
+                        heading,
+                        item,
+                    )
+                    continue
+                thumb = item.get("thumbnail")
+                if thumb is None:
+                    retcode, thumb_path, thumb_extension = _download_external_item_image(
+                        item,
+                        page=page,
+                        section=section,
+                        thumbnail_url=thumbnail_url,
+                        download=download,
+                        dest_dir=dest_path,
+                        no_image_thumb=no_image_thumb,
+                    )
+                    if retcode:
+                        thumb = logo_path
+                    else:
+                        if thumb_extension not in ("svg", "gif"):
+                            resize_pad(os.path.join(doc_dir, thumb_path))
+                        thumb = thumb_path
+                this_entry = _external_thumbnail_div(
+                    thumb,
+                    item_title,
+                    item_url,
+                    description=item.get("description"),
+                )
+                gallery_rst += this_entry
+            continue
         for backend in (section_backends or ('',)):
             path = section_path
             dest_dir = dest_path
@@ -915,61 +1080,19 @@ def _download_image(page, thumbnail_url, download, backend, section, dest_dir, n
 
     # Try to fetch thumbnail otherwise regenerate it
     url_components = [thumbnail_url, page]
-
     if section:
         url_components.append(section)
     if backend:
         url_components.append(backend)
-    url_components.append(f'{basename}.png')
-
-    # if there is a . in the path, just get rid of it
-    thumb_url = '/'.join(url_components).replace('/./', '/')
-
-    thumb_dir = os.path.join(dest_dir, 'thumbnails')
-    os.makedirs(thumb_dir, exist_ok=True)
-    thumb_path = os.path.join(thumb_dir, f'{basename}.png')
-
-    # Try existing file
-    retcode = 1
-    thumb_extension = 'png'
-
-    if os.path.isfile(thumb_path):
-        verb = 'Used existing'
-        retcode = 0
-
-    if os.path.isfile(thumb_path[:-4]+'.gif'):
-        verb = 'Used existing'
-        retcode = 0
-        thumb_path = thumb_path[:-4] +'.gif'
-        thumb_extension = 'gif'
-
-    # Try download
-    if download and retcode:
-        try:
-            thumb_req = requests.get(thumb_url)
-        except Exception:
-            thumb_req = requests.get(thumb_url, verify=False)
-
-        verb = 'Successfully downloaded'
-        if thumb_req.ok:
-            verb = 'Successfully downloaded'
-            retcode = 0
-        else:
-            try:
-                thumb_req = requests.get(thumb_url[:-4]+'.gif')
-            except Exception:
-                thumb_req = requests.get(thumb_url[:-4]+'.gif', verify=False)
-            if thumb_req.ok:
-                thumb_extension = 'gif'
-                thumb_path = thumb_path[:-4]+'.gif'
-                retcode = 0
-        if not retcode:
-            with open(thumb_path, 'wb') as thumb_f:
-                thumb_f.write(thumb_req.content)
-
-    if retcode and no_image_thumb:
-        shutil.copy2(NO_IMAGE_THUMB, thumb_path)
-        retcode = 0
+    url_components.append(basename)
+    thumb_url_base = '/'.join(url_components).replace('/./', '/')
+    retcode, _, thumb_extension, verb = _resolve_thumbnail(
+        thumb_url_base=thumb_url_base,
+        dest_dir=dest_dir,
+        basename=basename,
+        download=download,
+        no_image_thumb=no_image_thumb,
+    )
     return thumb_extension, extension, basename, retcode, verb
 
 
