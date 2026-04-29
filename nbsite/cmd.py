@@ -7,9 +7,42 @@ from collections import ChainMap
 from os.path import dirname
 
 from sphinx.application import Sphinx
+from sphinx.util import parallel as _sphinx_parallel
 
 from .scripts import clean_dist_html, fix_links
 from .util import copy_files
+
+_orig_join_one = _sphinx_parallel.ParallelTasks._join_one
+
+
+def _safe_join_one(self):
+    try:
+        return _orig_join_one(self)
+    except EOFError:
+        pass
+    for tid, proc in self._procs.copy().items():
+        if proc.exitcode is None:
+            continue
+        # Worker died without sending; finish chunk in main proc so build completes.
+        print(
+            f"sphinx parallel worker (tid={tid}, exitcode={proc.exitcode}) died; "
+            f"running chunk serial in main process",
+            flush=True,
+            file=sys.stderr,
+        )
+        _, func, arg = proc._args
+        proc.join()
+        self._procs.pop(tid)
+        self._precvs.pop(tid)
+        self._args.pop(tid)
+        result_func = self._result_funcs.pop(tid)
+        self._pworking -= 1
+        result_func(arg, func(arg) if arg is not None else func())
+        break
+    return True
+
+
+_sphinx_parallel.ParallelTasks._join_one = _safe_join_one
 
 DEFAULT_SITE_ORDERING = [
     "Introduction",
