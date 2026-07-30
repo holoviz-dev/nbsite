@@ -48,7 +48,7 @@ jinja2 = "*"
 jupyter_client = "*"
 myst-nb = ">=1.1"
 myst-parser = '>=3'
-nbconvert = "*"
+nbconvert = ">=7.17.1"
 nbformat = "*"
 nomkl = "*"
 notebook = "*"
