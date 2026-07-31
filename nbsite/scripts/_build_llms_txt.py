@@ -195,6 +195,15 @@ def _select_html_body(soup: BeautifulSoup):
 
 
 def _remove_html_wrappers(text: str) -> str:
+    text = re.sub(
+        r"<span\b[^>]*title=\"Extension loaded\.[^\"]*\"[^>]*>ⓘ</span>",
+        "",
+        text,
+        flags=re.I | re.S,
+    )
+    text = re.sub(r"<script\b.*?>.*?</script>", "", text, flags=re.I | re.S)
+    text = re.sub(r"<style\b.*?>.*?</style>", "", text, flags=re.I | re.S)
+
     def _replace_anchor(match: re.Match[str]) -> str:
         attrs = match.group(1)
         inner_html = match.group(2)
@@ -260,6 +269,12 @@ def _normalize_markdown(text: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _sanitize_markdown_output(path: Path) -> None:
+    text = path.read_text(encoding="utf-8")
+    text = _remove_html_wrappers(text)
+    path.write_text(_normalize_markdown(text), encoding="utf-8")
+
+
 def _convert_rst(
     rst_path: Path,
     output_path: Path,
@@ -307,9 +322,7 @@ def _convert_rst(
         if temp_path is not None:
             temp_path.unlink(missing_ok=True)
 
-    text = output_path.read_text(encoding="utf-8")
-    text = _remove_html_wrappers(text)
-    output_path.write_text(_normalize_markdown(text), encoding="utf-8")
+    _sanitize_markdown_output(output_path)
     return True
 
 
@@ -346,6 +359,8 @@ def build_markdown_docs(
             if path.suffix == ".ipynb" and source.convert_notebooks:
                 if _convert_notebook(path, destination.parent):
                     md_rel = destination.with_suffix(".md").relative_to(markdown_root)
+                    md_path = destination.with_suffix(".md")
+                    _sanitize_markdown_output(md_path)
                     generated.append(md_rel)
                     print(f"  Converted {md_rel}")
 
