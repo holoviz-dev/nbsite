@@ -84,7 +84,7 @@ def main(args=None):
     _set_defaults(build_parser,build)
 
     llms_parser = subparsers.add_parser("build-llms", help="build markdown docs and llms.txt from a reusable config")
-    llms_parser.add_argument('--config', type=str, required=True, help='config spec in module:attr or path.py:attr form; defaults to CONFIG')
+    llms_parser.add_argument('--config', type=str, required=True, help='config spec in module:attr or path.py:attr form; attr defaults to CONFIG')
     llms_parser.set_defaults(func=lambda args: build_llms_docs(_load_config_object(args.config)))
 
     args = parser.parse_args()

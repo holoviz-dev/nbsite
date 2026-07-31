@@ -221,11 +221,9 @@ def _remove_html_wrappers(text: str) -> str:
         return f"[{label}]({href})" if href else label
 
     text = re.sub(r"<a\b([^>]*)>(.*?)</a>", _replace_anchor, text, flags=re.S)
+    strip_tags = "|".join(re.escape(tag) for tag in MARKDOWN_STRIP_TAGS)
     text = re.sub(
-        r"</?(?:"
-        r"span|div|em|strong|p|small|sup|sub|code|pre|section|article|main|nav|"
-        r"ul|ol|li|table|tbody|thead|tr|td|th|blockquote|kbd|img"
-        r")(?:\s[^>]*)?>",
+        rf"</?(?:{strip_tags})(?:\s[^>]*)?>",
         "",
         text,
         flags=re.I,
@@ -240,8 +238,8 @@ def _normalize_markdown(text: str) -> str:
     pending_blank = False
 
     for raw_line in text.splitlines():
-        line = raw_line.rstrip()
-        stripped = line.strip()
+        was_in_code_block = in_code_block
+        stripped = raw_line.strip()
 
         if stripped.startswith("```") or stripped.startswith("~~~"):
             in_code_block = not in_code_block
@@ -259,6 +257,7 @@ def _normalize_markdown(text: str) -> str:
             continue
 
         pending_blank = False
+        line = raw_line if was_in_code_block else raw_line.rstrip()
         lines.append(line)
 
     while lines and not lines[0]:
@@ -331,6 +330,14 @@ def build_markdown_docs(
     markdown_root: Path,
 ) -> list[Path]:
     """Copy markdown files and convert notebooks into the markdown tree."""
+
+    for source in sources:
+        if not source.output_dir.is_relative_to(markdown_root):
+            raise ValueError(
+                f"MarkdownSource.output_dir ({source.output_dir}) must be "
+                f"located under markdown_root ({markdown_root}) so that "
+                "generated paths can be expressed relative to it."
+            )
 
     generated: list[Path] = []
     for source in sources:
