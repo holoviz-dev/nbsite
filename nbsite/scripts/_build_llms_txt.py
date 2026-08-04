@@ -545,7 +545,7 @@ def generate_index_pages(
         ]
         for md_file in md_files:
             rel_md = md_file.relative_to(markdown_root).as_posix()
-            lines.append(f"- [{category.label_builder(md_file)}]({markdown_base_url}/{rel_md})")
+            lines.append(f"- [{category.label_builder(md_file.relative_to(markdown_root))}]({markdown_base_url}/{rel_md})")
 
         index_file = category_dir / "index.md"
         index_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -580,7 +580,7 @@ def _matches_prefix(path: Path, prefix: Path) -> bool:
 def _build_url_pattern_body(section: LlmsSection, section_paths: Sequence[Path]) -> list[str]:
     def _rel(path: Path) -> str:
         try:
-            return str(path.relative_to(section.path_prefix).with_suffix(""))
+            return path.relative_to(section.path_prefix).with_suffix("").as_posix()
         except ValueError:
             return path.stem
 

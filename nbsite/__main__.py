@@ -24,7 +24,13 @@ def _load_config_object(spec: str):
     else:
         module = importlib.import_module(module_spec)
 
-    config = getattr(module, attr)
+    try:
+        config = getattr(module, attr)
+    except AttributeError:
+        raise ValueError(
+            f"Config attribute '{attr}' not found in module '{module_spec}'. "
+            f"Available attributes: {[a for a in dir(module) if not a.startswith('_')]}"
+        ) from None
     return config() if callable(config) else config
 
 
