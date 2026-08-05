@@ -2,6 +2,13 @@ from pathlib import Path
 
 import pytest
 
+try:
+    import markitdown  # noqa: F401
+
+    _has_markitdown = True
+except ImportError:
+    _has_markitdown = False
+
 from nbsite.scripts._build_llms_txt import (
     LlmsBuildConfig, LlmsSection, MarkdownSource, _convert_notebook,
     _deepen_relative_links, _normalize_markdown, _strip_markdown_noise,
@@ -195,6 +202,7 @@ def test_deepen_relative_links_only_deepens_shared_assets():
     assert "https://example.com/img.png" in deepened
 
 
+@pytest.mark.skipif(not _has_markitdown, reason="markitdown not installed")
 def test_convert_notebook_returns_markdown(tmp_path):
     notebook = tmp_path / "simple.ipynb"
     notebook.write_text(
@@ -207,6 +215,7 @@ def test_convert_notebook_returns_markdown(tmp_path):
     assert "World" in result
 
 
+@pytest.mark.skipif(not _has_markitdown, reason="markitdown not installed")
 def test_convert_notebook_handles_non_notebook(tmp_path):
     text_file = tmp_path / "notes.txt"
     text_file.write_text("Just some text")
