@@ -68,6 +68,11 @@ MARKDOWN_STRIP_TAGS = (
     "img",
 )
 
+_STRIP_TAGS_RE = re.compile(
+    r"</?(?:" + "|".join(re.escape(t) for t in MARKDOWN_STRIP_TAGS) + r")(?:\s[^>]*)?>",
+    re.I,
+)
+
 
 def default_label(path: Path) -> str:
     return path.stem.replace("_", " ")
@@ -154,6 +159,7 @@ class LlmsBuildConfig:
 
 def _iter_source_files(source: MarkdownSource) -> Iterable[Path]:
     """Yield source files, preferring .ipynb over .rst when both exist."""
+    # Collect all included paths grouped by stem.
     stem_to_paths: dict[str, list[Path]] = {}
     for path in sorted(source.source_dir.rglob("*")):
         if not path.is_file():
@@ -162,21 +168,15 @@ def _iter_source_files(source: MarkdownSource) -> Iterable[Path]:
         if _is_included(rel_path, source.include_suffixes, source.exclude_dir_names, source.exclude_files):
             stem_to_paths.setdefault(path.stem, []).append(path)
 
-    seen_stems: set[str] = set()
-    for path in sorted(source.source_dir.rglob("*")):
-        if not path.is_file():
-            continue
-        rel_path = path.relative_to(source.source_dir)
-        if not _is_included(rel_path, source.include_suffixes, source.exclude_dir_names, source.exclude_files):
-            continue
-        stem = path.stem
-        if stem in seen_stems:
-            continue
-        siblings = stem_to_paths.get(stem, [])
-        if path.suffix == ".rst" and any(s.suffix == ".ipynb" for s in siblings):
-            continue
-        seen_stems.add(stem)
-        yield path
+    # For each stem, emit the preferred file: .ipynb beats .rst; otherwise
+    # preserve the sorted order.
+    for siblings in stem_to_paths.values():
+        preferred = (
+            next((p for p in siblings if p.suffix == ".ipynb"), None)
+            or next((p for p in siblings if p.suffix != ".rst"), None)
+            or siblings[0]
+        )
+        yield preferred
 
 
 def _run_command(command: list[str], warning_context: str) -> bool:
@@ -188,13 +188,11 @@ def _run_command(command: list[str], warning_context: str) -> bool:
 
 
 def _convert_notebook(source_path: Path) -> str | None:
-    """Convert a file to markdown using markitdown."""
+    """Convert a Jupyter notebook to Markdown."""
     try:
-        from markitdown import MarkItDown, StreamInfo
+        from ._ipynb_converter import convert_notebook
 
-        md_converter = MarkItDown()
-        result = md_converter.convert(str(source_path), stream_info=StreamInfo(charset="utf-8"))
-        return result.text_content
+        return convert_notebook(source_path)
     except Exception as exc:
         print(f"  Warning: failed to convert {source_path}: {exc}")
         return None
@@ -252,13 +250,7 @@ def _remove_html_wrappers(text: str) -> str:
         return f"[{label}]({href})" if href else label
 
     text = re.sub(r"<a\b([^>]*)>(.*?)</a>", _replace_anchor, text, flags=re.S)
-    strip_tags = "|".join(re.escape(tag) for tag in MARKDOWN_STRIP_TAGS)
-    text = re.sub(
-        rf"</?(?:{strip_tags})(?:\s[^>]*)?>",
-        "",
-        text,
-        flags=re.I,
-    )
+    text = _STRIP_TAGS_RE.sub("", text)
     return re.sub(r"<!--.*?-->", "", text, flags=re.S)
 
 
@@ -300,22 +292,34 @@ def _normalize_markdown(text: str) -> str:
 
 
 def _strip_markdown_noise(text: str) -> str:
-    """Remove Sphinx/HTML-conversion artifacts that carry no value for LLMs."""
+    """Remove Sphinx/MyST/HTML-conversion artifacts that carry no value for LLMs."""
+    # Remove {eval-rst} code blocks
+    text = re.sub(r"```\{eval-rst\}\n.*?\n```", "", text, flags=re.S)
+
+    # Remove MySTMarkdown targets like (option-name)=
+    text = re.sub(r"^\([a-zA-Z_-]+\)=$", "", text, flags=re.M)
+
+    # Remove :::{directive} blocks (including content)
+    text = re.sub(r"^:::\{[^}]+\}\n.*?\n:::$", "", text, flags=re.M | re.S)
+
+    # Remove single-line :::{directive} content
+    text = re.sub(r"^:::\{[^}]+\}.*$", "", text, flags=re.M)
+
+    # Clean up cross-reference syntax: [`name`](target) -> name
+    text = re.sub(r"\[`([^`]+)`\]\([^)]*\)", r"`\1`", text)
+
+    # Clean up [text](target) cross-references that look like internal refs
+    text = re.sub(r"\[([^\]]+)\]\([a-zA-Z_-]+\)", r"`\1`", text)
+
     text = re.sub(r"\s*\[#\]\(#[^)]*\)", "", text)
     text = re.sub(r"\[source\]\([^)]*\)", "", text)
+
+    # Remove the Jupyter-notebook banner (with or without the "On this page" preamble)
+    # and the trailing "Edit on GitHub / Show Source" links that always follow it.
     text = re.sub(
-        (
-            r"\nThis web page was generated from a Jupyter notebook and not all\s*\n?"
-            r"interactivity will work on this website\.\s*\n*On this page\s*\n*"
-            r"\[\s*Edit on\s*\n?GitHub\]\([^)]*\)\s*\n*"
-            r"\[\s*Show\s*\n?Source\]\([^)]*\)"
-        ),
-        "",
-        text,
-        flags=re.S,
-    )
-    text = re.sub(
-        r"\n*\[\s*Edit on\s*\n?GitHub\]\([^)]*\)\s*\n*\[\s*Show\s*\n?Source\]\([^)]*\)\n*",
+        r"\n*(?:This web page was generated from a Jupyter notebook and not all\s*\n?"
+        r"interactivity will work on this website\.\s*\n*On this page\s*\n*)?"
+        r"\[\s*Edit on\s*\n?GitHub\]\([^)]*\)\s*\n*\[\s*Show\s*\n?Source\]\([^)]*\)\n*",
         "",
         text,
         flags=re.S,
@@ -333,6 +337,10 @@ def _strip_markdown_noise(text: str) -> str:
         text,
     )
     text = text.replace(r"\*\*", "**")
+
+    # Remove multiple blank lines left behind
+    text = re.sub(r"\n{3,}", "\n\n", text)
+
     return text
 
 
@@ -390,13 +398,9 @@ def _write_rendered_html(rendered_html_path: Path) -> Path | None:
         delete=False,
         encoding="utf-8",
     )
-    try:
-        temp.write(str(input_node))
-        temp.close()
-        return Path(temp.name)
-    finally:
-        if not temp.closed:
-            temp.close()
+    temp.write(str(input_node))
+    temp.close()
+    return Path(temp.name)
 
 
 def _convert_rst(
@@ -504,7 +508,7 @@ def generate_index_pages(
         lines = [
             f"# {category.title}",
             "",
-            f"{category.description}",
+            category.description,
             "",
         ]
         for md_file in md_files:
@@ -571,8 +575,10 @@ def _build_url_pattern_body(section: LlmsSection, section_paths: Sequence[Path])
         first = dot_parts[0]
         first_stem = ".".join(first[:-1])
         body.append(f"  e.g. `{section.url_pattern.format(stem=f'{first_stem}.{first[-1]}')}`")
-        key_fn = lambda parts: ".".join(parts[:-1])
-        for stem, entries in groupby(dot_parts, key=key_fn):
+        def _dot_stem(parts: list[str]) -> str:
+            return ".".join(parts[:-1])
+
+        for stem, entries in groupby(dot_parts, key=_dot_stem):
             body.append(f"  {stem}: {', '.join(entry[-1] for entry in entries)}")
         return body
 
@@ -582,6 +588,41 @@ def _build_url_pattern_body(section: LlmsSection, section_paths: Sequence[Path])
         f"  e.g. `{section.url_pattern.format(stem=rels[0], path=rels[0])}`",
         f"Available pages ({len(section_paths)}): {pages}",
     ]
+
+
+def _dedup_paths(paths: Iterable[Path], root: Path) -> list[Path]:
+    """Return *paths* with duplicates removed, keyed by stem-relative posix string."""
+    seen: set[str] = set()
+    result: list[Path] = []
+    for path in paths:
+        try:
+            key = path.relative_to(root).with_suffix("").as_posix()
+        except ValueError:
+            key = path.with_suffix("").as_posix()
+        if key not in seen:
+            seen.add(key)
+            result.append(path)
+    return result
+
+
+def _render_section(
+    section: LlmsSection,
+    section_paths: Sequence[Path],
+    markdown_base_url: str,
+) -> list[str]:
+    """Return the lines that represent one section's body in llms.txt."""
+    if section.url_pattern is not None:
+        body = _build_url_pattern_body(section, section_paths)
+    else:
+        body = _build_links(
+            section_paths,
+            markdown_base_url,
+            section.label_builder,
+            section.description_builder,
+        )
+        if section.note:
+            body = body + ["", section.note]
+    return body
 
 
 def generate_llms_txt(
@@ -596,53 +637,34 @@ def generate_llms_txt(
         "",
         config.project_description,
         "",
-        (f"All documentation is available as markdown files under {config.markdown_base_url}/."),
+        f"All documentation is available as markdown files under {config.markdown_base_url}/.",
         "",
     ]
 
     current_group: str | None = None
     for section in config.sections:
-        section_paths = [path for path in generated_paths if _matches_prefix(path, section.path_prefix) and section.path_filter(path)]
-        seen_paths: set[str] = set()
-        deduped_paths: list[Path] = []
-        for path in section_paths:
-            try:
-                rel_key = path.relative_to(config.markdown_root).with_suffix("").as_posix()
-            except ValueError:
-                rel_key = path.with_suffix("").as_posix()
-            if rel_key not in seen_paths:
-                seen_paths.add(rel_key)
-                deduped_paths.append(path)
-        section_paths = deduped_paths
+        candidates = [
+            path for path in generated_paths
+            if _matches_prefix(path, section.path_prefix) and section.path_filter(path)
+        ]
+        section_paths = _dedup_paths(candidates, config.markdown_root)
         if not section_paths:
             continue
 
-        if section.url_pattern is not None:
-            body = _build_url_pattern_body(section, section_paths)
-        else:
-            body = _build_links(
-                section_paths,
-                config.markdown_base_url,
-                section.label_builder,
-                section.description_builder,
-            )
-            if section.note:
-                body = body + ["", section.note]
+        body = _render_section(section, section_paths, config.markdown_base_url)
 
         if section.group is not None:
             if section.group != current_group:
                 lines.extend([f"## {section.group}", ""])
                 if section.group_description:
-                    lines.append(section.group_description)
-                    lines.append("")
+                    lines.extend([section.group_description, ""])
                 current_group = section.group
             lines.extend([f"### {section.title}", f"> {section.description}", ""])
-            lines.extend(body)
-            lines.append("")
         else:
-            lines.extend([f"## {section.title}", "", f"{section.description}", ""])
-            lines.extend(body)
-            lines.append("")
+            lines.extend([f"## {section.title}", "", section.description, ""])
+
+        lines.extend(body)
+        lines.append("")
 
     if generated_indexes:
         lines.extend(["## Reference Indexes", ""])
