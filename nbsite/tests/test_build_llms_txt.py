@@ -8,18 +8,6 @@ from nbsite.scripts._build_llms_txt import (
     build_markdown_docs, generate_llms_txt,
 )
 
-# def _make_fake_pandoc_output(input_suffix: str) -> str:
-#     return (
-#         "\n\n\n"
-#         "# example\n\n\n"
-#         "<div class=\"automodule\" members=\"\" show-inheritance=\"\">\n\n"
-#         "<a href=\"../index.html\" class=\"nav-link\" "
-#         "aria-label=\"Home\"><em></em></a>\n"
-#         "<span class=\"pre\">class</span> example\n\n"
-#         f"converted from {input_suffix}\n\n"
-#         "</div>\n"
-#     )
-
 
 def test_build_markdown_docs_exclude_files(tmp_path):
     source_dir = tmp_path / "doc"
@@ -163,22 +151,6 @@ def test_generate_llms_txt_link_descriptions(tmp_path):
     lines = (tmp_path / "llms.txt").read_text().splitlines()
     assert any(line.endswith(": an input widget") and "/widgets/index.md" in line for line in lines)
     assert any("/panes/index.md" in line and not line.endswith(": an input widget") for line in lines)
-
-
-# def test_needs_sphinx_resolution_detects_directives(tmp_path):
-#     notebook = tmp_path / "api.ipynb"
-#     notebook.write_text(
-#         '{"cells": [{"cell_type": "markdown", "source": '
-#         '[".. automethod:: hvPlot.line"]}]}'
-#     )
-#     assert _needs_sphinx_resolution(notebook)
-
-#     plain = tmp_path / "gallery.ipynb"
-#     plain.write_text(
-#         '{"cells": [{"cell_type": "markdown", "source": '
-#         '["# Title", "Some prose"]}]}'
-#     )
-#     assert not _needs_sphinx_resolution(plain)
 
 
 def test_strip_markdown_noise_removes_html_conversion_artifacts():

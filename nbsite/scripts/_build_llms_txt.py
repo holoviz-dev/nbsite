@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import Callable, Iterable, Sequence
 
 from bs4 import BeautifulSoup
-from markitdown import MarkItDown, StreamInfo
 
 LabelBuilder = Callable[[Path], str]
 PathPredicate = Callable[[Path], bool]
@@ -188,13 +187,13 @@ def _run_command(command: list[str], warning_context: str) -> bool:
     return False
 
 
-_md_converter = MarkItDown()
-
-
 def _convert_notebook(source_path: Path) -> str | None:
     """Convert a file to markdown using markitdown."""
     try:
-        result = _md_converter.convert(str(source_path), stream_info=StreamInfo(charset="utf-8"))
+        from markitdown import MarkItDown, StreamInfo
+
+        md_converter = MarkItDown()
+        result = md_converter.convert(str(source_path), stream_info=StreamInfo(charset="utf-8"))
         return result.text_content
     except Exception as exc:
         print(f"  Warning: failed to convert {source_path}: {exc}")
