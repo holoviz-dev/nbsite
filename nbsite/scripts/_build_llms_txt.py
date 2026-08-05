@@ -1,16 +1,14 @@
 """Reusable helpers for building markdown docs and llms.txt.
 
-Individual repos provide an `llms_config.py` module to customize source
+Individual repos provide an ``llms_config.py`` module to customize source
 roots, section definitions, index pages, and label formatting.
 """
 
 from __future__ import annotations
 
-import json
 import re
 import shutil
 import subprocess
-import sys
 import tempfile
 
 from dataclasses import dataclass, field
@@ -19,6 +17,7 @@ from pathlib import Path
 from typing import Callable, Iterable, Sequence
 
 from bs4 import BeautifulSoup
+from markitdown import MarkItDown, StreamInfo
 
 LabelBuilder = Callable[[Path], str]
 PathPredicate = Callable[[Path], bool]
@@ -68,11 +67,6 @@ MARKDOWN_STRIP_TAGS = (
     "blockquote",
     "kbd",
     "img",
-)
-
-SPHINX_DIRECTIVE_PATTERN = re.compile(
-    r"\.\.\s+(automethod|autofunction|autosummary|autoclass|autodata|"
-    r"automodule|currentmodule|plotting-options-table|backend-styling-options)"
 )
 
 
@@ -160,26 +154,30 @@ class LlmsBuildConfig:
 
 
 def _iter_source_files(source: MarkdownSource) -> Iterable[Path]:
+    """Yield source files, preferring .ipynb over .rst when both exist."""
+    stem_to_paths: dict[str, list[Path]] = {}
     for path in sorted(source.source_dir.rglob("*")):
         if not path.is_file():
             continue
         rel_path = path.relative_to(source.source_dir)
         if _is_included(rel_path, source.include_suffixes, source.exclude_dir_names, source.exclude_files):
-            yield path
+            stem_to_paths.setdefault(path.stem, []).append(path)
 
-
-def _needs_sphinx_resolution(notebook_path: Path) -> bool:
-    """Whether a notebook contains Sphinx directives that nbconvert leaves unresolved."""
-    try:
-        with open(notebook_path, encoding="utf-8") as f:
-            notebook = json.load(f)
-    except (OSError, ValueError):
-        return False
-    for cell in notebook.get("cells", []):
-        source = "".join(cell.get("source", []))
-        if SPHINX_DIRECTIVE_PATTERN.search(source):
-            return True
-    return False
+    seen_stems: set[str] = set()
+    for path in sorted(source.source_dir.rglob("*")):
+        if not path.is_file():
+            continue
+        rel_path = path.relative_to(source.source_dir)
+        if not _is_included(rel_path, source.include_suffixes, source.exclude_dir_names, source.exclude_files):
+            continue
+        stem = path.stem
+        if stem in seen_stems:
+            continue
+        siblings = stem_to_paths.get(stem, [])
+        if path.suffix == ".rst" and any(s.suffix == ".ipynb" for s in siblings):
+            continue
+        seen_stems.add(stem)
+        yield path
 
 
 def _run_command(command: list[str], warning_context: str) -> bool:
@@ -190,22 +188,17 @@ def _run_command(command: list[str], warning_context: str) -> bool:
     return False
 
 
-def _convert_notebook(notebook_path: Path, output_dir: Path) -> bool:
-    output_dir.mkdir(parents=True, exist_ok=True)
-    return _run_command(
-        [
-            sys.executable,
-            "-m",
-            "jupyter",
-            "nbconvert",
-            "--to",
-            "markdown",
-            "--output-dir",
-            str(output_dir),
-            str(notebook_path),
-        ],
-        str(notebook_path),
-    )
+_md_converter = MarkItDown()
+
+
+def _convert_notebook(source_path: Path) -> str | None:
+    """Convert a file to markdown using markitdown."""
+    try:
+        result = _md_converter.convert(str(source_path), stream_info=StreamInfo(charset="utf-8"))
+        return result.text_content
+    except Exception as exc:
+        print(f"  Warning: failed to convert {source_path}: {exc}")
+        return None
 
 
 def _pandoc_command(
@@ -235,7 +228,7 @@ def _select_html_body(soup: BeautifulSoup):
 
 def _remove_html_wrappers(text: str) -> str:
     text = re.sub(
-        r"<span\b[^>]*title=\"Extension loaded\.[^\"]*\"[^>]*>ⓘ</span>",
+        r"<span\b[^>]*title=\"Extension loaded\.[^\"]*\"[^>]*>\u2139</span>",
         "",
         text,
         flags=re.I | re.S,
@@ -309,12 +302,8 @@ def _normalize_markdown(text: str) -> str:
 
 def _strip_markdown_noise(text: str) -> str:
     """Remove Sphinx/HTML-conversion artifacts that carry no value for LLMs."""
-    # Header self-reference anchors: "## Title[#](#title)"
     text = re.sub(r"\s*\[#\]\(#[^)]*\)", "", text)
-    # "[source]" links pointing at the source code on GitHub
     text = re.sub(r"\[source\]\([^)]*\)", "", text)
-    # Sphinx "This web page was generated from a Jupyter notebook..." footer and
-    # the "On this page" / "Edit on GitHub" / "Show Source" navigation block
     text = re.sub(
         (
             r"\nThis web page was generated from a Jupyter notebook and not all\s*\n?"
@@ -332,9 +321,7 @@ def _strip_markdown_noise(text: str) -> str:
         text,
         flags=re.S,
     )
-    # Rewrite internal links to their markdown pages: rendered HTML build uses
-    # ``.html`` and notebook sources link ``.ipynb``, both of which resolve to
-    # the ``.md`` page in the markdown tree.
+
     def _to_markdown_link(match: re.Match[str]) -> str:
         url, fragment = match.group(1), match.group(2) or ""
         if url.startswith(("http:", "https:", "#", "mailto:")):
@@ -346,22 +333,12 @@ def _strip_markdown_noise(text: str) -> str:
         _to_markdown_link,
         text,
     )
-    # Pandoc escapes literal double-asterisks (e.g. ``**kwds`` splat args);
-    # unescape so the Python syntax reads literally in the markdown.
     text = text.replace(r"\*\*", "**")
     return text
 
 
 def _deepen_relative_links(text: str) -> str:
-    """Add one ``../`` to links pointing at shared Sphinx assets.
-
-    Rendered Sphinx pages live at ``<root>/<section>/page.html`` while their
-    markdown counterparts are emitted one level deeper under
-    ``<root>/markdown/<section>/page.md``. Relative links that point up toward
-    shared assets (e.g. ``../_images/``) therefore need an extra ``../``.
-    Page-to-page links (``../../ref/...``) are mirrored inside the markdown
-    tree and must stay unchanged.
-    """
+    """Add one ``../`` to links pointing at shared Sphinx assets."""
 
     def _replace(match: re.Match[str]) -> str:
         url = match.group(1)
@@ -392,10 +369,7 @@ def _write_rendered_html(rendered_html_path: Path) -> Path | None:
     for tag in input_node.find_all(HTML_STRIP_TAGS):
         tag.decompose()
 
-    # Collapse Sphinx signature markup so pandoc emits plain text instead of
-    # wrapping each parameter in italic/bold markers (e.g. ``*x=None*``).
     for dt in input_node.select("dt.sig, dt.sig-object"):
-        # Drop the "[source]" GitHub link and "#anchorname" headerlink spins.
         for tag in dt.find_all("a", class_="headerlink"):
             tag.decompose()
         source = dt.find("a", string=lambda t: t and "source" in t.lower() if t else False)
@@ -404,7 +378,6 @@ def _write_rendered_html(rendered_html_path: Path) -> Path | None:
         for tag in dt.find_all(True):
             tag.unwrap()
 
-    # Normalize :param: rows into "<name> : <type>" plain text.
     for dt in input_node.select("dl.field-list dt"):
         strong, classifier = dt.find("strong"), dt.find("span", class_="classifier")
         if strong is not None and classifier is not None:
@@ -500,20 +473,12 @@ def build_markdown_docs(
 
             if path.suffix == ".ipynb" and source.convert_notebooks:
                 md_destination = destination.with_suffix(".md")
-                rendered_html_path = _rendered_html_for(source, rel)
-                if (
-                    rendered_html_path is not None
-                    and rendered_html_path.exists()
-                    and _needs_sphinx_resolution(path)
-                ):
-                    if _convert_rst(path, md_destination, rendered_html_path):
-                        md_rel = md_destination.relative_to(markdown_root)
-                        generated.append(md_rel)
-                        print(f"  Converted {md_rel}")
-                elif _convert_notebook(path, destination.parent):
-                    md_rel = destination.with_suffix(".md").relative_to(markdown_root)
-                    md_path = destination.with_suffix(".md")
-                    _sanitize_markdown_output(md_path)
+                content = _convert_notebook(path)
+                if content is not None:
+                    md_destination.parent.mkdir(parents=True, exist_ok=True)
+                    md_destination.write_text(content, encoding="utf-8")
+                    md_rel = md_destination.relative_to(markdown_root)
+                    _sanitize_markdown_output(md_destination)
                     generated.append(md_rel)
                     print(f"  Converted {md_rel}")
 
@@ -639,6 +604,17 @@ def generate_llms_txt(
     current_group: str | None = None
     for section in config.sections:
         section_paths = [path for path in generated_paths if _matches_prefix(path, section.path_prefix) and section.path_filter(path)]
+        seen_paths: set[str] = set()
+        deduped_paths: list[Path] = []
+        for path in section_paths:
+            try:
+                rel_key = path.relative_to(config.markdown_root).with_suffix("").as_posix()
+            except ValueError:
+                rel_key = path.with_suffix("").as_posix()
+            if rel_key not in seen_paths:
+                seen_paths.add(rel_key)
+                deduped_paths.append(path)
+        section_paths = deduped_paths
         if not section_paths:
             continue
 
