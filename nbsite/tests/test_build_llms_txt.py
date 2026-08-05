@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from nbsite.scripts._build_llms_txt import (
-    LlmsBuildConfig, LlmsSection, MarkdownSource, _convert_with_markitdown,
+    LlmsBuildConfig, LlmsSection, MarkdownSource, _convert_notebook,
     _deepen_relative_links, _normalize_markdown, _strip_markdown_noise,
     build_markdown_docs, generate_llms_txt,
 )
@@ -223,21 +223,21 @@ def test_deepen_relative_links_only_deepens_shared_assets():
     assert "https://example.com/img.png" in deepened
 
 
-def test_convert_with_markitdown_returns_markdown(tmp_path):
+def test_convert_notebook_returns_markdown(tmp_path):
     notebook = tmp_path / "simple.ipynb"
     notebook.write_text(
         '{"cells": [{"cell_type": "markdown", "source": ["# Hello\\n", "World"]}, '
         '{"cell_type": "code", "source": ["print(1)"], "outputs": []}]}'
     )
-    result = _convert_with_markitdown(notebook)
+    result = _convert_notebook(notebook)
     assert result is not None
     assert "# Hello" in result
     assert "World" in result
 
 
-def test_convert_with_markitdown_handles_non_notebook(tmp_path):
+def test_convert_notebook_handles_non_notebook(tmp_path):
     text_file = tmp_path / "notes.txt"
     text_file.write_text("Just some text")
-    result = _convert_with_markitdown(text_file)
+    result = _convert_notebook(text_file)
     assert result is not None
     assert "Just some text" in result
