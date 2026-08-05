@@ -20,7 +20,7 @@ on:
     - cron: '0 20 * * SUN'
 
 env:
-  PYTHON_VERSION: "3.9"
+  PYTHON_VERSION: "3.10"
   PACKAGE: "nbsite"
 
 defaults:
