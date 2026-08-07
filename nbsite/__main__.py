@@ -1,7 +1,37 @@
 import argparse
+import importlib
+import importlib.util
 import inspect
 
+from pathlib import Path
+
 from .cmd import build, generate_rst, init
+from .scripts import build_llms_docs
+
+
+def _load_config_object(spec: str):
+    module_spec, _, attr = spec.partition(":")
+    attr = attr or "CONFIG"
+
+    if module_spec.endswith(".py") or Path(module_spec).exists():
+        config_path = Path(module_spec).resolve()
+        module_name = config_path.stem + "_llms_config"
+        loaded = importlib.util.spec_from_file_location(module_name, config_path)
+        if loaded is None or loaded.loader is None:
+            raise ValueError(f"Could not load config file: {config_path}")
+        module = importlib.util.module_from_spec(loaded)
+        loaded.loader.exec_module(module)
+    else:
+        module = importlib.import_module(module_spec)
+
+    try:
+        config = getattr(module, attr)
+    except AttributeError:
+        raise ValueError(
+            f"Config attribute '{attr}' not found in module '{module_spec}'. "
+            f"Available attributes: {[a for a in dir(module) if not a.startswith('_')]}"
+        ) from None
+    return config() if callable(config) else config
 
 
 def _add_common_args(parser,*names):
@@ -58,6 +88,10 @@ def main(args=None):
     build_parser.add_argument('--clean-dry-run',action='store_true',help='whether to not actually delete files from output (useful for uploading)')
     build_parser.add_argument('--inspect-links',action='store_true',help='whether to not to print all links')
     _set_defaults(build_parser,build)
+
+    llms_parser = subparsers.add_parser("build-llms", help="build markdown docs and llms.txt from a reusable config")
+    llms_parser.add_argument('--config', type=str, required=True, help='config spec in module:attr or path.py:attr form; attr defaults to CONFIG')
+    llms_parser.set_defaults(func=lambda args: build_llms_docs(_load_config_object(args.config)))
 
     args = parser.parse_args()
     return args.func(args) if hasattr(args,'func') else parser.error("must supply command to run")
