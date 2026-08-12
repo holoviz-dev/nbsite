@@ -5,6 +5,7 @@ import importlib
 import inspect
 import os
 import pathlib as _pathlib
+import re
 import subprocess
 import sys
 
@@ -123,6 +124,13 @@ copyright_fmt = "{start_year}-{current_year} Holoviz contributors"
 html_last_updated_fmt = '%Y-%m-%d'
 
 rediraffe_redirects = {}
+
+numpydoc_xref_param_type = True
+numpydoc_xref_type = True
+numpydoc_xref_aliases = {
+    "str": "builtins.str",
+    "type": "builtins.type",
+}
 
 suppress_warnings = [
     # Ignore: (WARNING/2) Document headings start at H2, not H1
@@ -274,6 +282,47 @@ def add_hv_sidebar_dropdown_context(app, pagename, templatename, context, doctre
     context['hv_sidebar_dropdown'] = app.config.nbsite_hv_sidebar_dropdown
 
 
+def mpltype_role(name, rawtext, text, lineno, inliner, options=None, content=None):
+    """Render matplotlib type roles (e.g. ``:mpltype:`color```) as literals.
+
+    The matplotlib extension (:mod:`matplotlib.sphinxext`) registers this role
+    to link to matplotlib's own reference pages, but those targets do not exist
+    in projects that do not document matplotlib types against its intersphinx
+    inventory. Rendering the type name as a literal avoids broken links and
+    warnings.
+    """
+    from docutils import nodes
+
+    return [nodes.literal(rawtext, text, classes=["docutils"])], []
+
+
+# Matches an .html-relative link target (e.g. user_guide/Annotating_Data.html,
+# ../gallery/index.html, Annotating_Data.html).
+_HTML_MD_LINK_RE = re.compile(r"\b([\w./:+-]+\.html)\b")
+
+
+def strip_html_from_links(app, docname, source):
+    """Strip ``.html`` from relative links in markdown source files.
+
+    Sphinx/MyST treat relative links with an ``.html`` extension as external
+    URLs rather than internal document references, which triggers
+    "reference target not found" warnings. Removing the extension lets Sphinx
+    resolve the link as an internal document. Absolute URLs (containing ``://``)
+    are left untouched.
+    """
+    path = app.env.doc2path(docname)
+    if not path.endswith((".md", ".markdown", ".mdown", ".mkd")):
+        return
+
+    def _replace(match):
+        url = match.group(0)
+        if "://" in url:
+            return url
+        return url[:-len(".html")]
+
+    source[0] = _HTML_MD_LINK_RE.sub(_replace, source[0])
+
+
 def setup(app):
     try:
         from nbsite.paramdoc import param_formatter, param_skip
@@ -284,6 +333,10 @@ def setup(app):
 
     nbbuild.setup(app)
     app.connect("builder-inited", remove_mystnb_static)
+    app.connect("source-read", strip_html_from_links)
+
+    # Avoid broken links/warnings for :mpltype:`...` roles (see mpltype_role).
+    app.add_role("mpltype", mpltype_role)
 
     # hv_sidebar_dropdown
     app.add_config_value('nbsite_hv_sidebar_dropdown', {}, 'html')
