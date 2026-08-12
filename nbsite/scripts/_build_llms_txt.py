@@ -167,14 +167,17 @@ class LlmsBuildConfig:
 
 def _iter_source_files(source: MarkdownSource) -> Iterable[Path]:
     """Yield source files, preferring .ipynb over .rst when both exist."""
-    # Collect all included paths grouped by stem.
-    stem_to_paths: dict[str, list[Path]] = {}
+    # Collect all included paths grouped by their directory + stem (not just
+    # stem) so that e.g. how_to/callbacks/index.md and how_to/state/index.md
+    # are treated as distinct pages instead of colliding on "index".
+    stem_to_paths: dict[Path, list[Path]] = {}
     for path in sorted(source.source_dir.rglob("*")):
         if not path.is_file():
             continue
         rel_path = path.relative_to(source.source_dir)
         if _is_included(rel_path, source.include_suffixes, source.exclude_dir_names, source.exclude_files):
-            stem_to_paths.setdefault(path.stem, []).append(path)
+            key = rel_path.with_suffix("")
+            stem_to_paths.setdefault(key, []).append(path)
 
     # For each stem, emit the preferred file: .ipynb beats .rst; otherwise
     # preserve the sorted order.

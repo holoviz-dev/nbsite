@@ -59,6 +59,26 @@ def test_build_markdown_docs_converts_rst_to_md(tmp_path):
     assert "This is an example." in output_text
 
 
+def test_build_markdown_docs_keeps_index_files_per_directory(tmp_path):
+    """index.md files in different directories must not collide on stem."""
+    source_dir = tmp_path / "doc"
+    output_dir = tmp_path / "builtdocs" / "markdown"
+    for name in ("callbacks", "state"):
+        page_dir = source_dir / "how_to" / name
+        page_dir.mkdir(parents=True)
+        (page_dir / "index.md").write_text(f"# {name} index\n")
+
+    generated = build_markdown_docs(
+        (MarkdownSource(source_dir=source_dir, output_dir=output_dir),),
+        output_dir,
+    )
+
+    assert Path("how_to/callbacks/index.md") in generated
+    assert Path("how_to/state/index.md") in generated
+    assert "callbacks index" in (output_dir / "how_to" / "callbacks" / "index.md").read_text()
+    assert "state index" in (output_dir / "how_to" / "state" / "index.md").read_text()
+
+
 def test_build_markdown_docs_output_dir_outside_markdown_root(tmp_path):
     source_dir = tmp_path / "doc"
     source_dir.mkdir()
