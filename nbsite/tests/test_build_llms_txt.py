@@ -3,9 +3,9 @@ from pathlib import Path
 import pytest
 
 from nbsite.scripts._build_llms_txt import (
-    LlmsBuildConfig, LlmsSection, MarkdownSource, _convert_notebook,
-    _deepen_relative_links, _normalize_markdown, _strip_markdown_noise,
-    build_markdown_docs, generate_llms_txt,
+    LlmsBuildConfig, LlmsSection, MarkdownSource, _build_url_pattern_body,
+    _convert_notebook, _deepen_relative_links, _normalize_markdown,
+    _strip_markdown_noise, build_markdown_docs, generate_llms_txt,
 )
 
 
@@ -57,6 +57,26 @@ def test_build_markdown_docs_converts_rst_to_md(tmp_path):
     output_text = (output_dir / "reference_manual" / "example.md").read_text()
     assert "example" in output_text.lower()
     assert "This is an example." in output_text
+
+
+def test_build_markdown_docs_keeps_index_files_per_directory(tmp_path):
+    """index.md files in different directories must not collide on stem."""
+    source_dir = tmp_path / "doc"
+    output_dir = tmp_path / "builtdocs" / "markdown"
+    for name in ("callbacks", "state"):
+        page_dir = source_dir / "how_to" / name
+        page_dir.mkdir(parents=True)
+        (page_dir / "index.md").write_text(f"# {name} index\n")
+
+    generated = build_markdown_docs(
+        (MarkdownSource(source_dir=source_dir, output_dir=output_dir),),
+        output_dir,
+    )
+
+    assert Path("how_to/callbacks/index.md") in generated
+    assert Path("how_to/state/index.md") in generated
+    assert "callbacks index" in (output_dir / "how_to" / "callbacks" / "index.md").read_text()
+    assert "state index" in (output_dir / "how_to" / "state" / "index.md").read_text()
 
 
 def test_build_markdown_docs_output_dir_outside_markdown_root(tmp_path):
@@ -183,6 +203,54 @@ def test_strip_markdown_noise_unescapes_python_kwargs_asterisks():
     assert r"\*\*" not in cleaned
 
 
+def test_strip_markdown_noise_normalizes_pyodide_fences():
+    text = "# Title\n\n```{pyodide}\nimport panel as pn\n```\n\n```{{pyodide}\nx = 1\n```\n"
+    cleaned = _strip_markdown_noise(text)
+    assert "```python\nimport panel as pn\n```" in cleaned
+    assert "```python\nx = 1\n```" in cleaned
+    assert "{pyodide}" not in cleaned
+
+
+def test_strip_markdown_noise_removes_jupyterlite_banner():
+    text = (
+        "# HoloViews\n\n"
+        "[Open this notebook in Jupyterlite](https://panelite.holoviz.org/lab?path=/x.ipynb) | "
+        "[Download this notebook from GitHub (right-click to download).]"
+        "(https://raw.githubusercontent.com/holoviz/panel/main/examples/x.ipynb)\n\n"
+        "---\n\n"
+        "Body text.\n\n"
+        "[Open this notebook in Jupyterlite](https://panelite.holoviz.org/lab?path=/x.ipynb) | "
+        "[Download this notebook from GitHub (right-click to download).]"
+        "(https://raw.githubusercontent.com/holoviz/panel/main/examples/x.ipynb)\n"
+    )
+    cleaned = _strip_markdown_noise(text)
+    assert "Jupyterlite" not in cleaned
+    assert "Download this notebook" not in cleaned
+    assert "Body text." in cleaned
+    assert cleaned.startswith("# HoloViews\n")
+
+
+def test_build_markdown_docs_sanitizes_copied_markdown(tmp_path):
+    source_dir = tmp_path / "doc"
+    source_dir.mkdir()
+    output_dir = tmp_path / "builtdocs" / "markdown"
+    (source_dir / "guide.md").write_text(
+        "# Guide\n\n"
+        "[Open this notebook in Jupyterlite](https://example.com/lab)\n\n"
+        "```{pyodide}\nprint(1)\n```\n"
+    )
+
+    build_markdown_docs(
+        (MarkdownSource(source_dir=source_dir, output_dir=output_dir),),
+        output_dir,
+    )
+
+    text = (output_dir / "guide.md").read_text()
+    assert "Jupyterlite" not in text
+    assert "```python\nprint(1)\n```" in text
+    assert "{pyodide}" not in text
+
+
 def test_deepen_relative_links_only_deepens_shared_assets():
     text = (
         "![bar](../_images/simple_area.png)\n\n"
@@ -220,3 +288,91 @@ def test_convert_notebook_handles_non_notebook(tmp_path):
     text_file.write_text("Just some text")
     result = _convert_notebook(text_file)
     assert result is None
+
+
+def test_build_markdown_docs_expands_meta_refresh_redirects(tmp_path):
+    """Stub pages that meta-refresh to index#section should expand that section."""
+    source_dir = tmp_path / "doc" / "how_to"
+    source_dir.mkdir(parents=True)
+    built = tmp_path / "builtdocs" / "how_to"
+    built.mkdir(parents=True)
+    output_dir = tmp_path / "builtdocs" / "markdown"
+
+    stub = source_dir / "build_apps.md"
+    stub.write_text(
+        ".. raw:: html\n"
+        "    <head>\n"
+        "        <meta http-equiv='refresh' content='0; URL=./index.html#build-apps'>\n"
+        "    </head>\n\n"
+        "# Build apps\n"
+    )
+    # Rendered landing page (unused for expansion target, but present like Sphinx output).
+    (built / "build_apps.html").write_text(
+        "<html><head>"
+        "<meta http-equiv='refresh' content='0; URL=./index.html#build-apps'>"
+        "</head><body><main id='main-content'><p>stub</p></main></body></html>"
+    )
+    (built / "index.html").write_text(
+        "<html><body><main id='main-content'>"
+        "<section id='build-apps'>"
+        "<h2>Build apps</h2>"
+        "<p>How to construct components.</p>"
+        "<a href='components/index.html'>Create Components</a>"
+        "</section>"
+        "<section id='other'><h2>Other</h2><p>Ignore me.</p></section>"
+        "</main></body></html>"
+    )
+
+    generated = build_markdown_docs(
+        (
+            MarkdownSource(
+                source_dir=tmp_path / "doc",
+                output_dir=output_dir,
+                rendered_source_dir=tmp_path / "builtdocs",
+            ),
+        ),
+        output_dir,
+    )
+
+    assert Path("how_to/build_apps.md") in generated
+    text = (output_dir / "how_to" / "build_apps.md").read_text()
+    assert "How to construct components." in text
+    assert "Create Components" in text
+    assert "Ignore me." not in text
+    assert "meta" not in text.lower()
+    assert "http-equiv" not in text.lower()
+
+
+def test_build_url_pattern_body_mixed_depth_groups_by_category():
+    section = LlmsSection(
+        title="how-to",
+        description="How-to guides.",
+        path_prefix=Path("how_to"),
+        url_pattern="/markdown/how_to/{path}.md",
+    )
+    paths = [
+        Path("how_to/build_apps.md"),
+        Path("how_to/authentication/access_tokens.md"),
+        Path("how_to/callbacks/examples/streaming_bokeh.md"),
+        Path("how_to/callbacks/async.md"),
+    ]
+    body = _build_url_pattern_body(section, paths)
+    text = "\n".join(body)
+    assert "standalone: build_apps" in text
+    assert "authentication: access_tokens" in text
+    assert "callbacks: async, examples/streaming_bokeh" in text
+
+
+def test_build_url_pattern_body_uniform_two_parts_uses_clean_format():
+    section = LlmsSection(
+        title="reference",
+        description="Reference.",
+        path_prefix=Path("reference"),
+        url_pattern="/markdown/reference/{path}.md",
+    )
+    paths = [Path("reference/widgets/Button.md"), Path("reference/panes/HTML.md")]
+    body = _build_url_pattern_body(section, paths)
+    text = "\n".join(body)
+    assert "{path} = {category}/{example}" in text
+    assert "widgets: Button" in text
+    assert "panes: HTML" in text
