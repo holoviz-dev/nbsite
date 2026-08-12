@@ -203,6 +203,54 @@ def test_strip_markdown_noise_unescapes_python_kwargs_asterisks():
     assert r"\*\*" not in cleaned
 
 
+def test_strip_markdown_noise_normalizes_pyodide_fences():
+    text = "# Title\n\n```{pyodide}\nimport panel as pn\n```\n\n```{{pyodide}\nx = 1\n```\n"
+    cleaned = _strip_markdown_noise(text)
+    assert "```python\nimport panel as pn\n```" in cleaned
+    assert "```python\nx = 1\n```" in cleaned
+    assert "{pyodide}" not in cleaned
+
+
+def test_strip_markdown_noise_removes_jupyterlite_banner():
+    text = (
+        "# HoloViews\n\n"
+        "[Open this notebook in Jupyterlite](https://panelite.holoviz.org/lab?path=/x.ipynb) | "
+        "[Download this notebook from GitHub (right-click to download).]"
+        "(https://raw.githubusercontent.com/holoviz/panel/main/examples/x.ipynb)\n\n"
+        "---\n\n"
+        "Body text.\n\n"
+        "[Open this notebook in Jupyterlite](https://panelite.holoviz.org/lab?path=/x.ipynb) | "
+        "[Download this notebook from GitHub (right-click to download).]"
+        "(https://raw.githubusercontent.com/holoviz/panel/main/examples/x.ipynb)\n"
+    )
+    cleaned = _strip_markdown_noise(text)
+    assert "Jupyterlite" not in cleaned
+    assert "Download this notebook" not in cleaned
+    assert "Body text." in cleaned
+    assert cleaned.startswith("# HoloViews\n")
+
+
+def test_build_markdown_docs_sanitizes_copied_markdown(tmp_path):
+    source_dir = tmp_path / "doc"
+    source_dir.mkdir()
+    output_dir = tmp_path / "builtdocs" / "markdown"
+    (source_dir / "guide.md").write_text(
+        "# Guide\n\n"
+        "[Open this notebook in Jupyterlite](https://example.com/lab)\n\n"
+        "```{pyodide}\nprint(1)\n```\n"
+    )
+
+    build_markdown_docs(
+        (MarkdownSource(source_dir=source_dir, output_dir=output_dir),),
+        output_dir,
+    )
+
+    text = (output_dir / "guide.md").read_text()
+    assert "Jupyterlite" not in text
+    assert "```python\nprint(1)\n```" in text
+    assert "{pyodide}" not in text
+
+
 def test_deepen_relative_links_only_deepens_shared_assets():
     text = (
         "![bar](../_images/simple_area.png)\n\n"

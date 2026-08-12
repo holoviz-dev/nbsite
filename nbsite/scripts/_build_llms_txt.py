@@ -436,6 +436,10 @@ def _strip_markdown_noise(text: str) -> str:
     # Remove {eval-rst} code blocks
     text = re.sub(r"```\{eval-rst\}\n.*?\n```", "", text, flags=re.S)
 
+    # MyST pyodide fences are executable docs chrome; keep the code as plain python.
+    # Handles both `{pyodide}` and the occasional doubled-brace `{{pyodide}`.
+    text = re.sub(r"^```\{\{?pyodide\}?\s*$", "```python", text, flags=re.M)
+
     # Remove MySTMarkdown targets like (option-name)=
     text = re.sub(r"^\([a-zA-Z_-]+\)=$", "", text, flags=re.M)
 
@@ -453,6 +457,16 @@ def _strip_markdown_noise(text: str) -> str:
 
     text = re.sub(r"\s*\[#\]\(#[^)]*\)", "", text)
     text = re.sub(r"\[source\]\([^)]*\)", "", text)
+
+    # Remove Jupyterlite / GitHub download banners (optionally followed by ---).
+    text = re.sub(
+        r"^\s*\[Open this notebook in Jupyterlite\]\([^)]*\)"
+        r"(?:\s*\|\s*\[Download this notebook from GitHub[^\]]*\]\([^)]*\))?"
+        r"\s*(?:\n+\s*---\s*)?\n?",
+        "",
+        text,
+        flags=re.M | re.I,
+    )
 
     # Remove the Jupyter-notebook banner (with or without the "On this page" preamble)
     # and the trailing "Edit on GitHub / Show Source" links that always follow it.
@@ -568,6 +582,9 @@ def build_markdown_docs(
                     print(f"  Expanded redirect {md_rel}")
                     continue
                 shutil.copy2(path, destination)
+                # Always sanitize copied markdown so MyST chrome (pyodide
+                # fences, Jupyterlite banners, etc.) is stripped consistently.
+                _sanitize_markdown_output(destination)
                 generated.append(destination.relative_to(markdown_root))
                 print(f"  Copied {destination.relative_to(markdown_root)}")
                 continue
