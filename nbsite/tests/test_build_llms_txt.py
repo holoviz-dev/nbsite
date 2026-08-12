@@ -3,9 +3,9 @@ from pathlib import Path
 import pytest
 
 from nbsite.scripts._build_llms_txt import (
-    LlmsBuildConfig, LlmsSection, MarkdownSource, _convert_notebook,
-    _deepen_relative_links, _normalize_markdown, _strip_markdown_noise,
-    build_markdown_docs, generate_llms_txt,
+    LlmsBuildConfig, LlmsSection, MarkdownSource, _build_url_pattern_body,
+    _convert_notebook, _deepen_relative_links, _normalize_markdown,
+    _strip_markdown_noise, build_markdown_docs, generate_llms_txt,
 )
 
 
@@ -220,3 +220,91 @@ def test_convert_notebook_handles_non_notebook(tmp_path):
     text_file.write_text("Just some text")
     result = _convert_notebook(text_file)
     assert result is None
+
+
+def test_build_markdown_docs_expands_meta_refresh_redirects(tmp_path):
+    """Stub pages that meta-refresh to index#section should expand that section."""
+    source_dir = tmp_path / "doc" / "how_to"
+    source_dir.mkdir(parents=True)
+    built = tmp_path / "builtdocs" / "how_to"
+    built.mkdir(parents=True)
+    output_dir = tmp_path / "builtdocs" / "markdown"
+
+    stub = source_dir / "build_apps.md"
+    stub.write_text(
+        ".. raw:: html\n"
+        "    <head>\n"
+        "        <meta http-equiv='refresh' content='0; URL=./index.html#build-apps'>\n"
+        "    </head>\n\n"
+        "# Build apps\n"
+    )
+    # Rendered landing page (unused for expansion target, but present like Sphinx output).
+    (built / "build_apps.html").write_text(
+        "<html><head>"
+        "<meta http-equiv='refresh' content='0; URL=./index.html#build-apps'>"
+        "</head><body><main id='main-content'><p>stub</p></main></body></html>"
+    )
+    (built / "index.html").write_text(
+        "<html><body><main id='main-content'>"
+        "<section id='build-apps'>"
+        "<h2>Build apps</h2>"
+        "<p>How to construct components.</p>"
+        "<a href='components/index.html'>Create Components</a>"
+        "</section>"
+        "<section id='other'><h2>Other</h2><p>Ignore me.</p></section>"
+        "</main></body></html>"
+    )
+
+    generated = build_markdown_docs(
+        (
+            MarkdownSource(
+                source_dir=tmp_path / "doc",
+                output_dir=output_dir,
+                rendered_source_dir=tmp_path / "builtdocs",
+            ),
+        ),
+        output_dir,
+    )
+
+    assert Path("how_to/build_apps.md") in generated
+    text = (output_dir / "how_to" / "build_apps.md").read_text()
+    assert "How to construct components." in text
+    assert "Create Components" in text
+    assert "Ignore me." not in text
+    assert "meta" not in text.lower()
+    assert "http-equiv" not in text.lower()
+
+
+def test_build_url_pattern_body_mixed_depth_groups_by_category():
+    section = LlmsSection(
+        title="how-to",
+        description="How-to guides.",
+        path_prefix=Path("how_to"),
+        url_pattern="/markdown/how_to/{path}.md",
+    )
+    paths = [
+        Path("how_to/build_apps.md"),
+        Path("how_to/authentication/access_tokens.md"),
+        Path("how_to/callbacks/examples/streaming_bokeh.md"),
+        Path("how_to/callbacks/async.md"),
+    ]
+    body = _build_url_pattern_body(section, paths)
+    text = "\n".join(body)
+    assert "standalone: build_apps" in text
+    assert "authentication: access_tokens" in text
+    assert "callbacks: async, examples/streaming_bokeh" in text
+
+
+def test_build_url_pattern_body_uniform_two_parts_uses_clean_format():
+    section = LlmsSection(
+        title="reference",
+        description="Reference.",
+        path_prefix=Path("reference"),
+        url_pattern="/markdown/reference/{path}.md",
+    )
+    paths = [Path("reference/widgets/Button.md"), Path("reference/panes/HTML.md")]
+    body = _build_url_pattern_body(section, paths)
+    text = "\n".join(body)
+    assert "{path} = {category}/{example}" in text
+    assert "widgets: Button" in text
+    assert "panes: HTML" in text
