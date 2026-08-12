@@ -73,6 +73,14 @@ _STRIP_TAGS_RE = re.compile(
     re.I,
 )
 
+# Meta-refresh used by Sphinx/MyST stub pages that only redirect to an index
+# fragment (e.g. Panel how-to section landings). Attribute order varies.
+_META_REFRESH_RE = re.compile(
+    r"http-equiv\s*=\s*[\"']refresh[\"'][^>]*\bcontent\s*=\s*[\"'][^\"']*url=\s*([^\"'\s#>]+)(?:#([^\"'\s]+))?"
+    r"|\bcontent\s*=\s*[\"'][^\"']*url=\s*([^\"'\s#>]+)(?:#([^\"'\s]+))?[\"'][^>]*http-equiv\s*=\s*[\"']refresh[\"']",
+    re.I | re.S,
+)
+
 
 def default_label(path: Path) -> str:
     return path.stem.replace("_", " ")
@@ -223,6 +231,133 @@ def _select_html_body(soup: BeautifulSoup):
     return soup
 
 
+def _extract_meta_refresh(text: str) -> tuple[str, str | None] | None:
+    """Return ``(url, fragment)`` from a meta-refresh redirect, if present."""
+    match = _META_REFRESH_RE.search(text)
+    if match is None:
+        return None
+    url = match.group(1) or match.group(3)
+    fragment = match.group(2) or match.group(4)
+    if not url:
+        return None
+    return url, fragment
+
+
+def _prepare_html_node(node) -> None:
+    """Strip chrome from a BeautifulSoup node before pandoc conversion."""
+    for tag in node.find_all(HTML_STRIP_TAGS):
+        tag.decompose()
+
+    for dt in node.select("dt.sig, dt.sig-object"):
+        for tag in dt.find_all("a", class_="headerlink"):
+            tag.decompose()
+        source = dt.find("a", string=lambda t: t and "source" in t.lower() if t else False)
+        if source is not None:
+            source.decompose()
+        for tag in dt.find_all(True):
+            tag.unwrap()
+
+    for dt in node.select("dl.field-list dt"):
+        strong, classifier = dt.find("strong"), dt.find("span", class_="classifier")
+        if strong is not None and classifier is not None:
+            strong.insert_after(" : ")
+            strong.unwrap()
+            classifier.unwrap()
+
+    # Header permalinks and empty anchors add noise in LLM markdown.
+    for tag in node.find_all("a", class_="headerlink"):
+        tag.decompose()
+
+
+def _html_node_to_temp_file(node) -> Path:
+    """Write a prepared HTML node to a temp file for pandoc."""
+    _prepare_html_node(node)
+    temp = tempfile.NamedTemporaryFile(
+        "w",
+        suffix=".html",
+        delete=False,
+        encoding="utf-8",
+    )
+    temp.write(str(node))
+    temp.close()
+    return Path(temp.name)
+
+
+def _convert_html_to_markdown(
+    html_path: Path,
+    output_path: Path,
+    *,
+    fragment: str | None = None,
+    warning_context: str | None = None,
+) -> bool:
+    """Convert rendered HTML (or one ``id=fragment`` section) to markdown."""
+    html = html_path.read_text(encoding="utf-8")
+    soup = BeautifulSoup(html, "html.parser")
+    if fragment:
+        node = soup.find(id=fragment)
+        if node is None:
+            print(
+                f"  Warning: redirect target #{fragment} not found in {html_path}"
+            )
+            return False
+    else:
+        node = _select_html_body(soup)
+
+    temp_path = _html_node_to_temp_file(node)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        if not _run_command(
+            _pandoc_command("html", output_path, temp_path),
+            warning_context or str(html_path),
+        ):
+            return False
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+    _sanitize_markdown_output(output_path, deepen_relative_links=True)
+    return True
+
+
+def _try_expand_redirect_markdown(
+    source_path: Path,
+    output_path: Path,
+    rendered_html_path: Path | None,
+) -> bool:
+    """Expand a meta-refresh stub page into the redirected section's content.
+
+    Panel how-to landings are thin MyST pages that only meta-refresh to
+    ``index.html#section``. Copying them yields nearly empty markdown. When
+    rendered HTML is available, pull the target section instead.
+    """
+    text = source_path.read_text(encoding="utf-8")
+    target = _extract_meta_refresh(text)
+    if target is None and rendered_html_path is not None and rendered_html_path.exists():
+        target = _extract_meta_refresh(rendered_html_path.read_text(encoding="utf-8"))
+    if target is None:
+        return False
+
+    url, fragment = target
+    if url.startswith(("http:", "https:", "#", "mailto:")):
+        return False
+
+    base_dir = (
+        rendered_html_path.parent
+        if rendered_html_path is not None
+        else source_path.parent
+    )
+    target_html = (base_dir / url).resolve()
+    if not target_html.is_file():
+        print(f"  Warning: redirect target missing for {source_path}: {target_html}")
+        return False
+
+    return _convert_html_to_markdown(
+        target_html,
+        output_path,
+        fragment=fragment,
+        warning_context=str(source_path),
+    )
+
+
 def _remove_html_wrappers(text: str) -> str:
     text = re.sub(
         r"<span\b[^>]*title=\"Extension loaded\.[^\"]*\"[^>]*>\u2139</span>",
@@ -367,68 +502,27 @@ def _sanitize_markdown_output(path: Path, deepen_relative_links: bool = False) -
     path.write_text(_normalize_markdown(text), encoding="utf-8")
 
 
-def _write_rendered_html(rendered_html_path: Path) -> Path | None:
-    """Extract the page body from rendered Sphinx HTML into a temp HTML file."""
-    html = rendered_html_path.read_text(encoding="utf-8")
-    soup = BeautifulSoup(html, "html.parser")
-    input_node = _select_html_body(soup)
-
-    for tag in input_node.find_all(HTML_STRIP_TAGS):
-        tag.decompose()
-
-    for dt in input_node.select("dt.sig, dt.sig-object"):
-        for tag in dt.find_all("a", class_="headerlink"):
-            tag.decompose()
-        source = dt.find("a", string=lambda t: t and "source" in t.lower() if t else False)
-        if source is not None:
-            source.decompose()
-        for tag in dt.find_all(True):
-            tag.unwrap()
-
-    for dt in input_node.select("dl.field-list dt"):
-        strong, classifier = dt.find("strong"), dt.find("span", class_="classifier")
-        if strong is not None and classifier is not None:
-            strong.insert_after(" : ")
-            strong.unwrap()
-            classifier.unwrap()
-
-    temp = tempfile.NamedTemporaryFile(
-        "w",
-        suffix=".html",
-        delete=False,
-        encoding="utf-8",
-    )
-    temp.write(str(input_node))
-    temp.close()
-    return Path(temp.name)
-
-
 def _convert_rst(
     rst_path: Path,
     output_path: Path,
     rendered_html_path: Path | None = None,
 ) -> bool:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    input_path = rst_path
-    input_format = "rst"
-    temp_path: Path | None = None
 
     if rendered_html_path is not None and rendered_html_path.exists():
-        temp_path = _write_rendered_html(rendered_html_path)
-        if temp_path is not None:
-            input_path = temp_path
-            input_format = "html"
-    try:
-        if not _run_command(
-            _pandoc_command(input_format, output_path, input_path),
-            str(rst_path),
-        ):
-            return False
-    finally:
-        if temp_path is not None:
-            temp_path.unlink(missing_ok=True)
+        # Prefer the Sphinx-rendered page so directives/cards expand usefully.
+        return _convert_html_to_markdown(
+            rendered_html_path,
+            output_path,
+            warning_context=str(rst_path),
+        )
 
-    _sanitize_markdown_output(output_path, deepen_relative_links=(input_format == "html"))
+    if not _run_command(
+        _pandoc_command("rst", output_path, rst_path),
+        str(rst_path),
+    ):
+        return False
+    _sanitize_markdown_output(output_path)
     return True
 
 
@@ -460,6 +554,14 @@ def build_markdown_docs(
 
             if path.suffix == ".md" and source.copy_markdown:
                 destination.parent.mkdir(parents=True, exist_ok=True)
+                rendered_html_path = _rendered_html_for(source, rel)
+                # Expand meta-refresh stubs (e.g. how-to section landings that
+                # only point at index.html#section) into real section content.
+                if _try_expand_redirect_markdown(path, destination, rendered_html_path):
+                    md_rel = destination.relative_to(markdown_root)
+                    generated.append(md_rel)
+                    print(f"  Expanded redirect {md_rel}")
+                    continue
                 shutil.copy2(path, destination)
                 generated.append(destination.relative_to(markdown_root))
                 print(f"  Copied {destination.relative_to(markdown_root)}")
@@ -546,47 +648,147 @@ def _matches_prefix(path: Path, prefix: Path) -> bool:
 
 
 def _build_url_pattern_body(section: LlmsSection, section_paths: Sequence[Path]) -> list[str]:
+    """Build a compact URL-pattern inventory for an llms.txt section.
+
+    Instead of listing every page as a separate markdown link, this renders
+    a single URL pattern plus a grouped inventory of path components.
+
+    Path structure is detected once, then one of these modes is chosen:
+
+    - **dotted_api**: all stems look like ``pkg.mod.method`` (3+ dot parts)
+    - **category_example**: all paths are exactly ``category/example``
+    - **mixed**: mix of standalone names and ``category/example``
+    - **nested**: any path deeper than ``category/example``
+    - **fallback**: flat list of every page (single-component or unknown shape)
+    """
+
     def _rel(path: Path) -> str:
+        """Relative stem under the section prefix, used as the pattern fill-in."""
         try:
             return path.relative_to(section.path_prefix).with_suffix("").as_posix()
         except ValueError:
             return path.stem
 
-    rels = sorted(_rel(path) for path in section_paths)
-    slash_parts = [Path(rel).parts for rel in rels]
-    dot_parts = [rel.split(".") for rel in rels]
+    rels = sorted(_rel(p) for p in section_paths)
+    if not rels:
+        return []
 
-    if all(len(parts) == 2 for parts in slash_parts):
-        body = [
-            f"Page URL pattern: `{section.url_pattern}` where {{path}} = {{category}}/{{example}}"
-        ]
-        first_category, first_example = slash_parts[0]
-        body.append(
-            f"  e.g. `{section.url_pattern.format(path=f'{first_category}/{first_example}')}`"
+    # Two views of the same stems:
+    # - slash_parts: directory-style hierarchy (foo/bar/baz) e.g explanation/api/callbacks
+    # - dot_parts: dotted API names (pkg.mod.method) e.g hvplot.hvPlot.box
+    slash_parts = [tuple(Path(r).parts) for r in rels]
+    dot_parts = [tuple(r.split(".")) for r in rels]
+    depths = [len(p) for p in slash_parts]
+    min_depth, max_depth = min(depths), max(depths)
+
+    # Prefer dotted API when every stem is clearly module-like. Checked first
+    # so paths such as ``pkg.mod.fn`` are not treated as flat single segments.
+    if all(len(d) >= 3 for d in dot_parts):
+        return _pattern_dotted_api(section.url_pattern, rels, dot_parts)
+
+    # Exact two-level tree: gallery-style category/example pages.
+    if min_depth == 2 and max_depth == 2:
+        return _pattern_slash_tree(
+            section.url_pattern,
+            where="{path} = {category}/{example}",
+            rels=rels,
+            slash_parts=slash_parts,
+            nested_only=False,
         )
-        for category, entries in groupby(slash_parts, key=lambda parts: parts[0]):
-            body.append(f"  {category}: {', '.join(entry[1] for entry in entries)}")
-        return body
 
-    if all(len(parts) >= 3 for parts in dot_parts):
-        body = [
-            f"Page URL pattern: `{section.url_pattern}` where {{stem}} = {{module}}.{{method}}"
-        ]
-        first = dot_parts[0]
-        first_stem = ".".join(first[:-1])
-        body.append(f"  e.g. `{section.url_pattern.format(stem=f'{first_stem}.{first[-1]}')}`")
-        def _dot_stem(parts: list[str]) -> str:
-            return ".".join(parts[:-1])
+    # Standalone pages plus optional category/example children.
+    if min_depth == 1 and max_depth == 2:
+        return _pattern_slash_tree(
+            section.url_pattern,
+            where="{path} = {example} or {category}/{example}",
+            rels=rels,
+            slash_parts=slash_parts,
+            nested_only=True,
+        )
 
-        for stem, entries in groupby(dot_parts, key=_dot_stem):
-            body.append(f"  {stem}: {', '.join(entry[-1] for entry in entries)}")
-        return body
+    # Deeper trees: keep first segment as category, join the rest with '/'.
+    if max_depth > 2:
+        return _pattern_slash_tree(
+            section.url_pattern,
+            where="{path} = {example} or {category}/{...}/{example}",
+            rels=rels,
+            slash_parts=slash_parts,
+            nested_only=True,
+        )
 
-    pages = ", ".join(rels)
+    # Single-component paths (or anything else): list them all.
+    return _pattern_fallback(section.url_pattern, rels)
+
+
+def _pattern_header(url_pattern: str, where: str, example: str) -> list[str]:
+    """Shared pattern line + concrete example URL.
+
+    ``where`` is concatenated (not interpolated) so brace placeholders such as
+    ``{path}`` survive into the output instead of being treated as f-string fields.
+    Both ``path`` and ``stem`` are passed to ``format`` so either placeholder works.
+    """
     return [
-        f"Page URL pattern: `{section.url_pattern}`",
-        f"  e.g. `{section.url_pattern.format(stem=rels[0], path=rels[0])}`",
-        f"Available pages ({len(section_paths)}): {pages}",
+        f"Page URL pattern: `{url_pattern}` where " + where,
+        f"  e.g. `{url_pattern.format(path=example, stem=example)}`",
+    ]
+
+
+def _group_by_first(parts_list: Sequence[tuple[str, ...]]) -> list[str]:
+    """Group paths by their first segment; join the remainder with ``/``."""
+    lines: list[str] = []
+    # Input must already be sorted so groupby sees contiguous keys.
+    for category, entries in groupby(parts_list, key=lambda p: p[0]):
+        children = ("/".join(entry[1:]) for entry in entries)
+        lines.append(f"  {category}: {', '.join(children)}")
+    return lines
+
+
+def _pattern_dotted_api(
+    url_pattern: str,
+    rels: Sequence[str],
+    dot_parts: Sequence[tuple[str, ...]],
+) -> list[str]:
+    """Group dotted API stems as ``module...: method, method``."""
+    body = _pattern_header(url_pattern, "{stem} = {module}.{method}", rels[0])
+    for stem, entries in groupby(dot_parts, key=lambda d: ".".join(d[:-1])):
+        body.append(f"  {stem}: {', '.join(e[-1] for e in entries)}")
+    return body
+
+
+def _pattern_slash_tree(
+    url_pattern: str,
+    where: str,
+    rels: Sequence[str],
+    slash_parts: Sequence[tuple[str, ...]],
+    *,
+    nested_only: bool,
+) -> list[str]:
+    """Render slash-hierarchy inventories, optionally with a standalone row.
+
+    When ``nested_only`` is True, single-segment paths are listed under
+    ``standalone:`` (not a URL category — just pages with no subdirectory)
+    and only multi-segment paths are grouped by category. When False, every
+    path is assumed multi-segment and grouped directly.
+    """
+    body = _pattern_header(url_pattern, where, rels[0])
+    if nested_only:
+        # Label deliberately avoids looking like a path category name.
+        standalone = [r for r, p in zip(rels, slash_parts) if len(p) == 1]
+        if standalone:
+            body.append(f"  standalone: {', '.join(standalone)}")
+        to_group = [p for p in slash_parts if len(p) >= 2]
+    else:
+        to_group = list(slash_parts)
+    body.extend(_group_by_first(to_group))
+    return body
+
+
+def _pattern_fallback(url_pattern: str, rels: Sequence[str]) -> list[str]:
+    """Last resort: pattern line plus a full comma-separated page list."""
+    return [
+        f"Page URL pattern: `{url_pattern}`",
+        f"  e.g. `{url_pattern.format(stem=rels[0], path=rels[0])}`",
+        f"Available pages ({len(rels)}): {', '.join(rels)}",
     ]
 
 
