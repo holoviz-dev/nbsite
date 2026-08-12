@@ -437,8 +437,9 @@ def _strip_markdown_noise(text: str) -> str:
     text = re.sub(r"```\{eval-rst\}\n.*?\n```", "", text, flags=re.S)
 
     # MyST pyodide fences are executable docs chrome; keep the code as plain python.
-    # Handles both `{pyodide}` and the occasional doubled-brace `{{pyodide}`.
-    text = re.sub(r"^```\{\{?pyodide\}?\s*$", "```python", text, flags=re.M)
+    # Handles `{pyodide}`, the doubled-brace `{{pyodide}`, and any backtick
+    # count (3+), so fences nested with 4 backticks are normalized too.
+    text = re.sub(r"^(`{3,})\{\{?pyodide\}?\s*$", r"\1python", text, flags=re.M)
 
     # Remove MySTMarkdown targets like (option-name)=
     text = re.sub(r"^\([a-zA-Z_-]+\)=$", "", text, flags=re.M)
