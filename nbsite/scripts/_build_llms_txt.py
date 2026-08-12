@@ -328,11 +328,18 @@ def _try_expand_redirect_markdown(
     Panel how-to landings are thin MyST pages that only meta-refresh to
     ``index.html#section``. Copying them yields nearly empty markdown. When
     rendered HTML is available, pull the target section instead.
+
+    Without rendered HTML there is nowhere to resolve the redirect target
+    from, so this is a no-op rather than emitting a spurious warning for
+    every stub page in projects that don't set ``rendered_source_dir``.
     """
+    if rendered_html_path is None or not rendered_html_path.exists():
+        return False
+
     text = source_path.read_text(encoding="utf-8")
-    target = _extract_meta_refresh(text)
-    if target is None and rendered_html_path is not None and rendered_html_path.exists():
-        target = _extract_meta_refresh(rendered_html_path.read_text(encoding="utf-8"))
+    target = _extract_meta_refresh(text) or _extract_meta_refresh(
+        rendered_html_path.read_text(encoding="utf-8")
+    )
     if target is None:
         return False
 
@@ -340,12 +347,7 @@ def _try_expand_redirect_markdown(
     if url.startswith(("http:", "https:", "#", "mailto:")):
         return False
 
-    base_dir = (
-        rendered_html_path.parent
-        if rendered_html_path is not None
-        else source_path.parent
-    )
-    target_html = (base_dir / url).resolve()
+    target_html = (rendered_html_path.parent / url).resolve()
     if not target_html.is_file():
         print(f"  Warning: redirect target missing for {source_path}: {target_html}")
         return False
