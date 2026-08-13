@@ -9,6 +9,8 @@ import re
 import subprocess
 import sys
 
+from importlib.util import find_spec
+
 import nbsite as _nbsite
 
 from nbsite import nbbuild
@@ -310,7 +312,7 @@ def strip_html_from_links(app, docname, source):
     resolve the link as an internal document. Absolute URLs (containing ``://``)
     are left untouched.
     """
-    path = app.env.doc2path(docname)
+    path = os.fspath(app.env.doc2path(docname))
     if not path.endswith((".md", ".markdown", ".mdown", ".mkd")):
         return
 
@@ -335,8 +337,8 @@ def setup(app):
     app.connect("builder-inited", remove_mystnb_static)
     app.connect("source-read", strip_html_from_links)
 
-    # Avoid broken links/warnings for :mpltype:`...` roles (see mpltype_role).
-    app.add_role("mpltype", mpltype_role)
+    if find_spec("matplotlib"):
+        app.add_role("mpltype", mpltype_role)
 
     # hv_sidebar_dropdown
     app.add_config_value('nbsite_hv_sidebar_dropdown', {}, 'html')

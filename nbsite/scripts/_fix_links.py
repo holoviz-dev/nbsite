@@ -116,9 +116,6 @@ def cleanup_links(path, inspect_links=False):
                     msg = 'Found missing link {} in: {}. {}'.format(a['href'], path, also_tried)
                     warnings.warn(msg)
 
-        # Append index.html to relative links that end in / (directory links)
-        # so the final HTML resolves to the index page (e.g. ../user_guide/
-        # -> ../user_guide/index.html).
         elif href.endswith('/') and 'http' not in href:
             a['href'] = href + 'index.html'
 
