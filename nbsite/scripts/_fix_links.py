@@ -116,6 +116,9 @@ def cleanup_links(path, inspect_links=False):
                     msg = 'Found missing link {} in: {}. {}'.format(a['href'], path, also_tried)
                     warnings.warn(msg)
 
+        elif href.endswith('/') and 'http' not in href:
+            a['href'] = href + 'index.html'
+
         if inspect_links and 'http' in a['href']:
             print(a['href'])
 
