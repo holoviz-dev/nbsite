@@ -127,6 +127,8 @@ html_last_updated_fmt = '%Y-%m-%d'
 
 rediraffe_redirects = {}
 
+# Link str/type to the stdlib docs instead of matching same-named project
+# objects (e.g. HoloViews' Dimension.str), which would trigger warnings.
 numpydoc_xref_param_type = True
 numpydoc_xref_type = True
 numpydoc_xref_aliases = {
@@ -311,6 +313,10 @@ def strip_html_from_links(app, docname, source):
     "reference target not found" warnings. Removing the extension lets Sphinx
     resolve the link as an internal document. Absolute URLs (containing ``://``)
     are left untouched.
+
+    This is a ``source-read`` hook and must run before parsing, so it lives
+    here rather than in ``scripts/_fix_links.py``, which post-processes
+    the built HTML instead.
     """
     path = os.fspath(app.env.doc2path(docname))
     if not path.endswith((".md", ".markdown", ".mdown", ".mkd")):
