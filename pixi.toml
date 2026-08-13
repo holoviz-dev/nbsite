@@ -46,6 +46,7 @@ beautifulsoup4 = "*"
 ipykernel = "*"
 jinja2 = "*"
 jupyter_client = "*"
+lxml = "*"
 myst-nb = ">=1.1"
 myst-parser = '>=3'
 nbconvert = "*"
