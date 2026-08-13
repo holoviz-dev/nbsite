@@ -277,7 +277,7 @@ def add_hv_sidebar_dropdown_context(app, pagename, templatename, context, doctre
     context['hv_sidebar_dropdown'] = app.config.nbsite_hv_sidebar_dropdown
 
 
-def mpltype_role(name, rawtext, text, lineno, inliner, options=None, content=None):
+def _mpltype_role(name, rawtext, text, lineno, inliner, options=None, content=None):
     """Render matplotlib type roles (e.g. ``:mpltype:`color```) as literals.
 
     The matplotlib extension (:mod:`matplotlib.sphinxext`) registers this role
@@ -296,7 +296,7 @@ def mpltype_role(name, rawtext, text, lineno, inliner, options=None, content=Non
 _HTML_MD_LINK_RE = re.compile(r"\b([\w./:+-]+\.html)\b")
 
 
-def strip_html_from_links(app, docname, source):
+def _strip_html_from_links_in_markdown(app, docname, source):
     """Strip ``.html`` from relative links in markdown source files.
 
     Sphinx/MyST treat relative links with an ``.html`` extension as external
@@ -332,10 +332,10 @@ def setup(app):
 
     nbbuild.setup(app)
     app.connect("builder-inited", remove_mystnb_static)
-    app.connect("source-read", strip_html_from_links)
+    app.connect("source-read", _strip_html_from_links_in_markdown)
 
     if find_spec("matplotlib"):
-        app.add_role("mpltype", mpltype_role)
+        app.add_role("mpltype", _mpltype_role)
 
     # hv_sidebar_dropdown
     app.add_config_value('nbsite_hv_sidebar_dropdown', {}, 'html')
