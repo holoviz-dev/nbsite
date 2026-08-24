@@ -81,6 +81,19 @@ _META_REFRESH_RE = re.compile(
     re.I | re.S,
 )
 
+# Keep in sync with nbsite/cmd.py::_path_and_order.
+_NUM_PREFIX_RE = re.compile(r"^\d+[-_ ]")
+
+
+def _strip_numeric_prefix(rel: Path) -> Path:
+    """Strip a leading ``<digits>-``/``_``/`` `` prefix from each path part.
+
+    Mirrors nbsite's ``cmd._path_and_order`` behavior for rst generation, so
+    e.g. ``1-Introduction.ipynb`` becomes ``Introduction.md`` in the markdown
+    output tree instead of keeping the ordering prefix in the visible name.
+    """
+    return Path(*(_NUM_PREFIX_RE.sub("", part) for part in rel.parts))
+
 
 def default_label(path: Path) -> str:
     return path.stem.replace("_", " ")
@@ -484,7 +497,9 @@ def _strip_markdown_noise(text: str) -> str:
         url, fragment = match.group(1), match.group(2) or ""
         if url.startswith(("http:", "https:", "#", "mailto:")):
             return f"({url}{fragment})"
-        return f"({url.removesuffix('.html').removesuffix('.ipynb')}.md{fragment})"
+        stem = url.removesuffix('.html').removesuffix('.ipynb')
+        stem = _strip_numeric_prefix(Path(stem)).as_posix()
+        return f"({stem}.md{fragment})"
 
     text = re.sub(
         r"\((?!http|https|#|mailto)([^()]*\.(?:html|ipynb))(#[^)]*)?\)",
@@ -570,7 +585,7 @@ def build_markdown_docs(
     for source in sources:
         for path in _iter_source_files(source):
             rel = path.relative_to(source.source_dir)
-            destination = source.output_dir / rel
+            destination = source.output_dir / _strip_numeric_prefix(rel)
 
             if path.suffix == ".md" and source.copy_markdown:
                 destination.parent.mkdir(parents=True, exist_ok=True)
