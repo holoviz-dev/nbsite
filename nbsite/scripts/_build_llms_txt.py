@@ -81,7 +81,7 @@ _META_REFRESH_RE = re.compile(
     re.I | re.S,
 )
 
-
+# Should match its counterpart file name in the html docs, i.e Introduction.html -> Introduction.md.
 _NUM_PREFIX_RE = re.compile(r"^\d+[-_ ]")
 
 
