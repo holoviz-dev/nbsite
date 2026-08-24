@@ -13,7 +13,7 @@ import tempfile
 
 from dataclasses import dataclass, field
 from itertools import groupby
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Callable, Iterable, Sequence
 
 from bs4 import BeautifulSoup
@@ -498,7 +498,7 @@ def _strip_markdown_noise(text: str) -> str:
         if url.startswith(("http:", "https:", "#", "mailto:")):
             return f"({url}{fragment})"
         stem = url.removesuffix('.html').removesuffix('.ipynb')
-        stem = _strip_numeric_prefix(PurePosixPath(stem)).as_posix()
+        stem = _strip_numeric_prefix(Path(stem)).as_posix()
         return f"({stem}.md{fragment})"
 
     text = re.sub(
