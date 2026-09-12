@@ -5,7 +5,8 @@ import pytest
 from nbsite.scripts._build_llms_txt import (
     LlmsBuildConfig, LlmsSection, MarkdownSource, _build_url_pattern_body,
     _convert_notebook, _deepen_relative_links, _normalize_markdown,
-    _strip_markdown_noise, build_markdown_docs, generate_llms_txt,
+    _strip_markdown_noise, _strip_numeric_prefix, build_markdown_docs,
+    generate_llms_txt,
 )
 
 
@@ -77,6 +78,47 @@ def test_build_markdown_docs_keeps_index_files_per_directory(tmp_path):
     assert Path("how_to/state/index.md") in generated
     assert "callbacks index" in (output_dir / "how_to" / "callbacks" / "index.md").read_text()
     assert "state index" in (output_dir / "how_to" / "state" / "index.md").read_text()
+
+
+@pytest.mark.parametrize(
+    ("rel", "expected"),
+    [
+        ("1-Introduction.ipynb", "Introduction.ipynb"),
+        ("12_getting_started.md", "getting_started.md"),
+        ("2 Overview.rst", "Overview.rst"),
+        ("tutorials/1-Introduction.ipynb", "tutorials/Introduction.ipynb"),
+        ("01-getting-started/1-Introduction.ipynb", "getting-started/Introduction.ipynb"),
+        ("index.md", "index.md"),
+        ("123.md", "123.md"),
+        ("v2-api.md", "v2-api.md"),
+    ],
+)
+def test_strip_numeric_prefix(rel, expected):
+    """Ordering prefixes must drop from every path part, matching rst generation."""
+    assert _strip_numeric_prefix(Path(rel)) == Path(expected)
+
+
+def test_build_markdown_docs_strips_numeric_prefixes(tmp_path):
+    """Output markdown paths must omit nbsite ordering prefixes."""
+    source_dir = tmp_path / "examples"
+    source_dir.mkdir()
+    output_dir = tmp_path / "builtdocs" / "markdown"
+    notebook = source_dir / "tutorials" / "1-Introduction.ipynb"
+    notebook.parent.mkdir(parents=True)
+    notebook.write_text(
+        '{"cells": [{"cell_type": "markdown", "source": ["# Introduction\\n"]}, '
+        '{"cell_type": "code", "source": [], "outputs": []}]}'
+    )
+    (source_dir / "2-Overview.md").write_text("# Overview\n")
+
+    generated = build_markdown_docs(
+        (MarkdownSource(source_dir=source_dir, output_dir=output_dir),),
+        output_dir,
+    )
+
+    expected = {Path("tutorials/Introduction.md"), Path("Overview.md")}
+    written = {p.relative_to(output_dir) for p in output_dir.rglob("*.md")}
+    assert set(generated) == written == expected
 
 
 def test_build_markdown_docs_output_dir_outside_markdown_root(tmp_path):
@@ -194,6 +236,20 @@ def test_strip_markdown_noise_removes_html_conversion_artifacts():
     assert "Show Source" not in cleaned
     assert "[Home](../index.md)" in cleaned
     assert "../../ref/api/manual/hvplot.plotting.lag_plot.md" in cleaned
+
+
+def test_strip_markdown_noise_strips_numeric_prefixes_in_links():
+    """Relative html/ipynb links must drop ordering prefixes when rewritten to .md."""
+    text = (
+        "[Intro](1-Introduction.html#start)\n\n"
+        "[Nested](../01-getting-started/2-Overview.ipynb)\n"
+    )
+    expected = (
+        "[Intro](Introduction.md#start)\n\n"
+        "[Nested](../getting-started/Overview.md)\n"
+    )
+    cleaned = _strip_markdown_noise(text)
+    assert cleaned == expected
 
 
 def test_strip_markdown_noise_unescapes_python_kwargs_asterisks():

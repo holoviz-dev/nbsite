@@ -336,6 +336,7 @@ def _path_and_order(filepath, keep_numbers):
     num_name = os.path.basename(filepath)
     leading_num = re.match(r"^\d+", num_name)
     if not keep_numbers:
+        # Keep in sync with nbsite/scripts/_build_llms_txt.py::_strip_numeric_prefix.
         name = re.split(r"^\d+( |-|_)", num_name)[-1]
         filepath = filepath.replace(num_name, name)
     return filepath, int(leading_num.group(0)) if leading_num else None
