@@ -19,6 +19,14 @@ _orig_init = _parallel.ParallelTasks.__init__
 _orig_add_task = _parallel.ParallelTasks.add_task
 
 
+def _waiting(self):
+    # Sphinx renamed ``_precvsWaiting`` to ``_precvs_waiting`` in 8.2.
+    try:
+        return self._precvs_waiting
+    except AttributeError:
+        return self._precvsWaiting
+
+
 def _init(self, nproc):
     _orig_init(self, nproc)
     # Sphinx keeps no reference to the task functions, and ``Process.start``
@@ -69,8 +77,9 @@ def _join_one(self):
             joined_any = True
             break
 
-    while self._precvs_waiting and self._pworking < self.nproc:
-        newtid, newprecv = self._precvs_waiting.popitem()
+    waiting = _waiting(self)
+    while waiting and self._pworking < self.nproc:
+        newtid, newprecv = waiting.popitem()
         self._precvs[newtid] = newprecv
         self._procs[newtid].start()
         self._pworking += 1
