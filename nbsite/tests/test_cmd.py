@@ -246,6 +246,37 @@ CODE_NOTEBOOK_CONTENT = u"""{
 }
 """
 
+def _embed_notebook(delay_before_write):
+    source = [
+        "import os, time, uuid\n",
+        "path = os.path.join(os.environ.get('PANEL_EMBED_SAVE_PATH', './'), 'json_' + uuid.uuid4().hex)\n",
+        "os.makedirs(path)\n",
+        f"time.sleep({delay_before_write})\n",
+        "with open(os.path.join(path, '0.json'), 'w') as f:\n",
+        "    f.write('{}')\n",
+        "print(os.path.basename(path))",
+    ]
+    return json.dumps({
+        "cells": [{
+            "cell_type": "code", "execution_count": None, "metadata": {}, "outputs": [], "source": source,
+        }],
+        "metadata": {"language_info": {"name": "python", "pygments_lexer": "ipython3"}},
+        "nbformat": 4,
+        "nbformat_minor": 2,
+    })
+
+
+def _notebook_rst(title, notebook):
+    return f"""
+{'*' * len(title)}
+{title}
+{'*' * len(title)}
+
+.. notebook:: test_project ../examples/{notebook}
+    :offset: 0
+"""
+
+
 CODE_NOTEBOOK_SKIP_EXECUTE_RST = u"""
 *************
 Code Notebook
@@ -482,6 +513,24 @@ def test_build_evaluates_notebooks_before_reading_sources(tmp_project_with_docs_
         "Zeroth_Notebook:0_Zeroth_Notebook.ipynb,1_First_Notebook.ipynb",
         "index:0_Zeroth_Notebook.ipynb,1_First_Notebook.ipynb",
     ]
+
+@pytest.mark.slow
+def test_build_keeps_json_of_notebooks_in_the_same_directory_evaluated_together(tmp_project_with_docs_skeleton):
+    project = tmp_project_with_docs_skeleton
+    # The quick notebook finishes while the slow one is still writing its json
+    (project / "examples" / "Embed_Quick.ipynb").write_text(_embed_notebook(0))
+    (project / "examples" / "Embed_Slow.ipynb").write_text(_embed_notebook(4))
+    (project / "doc" / "Embed_Quick.rst").write_text(_notebook_rst("Embed Quick", "Embed_Quick.ipynb"))
+    (project / "doc" / "Embed_Slow.rst").write_text(_notebook_rst("Embed Slow", "Embed_Slow.ipynb"))
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    for name in ("Embed_Quick", "Embed_Slow"):
+        evaluated = json.loads((project / "doc" / f"{name}.ipynb").read_text())
+        outputs = evaluated["cells"][0]["outputs"]
+        assert [o["output_type"] for o in outputs] == ["stream"]
+        json_dir = "".join(outputs[0]["text"]).strip()
+        assert (project / "doc" / json_dir / "0.json").is_file()
+        assert (project / "builtdocs" / json_dir / "0.json").is_file()
+    assert not list((project / "examples").glob("json_*"))
 
 @pytest.mark.slow
 def test_build_generates_sidebar_navigation_once_per_page(tmp_project_with_docs_skeleton):

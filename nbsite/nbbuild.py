@@ -38,6 +38,7 @@ import re
 import shutil
 import string
 import sys
+import tempfile
 import typing
 
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -419,6 +420,33 @@ def nb_to_python(nb_path):
     return output
 
 
+@contextmanager
+def _panel_embed_save_path():
+    """
+    Let Panel save the embedded states of a notebook in a directory of its own.
+
+    Panel saves them in the working directory by default, i.e. next to the
+    notebook, where notebooks from the same directory evaluated at the same
+    time would take each other's files.
+    """
+    if 'PANEL_EMBED_SAVE_PATH' in os.environ:
+        yield None
+        return
+    load_path = os.environ.get('PANEL_EMBED_LOAD_PATH')
+    save_path = tempfile.mkdtemp(prefix='nbsite_embed_')
+    os.environ['PANEL_EMBED_SAVE_PATH'] = save_path
+    if load_path is None:
+        # Keeps the references relative to the page, as when saving to the working directory
+        os.environ['PANEL_EMBED_LOAD_PATH'] = './'
+    try:
+        yield save_path
+    finally:
+        del os.environ['PANEL_EMBED_SAVE_PATH']
+        if load_path is None:
+            del os.environ['PANEL_EMBED_LOAD_PATH']
+        shutil.rmtree(save_path, ignore_errors=True)
+
+
 def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
                       skip_execute=None, timeout=300, ipython_startup=None,
                       patterns_to_take_with_me=None):
@@ -441,26 +469,31 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
     if not os.path.isfile(dest_path):
         print('INFO: Writing evaluated notebook to {dest_path!s}'.format(
             dest_path=os.path.abspath(dest_path)))
-        try:
-            if not skip_execute:
-                not_nb_runner.preprocess(notebook,{})
-        except CellExecutionError as e:
-            print('')
-            print(e)
-        os.chdir(cwd)
+        with _panel_embed_save_path() as embed_save_path:
+            try:
+                if not skip_execute:
+                    not_nb_runner.preprocess(notebook,{})
+            except CellExecutionError as e:
+                print('')
+                print(e)
+            os.chdir(cwd)
 
-        if skip_execute:
-            with open(dest_path,'w', encoding='utf-8') as f:
-                nbformat.write(notebook, f)
-        else:
-            ne = NotebookExporter()
-            newnb, _ = ne.from_notebook_node(notebook)
-            with open(dest_path, 'w', encoding='utf-8') as f:
-                f.write(newnb)
-            for pattern in patterns_to_take_with_me:
-                for f in glob.glob(os.path.join(os.path.dirname(nb_path),pattern)):
-                    print("mv %s %s"%(f, os.path.dirname(dest_path)))
-                    shutil.move(f,os.path.dirname(dest_path))
+            if skip_execute:
+                with open(dest_path,'w', encoding='utf-8') as f:
+                    nbformat.write(notebook, f)
+            else:
+                ne = NotebookExporter()
+                newnb, _ = ne.from_notebook_node(notebook)
+                with open(dest_path, 'w', encoding='utf-8') as f:
+                    f.write(newnb)
+                source_dirs = [os.path.dirname(nb_path)]
+                if embed_save_path is not None:
+                    source_dirs.append(embed_save_path)
+                for pattern in patterns_to_take_with_me:
+                    for source_dir in source_dirs:
+                        for f in glob.glob(os.path.join(source_dir, pattern)):
+                            print("mv %s %s"%(f, os.path.dirname(dest_path)))
+                            shutil.move(f,os.path.dirname(dest_path))
     else:
         print('INFO: Skipping existing evaluated notebook {dest_path!s}'.format(
             dest_path=os.path.abspath(dest_path)))
