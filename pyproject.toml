@@ -49,6 +49,7 @@ dependencies = [
     'sphinxext-rediraffe',
     'packaging',
     'requests',
+    'lxml',
 ]
 
 [project.scripts]
