@@ -40,6 +40,7 @@ import string
 import sys
 import typing
 
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -57,6 +58,7 @@ from nbconvert.preprocessors import (
 )
 from packaging.version import Version
 from sphinx.util import logging
+from sphinx.util.display import status_iterator
 
 from .cmd import _prepare_paths, hosts
 
@@ -532,6 +534,91 @@ def render_notebook(nb_path, document, preprocessors=[]):
     return doc.children
 
 
+def evaluate_notebook_with_retries(nb_path, dest_path, **kwargs):
+    import zmq
+    for n in range(1, 6):
+        try:
+            evaluate_notebook(nb_path, dest_path, **kwargs)
+            break
+        except (zmq.error.ZMQError, RuntimeError) as e:
+            # Sometimes the kernel dies
+            print(f"{nb_path} failed with {e}, retrying ({n}/5)...", flush=True)
+
+
+_NOTEBOOK_DIRECTIVE_RE = re.compile(
+    r"^(?P<indent>[ \t]*)\.\.[ \t]+notebook::[ \t]+\S+[ \t]+(?P<path>\S+)[^\n]*\n?"
+    r"(?P<options>(?:(?P=indent)[ \t]+:[^\n]*(?:\n|$))*)",
+    re.MULTILINE,
+)
+_DIRECTIVE_OPTION_RE = re.compile(r"^[ \t]*:(?P<name>[^:\s]+):(?P<value>[^\n]*)$", re.MULTILINE)
+
+
+def find_notebook_evaluations(source_path, config):
+    """
+    Find the notebooks evaluated by the notebook directives of an rst file,
+    with the arguments NotebookDirective.run passes to evaluate_notebook.
+    """
+    with open(source_path, encoding='utf-8') as f:
+        source = f.read()
+    rst_dir = os.path.dirname(os.path.abspath(source_path))
+    evaluations = []
+    for match in _NOTEBOOK_DIRECTIVE_RE.finditer(source):
+        options = {
+            m['name']: m['value'].strip()
+            for m in _DIRECTIVE_OPTION_RE.finditer(match['options'])
+        }
+        nb_path = os.path.abspath(os.path.join(rst_dir, match['path']))
+        evaluations.append(dict(
+            nb_path=nb_path,
+            dest_path=os.path.join(rst_dir, os.path.basename(nb_path)),
+            skip_exceptions='skip_exceptions' in options,
+            # Same as the bool converter in NotebookDirective.option_spec
+            skip_execute=bool(options.get('skip_execute')),
+            timeout=config.nbbuild_cell_timeout,
+            ipython_startup=config.nbbuild_ipython_startup,
+            patterns_to_take_with_me=config.nbbuild_patterns_to_take_along,
+        ))
+    return evaluations
+
+
+def evaluate_notebooks_before_reading(app, env, docnames):
+    """
+    Evaluate the notebooks of the documents about to be read in a process pool.
+
+    Otherwise the notebooks are evaluated while Sphinx reads the documents,
+    where each parallel worker gets a fixed chunk of documents, so a chunk
+    with slow notebooks leaves the other workers idle. evaluate_notebook
+    skips notebooks already evaluated, so NotebookDirective only renders them.
+    """
+    if not app.config.nbbuild_pre_execute or not app.parallel:
+        return
+
+    evaluations = {}
+    for docname in docnames:
+        source_path = str(env.doc2path(docname))
+        if not source_path.endswith('.rst') or not os.path.isfile(source_path):
+            continue
+        for evaluation in find_notebook_evaluations(source_path, app.config):
+            if not os.path.isfile(evaluation['dest_path']):
+                evaluations.setdefault(evaluation['dest_path'], evaluation)
+    if not evaluations:
+        return
+
+    with ProcessPoolExecutor(max_workers=min(app.parallel, len(evaluations))) as executor:
+        futures = {
+            executor.submit(evaluate_notebook_with_retries, **evaluation): dest_path
+            for dest_path, evaluation in evaluations.items()
+        }
+        for future in status_iterator(
+            as_completed(futures), 'evaluating notebooks... ', 'purple',
+            len(futures), app.verbosity,
+            stringify_func=lambda future: os.path.relpath(futures[future], app.srcdir),
+        ):
+            if (exc := future.exception()) is not None:
+                # NotebookDirective evaluates it again when the document is read
+                logger.warning("Evaluating %s failed: %s", futures[future], exc)
+
+
 class NotebookDirective(Directive):
     """Insert an evaluated notebook into a document
 
@@ -636,21 +723,14 @@ class NotebookDirective(Directive):
         os.makedirs(dest_dir, exist_ok=True)
 
         # Evaluate Notebook and insert into Sphinx doc
-        import zmq
-        for n in range(1, 6):
-            try:
-                evaluate_notebook(
-                    nb_abs_path, dest_path,
-                    skip_exceptions='skip_exceptions' in self.options,
-                    skip_execute=self.options.get('skip_execute'),
-                    timeout=setup.config.nbbuild_cell_timeout,
-                    ipython_startup=setup.config.nbbuild_ipython_startup,
-                    patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
-                )
-                break
-            except (zmq.error.ZMQError, RuntimeError) as e:
-                # Sometimes the kernel dies
-                print(f"{nb_abs_path} failed with {e}, retrying ({n}/5)...", flush=True)
+        evaluate_notebook_with_retries(
+            nb_abs_path, dest_path,
+            skip_exceptions='skip_exceptions' in self.options,
+            skip_execute=self.options.get('skip_execute'),
+            timeout=setup.config.nbbuild_cell_timeout,
+            ipython_startup=setup.config.nbbuild_ipython_startup,
+            patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
+        )
 
         preprocessors = self.preprocessors(dest_dir)
         rendered_nodes = render_notebook(
@@ -686,5 +766,7 @@ def setup(app):
     app.add_config_value('nbbuild_cell_timeout',300,'html')
     app.add_config_value('nbbuild_ipython_startup',"from nbsite.ipystartup import *",'html')
     app.add_config_value('nbbuild_patterns_to_take_along',["*.json", "json_*"],'html')
+    app.add_config_value('nbbuild_pre_execute', True, 'html')
 
     app.add_directive('notebook', NotebookDirective)
+    app.connect('env-before-read-docs', evaluate_notebooks_before_reading)

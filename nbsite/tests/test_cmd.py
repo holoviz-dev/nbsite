@@ -178,6 +178,57 @@ Appendix 0
     :offset: 0
 """
 
+CONF_RECORD_EVALUATED_CONTENT = u"""
+import os
+
+from nbsite.shared_conf import *
+from nbsite.shared_conf import setup as _shared_setup
+
+
+def _record_evaluated(app, docname, source):
+    evaluated = sorted(f for f in os.listdir(app.srcdir) if f.endswith(".ipynb"))
+    with open(os.path.join(app.srcdir, "..", "read_sources.txt"), "a") as f:
+        f.write(docname + ":" + ",".join(evaluated) + "\\n")
+
+
+def setup(app):
+    _shared_setup(app)
+    app.connect("source-read", _record_evaluated)
+"""
+
+CODE_NOTEBOOK_CONTENT = u"""{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print('executed')"
+   ]
+  }
+ ],
+ "metadata": {
+  "language_info": {
+   "name": "python",
+   "pygments_lexer": "ipython3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
+"""
+
+CODE_NOTEBOOK_SKIP_EXECUTE_RST = u"""
+*************
+Code Notebook
+*************
+
+.. notebook:: test_project ../examples/Code_Notebook.ipynb
+    :offset: 0
+    :skip_execute: True
+"""
+
 @pytest.fixture(autouse=True)
 def tmp_module(tmp_path):
     """This sets up a temporary directory structure meant to mimic a module
@@ -390,6 +441,29 @@ def test_build(tmp_project_with_docs_skeleton):
     assert (project / "doc" / "1_First_Notebook.ipynb").is_file()
     assert (project / "builtdocs" / "Zeroth_Notebook.html").is_file()
     assert (project / "builtdocs" / "First_Notebook.html").is_file()
+
+@pytest.mark.slow
+def test_build_evaluates_notebooks_before_reading_sources(tmp_project_with_docs_skeleton):
+    project = tmp_project_with_docs_skeleton
+    (project / "doc" / "conf.py").write_text(CONF_RECORD_EVALUATED_CONTENT)
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "First_Notebook.rst").write_text(EXAMPLE_1_RST)
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    read_sources = (project / "read_sources.txt").read_text().splitlines()
+    assert sorted(read_sources) == [
+        "First_Notebook:0_Zeroth_Notebook.ipynb,1_First_Notebook.ipynb",
+        "Zeroth_Notebook:0_Zeroth_Notebook.ipynb,1_First_Notebook.ipynb",
+        "index:0_Zeroth_Notebook.ipynb,1_First_Notebook.ipynb",
+    ]
+
+@pytest.mark.slow
+def test_build_does_not_execute_notebook_with_skip_execute(tmp_project_with_docs_skeleton):
+    project = tmp_project_with_docs_skeleton
+    (project / "examples" / "Code_Notebook.ipynb").write_text(CODE_NOTEBOOK_CONTENT)
+    (project / "doc" / "Code_Notebook.rst").write_text(CODE_NOTEBOOK_SKIP_EXECUTE_RST)
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    evaluated = json.loads((project / "doc" / "Code_Notebook.ipynb").read_text())
+    assert evaluated["cells"][0]["outputs"] == []
 
 @pytest.mark.slow
 def test_build_with_nblink_at_top_succeeds(tmp_project_with_docs_skeleton):
