@@ -107,6 +107,14 @@ def cleanup_links(path, inspect_links=False, autolinkable=None):
     parser = lxml.html.HTMLParser(huge_tree=True)
     tree = lxml.html.document_fromstring(text, parser=parser)
     messages = []
+    # libxml2 percent-escapes whitespace in URI attributes when serializing,
+    # and whitespace in base64 is ignored anyway
+    for element in tree.xpath('//*[starts-with(@src, "data:") or starts-with(@href, "data:")]'):
+        for attribute in ('src', 'href'):
+            value = element.get(attribute, '')
+            if value.startswith('data:') and ';base64,' in value:
+                element.set(attribute, ''.join(value.split()))
+
     for a in tree.iter('a'):
         href = a.get('href', '')
         if '.ipynb' in href and 'http' not in href:

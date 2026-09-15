@@ -83,6 +83,16 @@ def test_fix_links_processes_nested_pages(tmp_path):
     assert _attributes(tmp_path / "a" / "b" / "page.html", "a", "href") == ["Other.html"]
 
 
+def test_fix_links_does_not_escape_base64_image_data(tmp_path):
+    data = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz\nAAAB+wAAAfsBxc2miwAAABl0"
+    _write_page(tmp_path / "page.html", f'<img src="data:image/png;base64,{data}">')
+    fix_links(str(tmp_path))
+    assert "%0A" not in (tmp_path / "page.html").read_text()
+    assert _attributes(tmp_path / "page.html", "img", "src") == [
+        "data:image/png;base64," + data.replace("\n", ""),
+    ]
+
+
 def test_fix_links_keeps_huge_embedded_output(tmp_path):
     data = "x" * 12_000_000
     _write_page(
