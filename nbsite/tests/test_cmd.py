@@ -1,6 +1,8 @@
 import json
 import shutil
 
+from collections import Counter
+
 import pytest
 
 from nbsite.cmd import build, generate_rst
@@ -194,6 +196,31 @@ def _record_evaluated(app, docname, source):
 def setup(app):
     _shared_setup(app)
     app.connect("source-read", _record_evaluated)
+"""
+
+CONF_RECORD_TOCTREE_CONTENT = u"""
+import os
+
+import pydata_sphinx_theme.toctree as _toctree
+
+from nbsite.shared_conf import *
+
+_add_toctree_functions = _toctree.add_toctree_functions
+
+
+def _recording_add_toctree_functions(app, pagename, templatename, context, doctree):
+    _add_toctree_functions(app, pagename, templatename, context, doctree)
+    generate_toctree_html = context["generate_toctree_html"]
+
+    def recording_generate_toctree_html(*args, **kwargs):
+        with open(os.path.join(app.srcdir, "..", "toctree_calls.txt"), "a") as f:
+            f.write(pagename + "\\n")
+        return generate_toctree_html(*args, **kwargs)
+
+    context["generate_toctree_html"] = recording_generate_toctree_html
+
+
+_toctree.add_toctree_functions = _recording_add_toctree_functions
 """
 
 CODE_NOTEBOOK_CONTENT = u"""{
@@ -455,6 +482,29 @@ def test_build_evaluates_notebooks_before_reading_sources(tmp_project_with_docs_
         "Zeroth_Notebook:0_Zeroth_Notebook.ipynb,1_First_Notebook.ipynb",
         "index:0_Zeroth_Notebook.ipynb,1_First_Notebook.ipynb",
     ]
+
+@pytest.mark.slow
+def test_build_generates_sidebar_navigation_once_per_page(tmp_project_with_docs_skeleton):
+    project = tmp_project_with_docs_skeleton
+    (project / "doc" / "conf.py").write_text(CONF_RECORD_TOCTREE_CONTENT)
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "First_Notebook.rst").write_text(EXAMPLE_1_RST)
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    calls = Counter((project / "toctree_calls.txt").read_text().splitlines())
+    assert {"index", "Zeroth_Notebook", "First_Notebook"} <= set(calls)
+    assert set(calls.values()) == {1}
+
+@pytest.mark.slow
+def test_build_with_sidebar_nav_bs_alt_template(tmp_project_with_docs_skeleton):
+    project = tmp_project_with_docs_skeleton
+    conf = CONF_CONTENT + 'html_sidebars = {"**": ["sidebar-nav-bs-alt"]}\n'
+    (project / "doc" / "conf.py").write_text(conf)
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "First_Notebook.rst").write_text(EXAMPLE_1_RST)
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    html = (project / "builtdocs" / "Zeroth_Notebook.html").read_text()
+    assert 'class="bd-docs-nav bd-links"' in html
+    assert 'href="First_Notebook.html"' in html
 
 @pytest.mark.slow
 def test_build_does_not_execute_notebook_with_skip_execute(tmp_project_with_docs_skeleton):
