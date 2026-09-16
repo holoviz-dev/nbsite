@@ -9,10 +9,6 @@ PYTHONIOENCODING = "utf-8"
 [environments]
 default = ["py312", "required", "test", "example", "test-example", "lint", "dev"]
 
-[environments.test-310]
-features = ["py310", "required", "test", "example", "test-example"]
-no-default-feature = true
-
 [environments.test-311]
 features = ["py311", "required", "test", "example", "test-example"]
 no-default-feature = true
@@ -70,9 +66,6 @@ sphinxext-rediraffe = "*"
 install = 'python -m pip install --no-deps --disable-pip-version-check -e .'
 setup-dev = { depends-on = ["install", "lint-install"] }
 sync-git-tags = 'python scripts/sync_git_tags.py nbsite'
-
-[feature.py310.dependencies]
-python = "3.10.*"
 
 [feature.py311.dependencies]
 python = "3.11.*"
