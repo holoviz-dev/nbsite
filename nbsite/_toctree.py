@@ -8,6 +8,7 @@ When not collapsing, the result only depends on the page through the
 and those are applied to it, and undone again, for every page.
 """
 
+from collections import Counter
 from contextlib import contextmanager
 
 from docutils import nodes
@@ -140,12 +141,14 @@ def _build_cache(builder, includehidden, maxdepth, titles_only):
     ]
     # Pages pruned from the toctree are not marked as current in it, while
     # Sphinx marks them before pruning and keeps the classes of their parents
-    in_tree = {refuri for _refnode, refuri, _anchorname in references}
-    deeper = {
+    in_tree = Counter(refuri for _refnode, refuri, _anchorname in references)
+    in_entries = Counter(
         refnode['refuri']
         for refnode in entries.findall(nodes.reference)
         if url_re.match(refnode['refuri']) is None
-    } - in_tree
+    )
+    # A page listed more than once can be pruned from only some of the places
+    deeper = set(in_entries - in_tree)
 
     cache.update(tree=tree, references=references, deeper_than_maxdepth=deeper)
     return cache

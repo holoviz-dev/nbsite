@@ -534,11 +534,21 @@ def test_build_keeps_json_of_notebooks_in_the_same_directory_evaluated_together(
 
 def _sidebar_navs(builtdocs):
     navs = {}
-    for page in sorted(builtdocs.glob("*.html")):
+    for page in sorted(builtdocs.rglob("*.html")):
         text = page.read_text()
         start = text.find('<nav class="bd-docs-nav bd-links"')
-        navs[page.name] = text[start:text.find("</nav>", start)] if start != -1 else None
+        navs[page.relative_to(builtdocs).as_posix()] = text[start:text.find("</nav>", start)] if start != -1 else None
     return navs
+
+
+NESTED_TOCTREE_PAGES = {
+    "index.rst": "Project\n=======\n\n.. toctree::\n\n   a\n   b/index\n   c\n   b/b2/deep\n",
+    "a.rst": "A\n=\n",
+    "c.rst": "C\n=\n",
+    "b/index.rst": "B\n=\n\n.. toctree::\n\n   b2/index\n",
+    "b/b2/index.rst": "B2\n==\n\n.. toctree::\n\n   deep\n",
+    "b/b2/deep.rst": "Deep\n====\n",
+}
 
 @pytest.mark.slow
 def test_build_resolves_toctree_entries_once(tmp_project_with_docs_skeleton, monkeypatch):
@@ -563,6 +573,25 @@ def test_build_resolves_toctree_entries_once(tmp_project_with_docs_skeleton, mon
     monkeypatch.setattr(toctree, "_entries_from_toctree", recording_entries_from_toctree)
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='', disable_parallel=True)
     assert len(resolved) == 1
+
+@pytest.mark.slow
+@pytest.mark.parametrize("navigation_depth", [1, 2, 4])
+def test_build_sidebar_of_nested_toctree_is_the_same_without_toctree_cache(tmp_path, navigation_depth):
+    theme_options = f'html_theme_options = {{**html_theme_options, "navigation_depth": {navigation_depth}}}\n'
+    builtdocs = {}
+    for name, extra_conf in [("cached", ""), ("uncached", "nbsite_cache_toctree = False\n")]:
+        project = tmp_path / name
+        for page, content in NESTED_TOCTREE_PAGES.items():
+            (project / "doc" / page).parent.mkdir(parents=True, exist_ok=True)
+            (project / "doc" / page).write_text(content)
+        (project / "examples").mkdir()
+        (project / "doc" / "conf.py").write_text(CONF_CONTENT + theme_options + extra_conf)
+        build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+        builtdocs[name] = project / "builtdocs"
+
+    navs = _sidebar_navs(builtdocs["cached"])
+    assert 'current' in navs["b/b2/deep.html"]
+    assert navs == _sidebar_navs(builtdocs["uncached"])
 
 @pytest.mark.slow
 def test_build_with_a_page_listed_twice_in_the_toctree(tmp_project_with_docs_skeleton):
