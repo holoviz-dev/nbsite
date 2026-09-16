@@ -266,6 +266,17 @@ def _embed_notebook(delay_before_write):
     })
 
 
+def _code_notebook(source):
+    return json.dumps({
+        "cells": [{
+            "cell_type": "code", "execution_count": None, "metadata": {}, "outputs": [], "source": source,
+        }],
+        "metadata": {"language_info": {"name": "python", "pygments_lexer": "ipython3"}},
+        "nbformat": 4,
+        "nbformat_minor": 2,
+    })
+
+
 def _notebook_rst(title, notebook):
     return f"""
 {'*' * len(title)}
@@ -643,6 +654,44 @@ def test_build_sidebar_is_the_same_without_toctree_cache(tmp_project_with_docs_s
     navs = _sidebar_navs(project / "builtdocs")
     assert navs["Zeroth_Notebook.html"]
     assert navs == _sidebar_navs(uncached / "builtdocs")
+
+@pytest.mark.slow
+def test_build_keeps_existing_json_next_to_notebooks(tmp_project_with_docs_skeleton):
+    project = tmp_project_with_docs_skeleton
+    (project / "examples" / "data.json").write_text('{"value": 1}')
+    source = [
+        "import json\n",
+        "with open('data.json') as f:\n",
+        "    data = json.load(f)\n",
+        "with open('created.json', 'w') as f:\n",
+        "    json.dump(data, f)",
+    ]
+    (project / "examples" / "Json_Notebook.ipynb").write_text(_code_notebook(source))
+    (project / "doc" / "Json_Notebook.rst").write_text(_notebook_rst("Json Notebook", "Json_Notebook.ipynb"))
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    assert (project / "examples" / "data.json").is_file()
+    assert not (project / "examples" / "created.json").exists()
+    assert (project / "doc" / "created.json").is_file()
+
+@pytest.mark.slow
+def test_build_does_not_evaluate_notebooks_in_a_pool_with_one_process(tmp_project_with_docs_skeleton, monkeypatch):
+    from nbsite import nbbuild
+
+    project = tmp_project_with_docs_skeleton
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+
+    pools = []
+    process_pool_executor = nbbuild.ProcessPoolExecutor
+
+    def recording_process_pool_executor(*args, **kwargs):
+        pools.append(kwargs)
+        return process_pool_executor(*args, **kwargs)
+
+    monkeypatch.setattr(nbbuild, "ProcessPoolExecutor", recording_process_pool_executor)
+    monkeypatch.setattr("nbsite.cmd.os.cpu_count", lambda: 1)
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    assert pools == []
+    assert (project / "doc" / "0_Zeroth_Notebook.ipynb").is_file()
 
 @pytest.mark.slow
 def test_build_generates_sidebar_navigation_once_per_page(tmp_project_with_docs_skeleton):

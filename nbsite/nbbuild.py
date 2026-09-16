@@ -469,6 +469,13 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
     if not os.path.isfile(dest_path):
         print('INFO: Writing evaluated notebook to {dest_path!s}'.format(
             dest_path=os.path.abspath(dest_path)))
+        # Files already next to the notebook, e.g. data the notebooks read, are
+        # not moved, as other notebooks may be evaluated from the same directory
+        existing_files = {
+            f
+            for pattern in patterns_to_take_with_me
+            for f in glob.glob(os.path.join(os.path.dirname(nb_path), pattern))
+        }
         with _panel_embed_save_path() as embed_save_path:
             try:
                 if not skip_execute:
@@ -492,6 +499,8 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
                 for pattern in patterns_to_take_with_me:
                     for source_dir in source_dirs:
                         for f in glob.glob(os.path.join(source_dir, pattern)):
+                            if f in existing_files:
+                                continue
                             print("mv %s %s"%(f, os.path.dirname(dest_path)))
                             shutil.move(f,os.path.dirname(dest_path))
     else:
@@ -623,7 +632,8 @@ def evaluate_notebooks_before_reading(app, env, docnames):
     with slow notebooks leaves the other workers idle. evaluate_notebook
     skips notebooks already evaluated, so NotebookDirective only renders them.
     """
-    if not app.config.nbbuild_pre_execute or not app.parallel:
+    # With a single process the notebooks are evaluated one at a time either way
+    if not app.config.nbbuild_pre_execute or app.parallel <= 1:
         return
 
     evaluations = {}
