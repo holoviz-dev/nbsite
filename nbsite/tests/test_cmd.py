@@ -532,6 +532,54 @@ def test_build_keeps_json_of_notebooks_in_the_same_directory_evaluated_together(
         assert (project / "builtdocs" / json_dir / "0.json").is_file()
     assert not list((project / "examples").glob("json_*"))
 
+def _sidebar_navs(builtdocs):
+    navs = {}
+    for page in sorted(builtdocs.glob("*.html")):
+        text = page.read_text()
+        start = text.find('<nav class="bd-docs-nav bd-links"')
+        navs[page.name] = text[start:text.find("</nav>", start)] if start != -1 else None
+    return navs
+
+@pytest.mark.slow
+def test_build_resolves_toctree_entries_once(tmp_project_with_docs_skeleton, monkeypatch):
+    from sphinx.environment.adapters import toctree
+
+    project = tmp_project_with_docs_skeleton
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "First_Notebook.rst").write_text(EXAMPLE_1_RST)
+
+    resolved, nested = [], []
+    entries_from_toctree = toctree._entries_from_toctree
+
+    def recording_entries_from_toctree(*args, **kwargs):
+        if not nested:
+            resolved.append(args)
+        nested.append(True)
+        try:
+            return entries_from_toctree(*args, **kwargs)
+        finally:
+            nested.pop()
+
+    monkeypatch.setattr(toctree, "_entries_from_toctree", recording_entries_from_toctree)
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='', disable_parallel=True)
+    assert len(resolved) == 1
+
+@pytest.mark.slow
+def test_build_sidebar_is_the_same_without_toctree_cache(tmp_project_with_docs_skeleton, tmp_path):
+    project = tmp_project_with_docs_skeleton
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "First_Notebook.rst").write_text(EXAMPLE_1_RST)
+    uncached = tmp_path / "uncached_project"
+    shutil.copytree(project, uncached)
+    (uncached / "doc" / "conf.py").write_text(CONF_CONTENT + "nbsite_cache_toctree = False\n")
+
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    build('html', str(uncached / "builtdocs"), project_root=str(uncached), examples_assets='')
+
+    navs = _sidebar_navs(project / "builtdocs")
+    assert navs["Zeroth_Notebook.html"]
+    assert navs == _sidebar_navs(uncached / "builtdocs")
+
 @pytest.mark.slow
 def test_build_generates_sidebar_navigation_once_per_page(tmp_project_with_docs_skeleton):
     project = tmp_project_with_docs_skeleton

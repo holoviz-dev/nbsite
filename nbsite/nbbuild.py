@@ -800,6 +800,10 @@ def setup(app):
     app.add_config_value('nbbuild_ipython_startup',"from nbsite.ipystartup import *",'html')
     app.add_config_value('nbbuild_patterns_to_take_along',["*.json", "json_*"],'html')
     app.add_config_value('nbbuild_pre_execute', True, 'html')
+    app.add_config_value('nbsite_cache_toctree', True, 'html')
+
+    from ._toctree import patch_get_local_toctree
+    patch_get_local_toctree()
 
     app.add_directive('notebook', NotebookDirective)
     app.connect('env-before-read-docs', evaluate_notebooks_before_reading)
