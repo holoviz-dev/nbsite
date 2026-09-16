@@ -4,6 +4,7 @@ Cleans up relative cross-notebook links by replacing them with .html
 extension.
 """
 import os
+import posixpath
 import re
 import warnings
 
@@ -131,7 +132,9 @@ def cleanup_links(path, inspect_links=False, autolinkable=None):
                 name = re.split(r"^#?\d+( |-|_)", num_name)[-1]
                 new_path = try_path.replace(num_name, name)
                 if os.path.exists(new_path):
-                    a.set('href', os.path.relpath(new_path, os.path.dirname(path)) + sep + fragment)
+                    # A URL, so always with forward slashes, also on Windows
+                    href = os.path.relpath(new_path, os.path.dirname(path)).replace(os.sep, '/')
+                    a.set('href', href + sep + fragment)
                 else:
                     also_tried = 'Also tried: {}'.format(name) if name != num_name else ''
                     messages.append('Found missing link {} in: {}. {}'.format(href, path, also_tried))
@@ -147,7 +150,7 @@ def cleanup_links(path, inspect_links=False, autolinkable=None):
         if 'http' not in src and 'assets' in src:
             try_path = os.path.join(os.path.dirname(path), src)
             if not os.path.exists(try_path):
-                also_tried = os.path.join('..', src)
+                also_tried = posixpath.join('..', src)
                 if os.path.exists(os.path.join(os.path.dirname(path), also_tried)):
                     img.set('src', also_tried)
                 else:

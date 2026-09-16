@@ -8,7 +8,10 @@ from nbsite.scripts import fix_links
 
 def _write_page(path, body):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(f"<!DOCTYPE html><html><head><title>t</title></head><body>{body}</body></html>")
+    path.write_text(
+        f"<!DOCTYPE html><html><head><title>t</title></head><body>{body}</body></html>",
+        encoding="utf-8",
+    )
 
 
 def _parse(path):
@@ -34,6 +37,13 @@ def test_fix_links_falls_back_to_unnumbered_page(tmp_path):
     _write_page(tmp_path / "page.html", '<a href="01-Other.ipynb">link</a>')
     fix_links(str(tmp_path))
     assert _attributes(tmp_path / "page.html", "a", "href") == ["Other.html"]
+
+
+def test_fix_links_falls_back_to_unnumbered_page_in_other_directory(tmp_path):
+    _write_page(tmp_path / "other" / "Other.html", "")
+    _write_page(tmp_path / "sub" / "page.html", '<a href="../other/01-Other.ipynb#part">link</a>')
+    fix_links(str(tmp_path))
+    assert _attributes(tmp_path / "sub" / "page.html", "a", "href") == ["../other/Other.html#part"]
 
 
 def test_fix_links_warns_on_missing_notebook_link(tmp_path):
