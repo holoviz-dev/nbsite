@@ -37,7 +37,7 @@ dependencies = [
     'jupyter_client',
     'myst-nb>=1.1',
     'notebook',
-    'sphinx>=7',
+    'sphinx>=9',
     'beautifulsoup4',
     'jinja2',
     'pillow',
