@@ -565,6 +565,41 @@ def test_build_resolves_toctree_entries_once(tmp_project_with_docs_skeleton, mon
     assert len(resolved) == 1
 
 @pytest.mark.slow
+def test_build_with_a_page_listed_twice_in_the_toctree(tmp_project_with_docs_skeleton):
+    project = tmp_project_with_docs_skeleton
+    index = INDEX_CONTENT.replace(
+        "   First Notebook <First_Notebook>",
+        "   First Notebook <First_Notebook>\n   First Notebook Again <First_Notebook>",
+    )
+    (project / "doc" / "index.rst").write_text(index)
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "First_Notebook.rst").write_text(EXAMPLE_1_RST)
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
+    navs = _sidebar_navs(project / "builtdocs")
+    assert navs["First_Notebook.html"].count('class="current') >= 1
+    assert navs["Zeroth_Notebook.html"]
+
+@pytest.mark.slow
+def test_build_copies_the_toctree_once(tmp_project_with_docs_skeleton, monkeypatch):
+    from sphinx.environment.adapters import toctree
+
+    project = tmp_project_with_docs_skeleton
+    (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
+    (project / "doc" / "First_Notebook.rst").write_text(EXAMPLE_1_RST)
+
+    copied = []
+    toctree_copy = toctree._toctree_copy
+
+    def recording_toctree_copy(node, *args, **kwargs):
+        if node.get("toctree"):
+            copied.append(node)
+        return toctree_copy(node, *args, **kwargs)
+
+    monkeypatch.setattr(toctree, "_toctree_copy", recording_toctree_copy)
+    build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='', disable_parallel=True)
+    assert len(copied) == 1
+
+@pytest.mark.slow
 def test_build_sidebar_is_the_same_without_toctree_cache(tmp_project_with_docs_skeleton, tmp_path):
     project = tmp_project_with_docs_skeleton
     (project / "doc" / "Zeroth_Notebook.rst").write_text(EXAMPLE_0_RST)
