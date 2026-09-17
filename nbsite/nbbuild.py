@@ -812,9 +812,10 @@ def setup(app):
     app.add_config_value('nbbuild_patterns_to_take_along',["*.json", "json_*"],'html')
     app.add_config_value('nbbuild_pre_execute', True, 'html')
     app.add_config_value('nbsite_cache_toctree', True, 'html')
+    app.add_config_value('nbsite_sphinx_patches', True, 'html')
 
-    from ._sphinx_patches import _patch_get_local_toctree
-    _patch_get_local_toctree()
+    from ._sphinx_patches import _apply_sphinx_patches
+    app.connect('config-inited', _apply_sphinx_patches)
 
     app.add_directive('notebook', NotebookDirective)
     app.connect('env-before-read-docs', evaluate_notebooks_before_reading)

@@ -43,3 +43,15 @@ def _patch_get_local_toctree():
 def _unpatch_get_local_toctree():
     """Restore the original ``StandaloneHTMLBuilder._get_local_toctree``."""
     StandaloneHTMLBuilder._get_local_toctree = _orig_get_local_toctree
+
+
+def _apply_sphinx_patches(app, config):
+    """Patch or restore Sphinx on ``config-inited``, following ``nbsite_sphinx_patches``."""
+    if config.nbsite_sphinx_patches:
+        _patch_parallel_tasks()
+        _patch_python_domain_merge()
+        _patch_get_local_toctree()
+    else:
+        _unpatch_parallel_tasks()
+        _unpatch_python_domain_merge()
+        _unpatch_get_local_toctree()

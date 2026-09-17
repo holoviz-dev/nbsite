@@ -91,3 +91,13 @@ While evaluating a notebook, nbsite sets `PANEL_EMBED_SAVE_PATH` to a temporary 
 ## Sidebar navigation
 
 The sidebar shows the navigation of the whole site on every page. nbsite resolves this navigation once per build instead of for every page, which gives the same result. Set `nbsite_cache_toctree = False` in conf.py to let Sphinx resolve it for every page.
+
+## Sphinx patches
+
+nbsite patches Sphinx to:
+
+* run the task of a parallel worker that died without sending a result in the main process, instead of aborting the build.
+* keep the original definition of a Python object over an alias when merging parallel reads, as a serial build does.
+* resolve the sidebar navigation once per build (see `nbsite_cache_toctree`).
+
+Set `nbsite_sphinx_patches = False` in conf.py to build with Sphinx unpatched.

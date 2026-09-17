@@ -98,3 +98,20 @@ def test_python_domain_merge_prefers_original_definition(patched_python_domain_m
     domain.data = {"objects": {} if existing is None else {"pkg.sub.Foo": existing}, "modules": {}}
     domain.merge_domaindata({merged.docname}, {"objects": {"pkg.sub.Foo": merged}, "modules": {}})
     assert domain.objects["pkg.sub.Foo"] == expected
+
+
+@pytest.mark.parametrize("enabled", [True, False])
+def test_sphinx_patches_config(tmp_path, enabled):
+    from sphinx.application import Sphinx
+    from sphinx.builders.html import StandaloneHTMLBuilder
+
+    from nbsite._sphinx_patches import (
+        _get_local_toctree, _join_one, _merge_python_domaindata,
+    )
+
+    (tmp_path / "conf.py").write_text(f"extensions = ['nbsite.nbbuild']\nnbsite_sphinx_patches = {enabled}\n")
+    (tmp_path / "index.rst").write_text("Index\n=====\n")
+    Sphinx(tmp_path, tmp_path, tmp_path / "out", tmp_path / "doctrees", "html", status=None, warning=None)
+    assert (ParallelTasks._join_one is _join_one) is enabled
+    assert (PythonDomain.merge_domaindata is _merge_python_domaindata) is enabled
+    assert (StandaloneHTMLBuilder._get_local_toctree is _get_local_toctree) is enabled
