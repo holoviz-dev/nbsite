@@ -8,10 +8,7 @@ from os.path import dirname
 
 from sphinx.application import Sphinx
 
-from ._parallel import (
-    patch_parallel_tasks as _patch_parallel_tasks,
-    patch_python_domain_merge as _patch_python_domain_merge,
-)
+from ._sphinx_patches import _patch_parallel_tasks, _patch_python_domain_merge
 from .scripts import clean_dist_html, fix_links
 from .util import copy_files
 

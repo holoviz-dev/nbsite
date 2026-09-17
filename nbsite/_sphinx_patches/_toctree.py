@@ -218,13 +218,3 @@ def _get_local_toctree(self, docname, collapse=True, **kwargs):
         with _page_toctree(self, cached, docname) as toctree:
             return self.render_partial(toctree)['fragment']
     return self.render_partial(_resolved_for_page(self, cached, docname))['fragment']
-
-
-def patch_get_local_toctree():
-    """Patch ``StandaloneHTMLBuilder._get_local_toctree``, idempotently."""
-    StandaloneHTMLBuilder._get_local_toctree = _get_local_toctree
-
-
-def unpatch_get_local_toctree():
-    """Restore the original ``StandaloneHTMLBuilder._get_local_toctree``."""
-    StandaloneHTMLBuilder._get_local_toctree = _orig_get_local_toctree

@@ -7,9 +7,9 @@ from sphinx.domains.python import ObjectEntry, PythonDomain
 from sphinx.errors import SphinxParallelError
 from sphinx.util.parallel import ParallelTasks, parallel_available
 
-from nbsite._parallel import (
-    patch_parallel_tasks, patch_python_domain_merge, unpatch_parallel_tasks,
-    unpatch_python_domain_merge,
+from nbsite._sphinx_patches import (
+    _patch_parallel_tasks, _patch_python_domain_merge, _unpatch_parallel_tasks,
+    _unpatch_python_domain_merge,
 )
 
 pytestmark = pytest.mark.skipif(not parallel_available, reason="Sphinx parallel builds need forking")
@@ -17,9 +17,9 @@ pytestmark = pytest.mark.skipif(not parallel_available, reason="Sphinx parallel 
 
 @pytest.fixture(autouse=True)
 def patched():
-    patch_parallel_tasks()
+    _patch_parallel_tasks()
     yield
-    unpatch_parallel_tasks()
+    _unpatch_parallel_tasks()
 
 
 def _die_in_worker(arg):
@@ -73,9 +73,9 @@ def test_failing_task_still_raises():
 
 @pytest.fixture
 def patched_python_domain_merge():
-    patch_python_domain_merge()
+    _patch_python_domain_merge()
     yield
-    unpatch_python_domain_merge()
+    _unpatch_python_domain_merge()
 
 
 ORIGINAL = ObjectEntry("pkg.sub", "pkg.sub.Foo", "class", False)
