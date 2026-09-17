@@ -459,9 +459,7 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
                   kernel_name='python%s'%sys.version_info[0],
                   allow_errors=skip_exceptions)
 
-    cwd = os.getcwd()
     filedir, filename = os.path.split(nb_path)
-    os.chdir(filedir)
     not_nb_runner = ExecutePreprocessor1000(**kwargs)
     if ipython_startup is not None:
         not_nb_runner._ipython_startup = ipython_startup
@@ -477,13 +475,16 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
             for f in glob.glob(os.path.join(os.path.dirname(nb_path), pattern))
         }
         with _panel_embed_save_path() as embed_save_path:
+            cwd = os.getcwd()
+            os.chdir(filedir)
             try:
                 if not skip_execute:
                     not_nb_runner.preprocess(notebook,{})
             except CellExecutionError as e:
                 print('')
                 print(e)
-            os.chdir(cwd)
+            finally:
+                os.chdir(cwd)
 
             if skip_execute:
                 with open(dest_path,'w', encoding='utf-8') as f:

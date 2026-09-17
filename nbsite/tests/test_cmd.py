@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 
 from collections import Counter
@@ -672,6 +673,39 @@ def test_build_keeps_existing_json_next_to_notebooks(tmp_project_with_docs_skele
     assert (project / "examples" / "data.json").is_file()
     assert not (project / "examples" / "created.json").exists()
     assert (project / "doc" / "created.json").is_file()
+
+@pytest.fixture
+def notebook_paths(tmp_path, monkeypatch):
+    import nbformat
+
+    source_dir = tmp_path / "examples"
+    source_dir.mkdir()
+    nb_path = source_dir / "Notebook.ipynb"
+    nbformat.write(nbformat.v4.new_notebook(cells=[nbformat.v4.new_code_cell("1")]), nb_path)
+    dest_dir = tmp_path / "doc"
+    dest_dir.mkdir()
+    monkeypatch.chdir(tmp_path)
+    return nb_path, dest_dir / "Notebook.ipynb"
+
+def test_evaluate_notebook_keeps_working_directory_when_already_evaluated(notebook_paths, tmp_path):
+    from nbsite.nbbuild import evaluate_notebook
+
+    nb_path, dest_path = notebook_paths
+    shutil.copy(nb_path, dest_path)
+    evaluate_notebook(str(nb_path), str(dest_path))
+    assert os.getcwd() == str(tmp_path)
+
+def test_evaluate_notebook_keeps_working_directory_when_kernel_dies(notebook_paths, tmp_path, monkeypatch):
+    from nbsite import nbbuild
+
+    def dying_kernel(self, nb, resources):
+        raise RuntimeError("Kernel died before replying to kernel_info")
+
+    monkeypatch.setattr(nbbuild.ExecutePreprocessor1000, "preprocess", dying_kernel)
+    nb_path, dest_path = notebook_paths
+    with pytest.raises(RuntimeError, match="Kernel died"):
+        nbbuild.evaluate_notebook(str(nb_path), str(dest_path))
+    assert os.getcwd() == str(tmp_path)
 
 @pytest.mark.slow
 def test_build_does_not_evaluate_notebooks_in_a_pool_with_one_process(tmp_project_with_docs_skeleton, monkeypatch):
