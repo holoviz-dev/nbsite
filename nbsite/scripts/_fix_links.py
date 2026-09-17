@@ -70,6 +70,9 @@ def find_autolinkable():
             'containers': filter_available(all_containers, 'containers')}
 
 
+_HTML_TAG_RE = re.compile(r"<html[\s>]", re.IGNORECASE)
+
+
 def _uses_component_links(path):
     return ('user_guide' in path) or ('getting_started' in path)
 
@@ -96,7 +99,9 @@ def cleanup_links(path, inspect_links=False, autolinkable=None):
     """
     with open(path, encoding='utf-8') as f:
         text = f.read()
-    if not text.strip():
+    # Not a page, e.g. a Jinja template a theme copies to _static, which
+    # parsing as a document would wrap in <html> and URL-encode
+    if _HTML_TAG_RE.search(text) is None:
         return []
 
 #    if 'BokehJS does not appear to have successfully loaded' in text:

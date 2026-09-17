@@ -125,3 +125,17 @@ def test_fix_links_keeps_page_content(tmp_path):
     tree = lxml.html.fromstring((tmp_path / "page.html").read_text(encoding="utf-8"))
     assert tree.xpath("//script")[0].text == '{"a": "<b>&amp;</b>"}'
     assert tree.xpath("//p")[0].text_content() == "café <tag>"
+
+
+def test_fix_links_leaves_html_templates_unchanged(tmp_path):
+    template = (
+        "<!--\n  AUTO-GENERATED from webpack.config.js, do **NOT** edit by hand.\n-->\n\n"
+        "{% macro head_pre_assets() %}\n"
+        "<link href=\"{{ pathto('_static/styles/theme.css', 1) }}?digest=abc\" rel=\"stylesheet\" />\n"
+        "{% endmacro %}\n"
+    )
+    path = tmp_path / "_static" / "webpack-macros.html"
+    path.parent.mkdir()
+    path.write_text(template, encoding="utf-8")
+    fix_links(str(tmp_path))
+    assert path.read_text(encoding="utf-8") == template
