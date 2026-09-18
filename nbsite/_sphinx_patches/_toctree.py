@@ -18,12 +18,6 @@ from sphinx.environment.adapters import toctree as _toctree
 from sphinx.util import url_re
 from sphinx.util.matching import Matcher
 
-# Sphinx < 7.2 resolves toctrees with the TocTree class instead
-_SUPPORTED = all(
-    hasattr(_toctree, name)
-    for name in ("_entries_from_toctree", "_toctree_add_classes", "_toctree_copy")
-)
-
 _TOCTREE_KWARGS = {"includehidden", "maxdepth", "titles_only"}
 
 _orig_get_local_toctree = StandaloneHTMLBuilder._get_local_toctree
@@ -196,7 +190,6 @@ def _has_only_nodes(builder):
 def _get_local_toctree(self, docname, collapse=True, **kwargs):
     if (
         collapse
-        or not _SUPPORTED
         or not getattr(self.config, 'nbsite_cache_toctree', False)
         or not set(kwargs) <= _TOCTREE_KWARGS
         or _has_only_nodes(self)
