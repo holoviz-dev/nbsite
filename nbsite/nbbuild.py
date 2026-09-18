@@ -60,6 +60,7 @@ from nbconvert.preprocessors import (
 from packaging.version import Version
 from sphinx.util import logging
 from sphinx.util.display import status_iterator
+from traitlets.config import Config
 
 from .cmd import _prepare_paths, hosts
 
@@ -458,6 +459,8 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
     kwargs = dict(timeout=timeout,
                   kernel_name='python%s'%sys.version_info[0],
                   allow_errors=skip_exceptions)
+    if sys.platform != 'win32':
+        kwargs['config'] = Config({'KernelManager': {'transport': 'ipc'}})
 
     filedir, filename = os.path.split(nb_path)
     not_nb_runner = ExecutePreprocessor1000(**kwargs)
