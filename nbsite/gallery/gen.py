@@ -353,6 +353,12 @@ def convert_notebook_to_md(filename, directive='{pyodide}'):
             md += f'\n{backticks}'
     return md
 
+def _gallery_item_title(name, content):
+    titles = content.get('titles', {})
+    if name in titles:
+        return titles[name]
+    return ' '.join([n[0].capitalize()+n[1:] for n in name.replace('_', ' ').split(' ')])
+
 def generate_pyodide_markdown(
     app, page, section, backend, filename, src_dir, dest_dir,
     img_extension, deployed_file, deployed, skip
@@ -366,13 +372,13 @@ def generate_pyodide_markdown(
     basename = os.path.basename(filename)
     md_path = os.path.join(dest_dir, basename[:-len(extension)].replace(' ', '_') + 'md')
     name = basename[:-(len(extension)+1)]
-    title = ' '.join([n[0].capitalize()+n[1:] for n in name.replace('_', ' ').split(' ')])
     ftype = 'notebook' if extension == 'ipynb' else 'script'
 
     # Unpack config
     gallery_conf = app.config.nbsite_gallery_conf
     examples_dir = gallery_conf['examples_dir']
     content = gallery_conf['galleries'][page]
+    title = _gallery_item_title(name, content)
 
     # Download link options
     host = gallery_conf['host']
@@ -447,13 +453,13 @@ def generate_item_rst(
     name = basename[:-(len(extension)+1)]
     rel_path = os.path.relpath(os.path.join(src_dir, basename), dest_dir)
     rst_path = os.path.join(dest_dir, basename[:-len(extension)].replace(' ', '_') + 'rst')
-    title = ' '.join([n[0].capitalize()+n[1:] for n in name.replace('_', ' ').split(' ')])
     ftype = 'notebook' if extension == 'ipynb' else 'script'
 
     # Unpack config
     gallery_conf = app.config.nbsite_gallery_conf
     examples_dir = gallery_conf['examples_dir']
     content = gallery_conf['galleries'][page]
+    title = _gallery_item_title(name, content)
     skip_execute = gallery_conf['skip_execute']
 
     # Download link options
