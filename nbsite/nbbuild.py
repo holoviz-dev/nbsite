@@ -457,7 +457,9 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
     notebook = nbformat.read(nb_path, as_version=4)
     kwargs = dict(timeout=timeout,
                   kernel_name='python%s'%sys.version_info[0],
-                  allow_errors=skip_exceptions)
+                  allow_errors=skip_exceptions,
+                  # Hides ipykernel's warning about unencrypted TCP transport
+                  extra_arguments=['--IPKernelApp.log_level=ERROR'])
 
     filedir, filename = os.path.split(nb_path)
     not_nb_runner = ExecutePreprocessor1000(**kwargs)
