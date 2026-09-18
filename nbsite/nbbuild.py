@@ -60,7 +60,6 @@ from nbconvert.preprocessors import (
 from packaging.version import Version
 from sphinx.util import logging
 from sphinx.util.display import status_iterator
-from traitlets.config import Config
 
 from .cmd import _prepare_paths, hosts
 
@@ -458,9 +457,9 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
     notebook = nbformat.read(nb_path, as_version=4)
     kwargs = dict(timeout=timeout,
                   kernel_name='python%s'%sys.version_info[0],
-                  allow_errors=skip_exceptions)
-    if sys.platform != 'win32':
-        kwargs['config'] = Config({'KernelManager': {'transport': 'ipc'}})
+                  allow_errors=skip_exceptions,
+                  # Hides ipykernel's warning about unencrypted TCP transport
+                  extra_arguments=['--IPKernelApp.log_level=ERROR'])
 
     filedir, filename = os.path.split(nb_path)
     not_nb_runner = ExecutePreprocessor1000(**kwargs)
