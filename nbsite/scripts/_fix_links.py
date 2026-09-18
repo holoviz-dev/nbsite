@@ -4,14 +4,15 @@ Cleans up relative cross-notebook links by replacing them with .html
 extension.
 """
 import os
+import posixpath
 import re
 import warnings
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 from pathlib import Path
 
-from bs4 import BeautifulSoup
+import lxml.html
 
 # TODO: holoviews specific links e.g. to reference manual...doc & generalize
 
@@ -69,11 +70,17 @@ def find_autolinkable():
             'containers': filter_available(all_containers, 'containers')}
 
 
+_HTML_TAG_RE = re.compile(r"<html[\s>]", re.IGNORECASE)
 
-def component_links(text, path):
-    autolinkable = find_autolinkable()
 
-    if ('user_guide' in path) or ('getting_started' in path):
+def _uses_component_links(path):
+    return ('user_guide' in path) or ('getting_started' in path)
+
+
+def component_links(text, path, autolinkable=None):
+    if _uses_component_links(path):
+        if autolinkable is None:
+            autolinkable = find_autolinkable()
         for clstype, listing in autolinkable.items():
             for (clsname, replacement) in list(listing):
                 try:
@@ -83,62 +90,88 @@ def component_links(text, path):
     return text
 
 
-def cleanup_links(path, inspect_links=False):
+def cleanup_links(path, inspect_links=False, autolinkable=None):
     """
     Use inspect_links to get a list of all the external links in the site
+
+    Returns the warning messages instead of warning, as warnings raised in
+    the worker processes of fix_links do not reach the main process.
     """
-    with open(path) as f:
+    with open(path, encoding='utf-8') as f:
         text = f.read()
+    # Not a page, e.g. a Jinja template a theme copies to _static, which
+    # parsing as a document would wrap in <html> and URL-encode
+    if _HTML_TAG_RE.search(text) is None:
+        return []
 
 #    if 'BokehJS does not appear to have successfully loaded' in text:
 #        for k, v in BOKEH_REPLACEMENTS.items():
 #            text = text.replace(k, v)
 
-    text = component_links(text, path)
-    soup = BeautifulSoup(text, features="html.parser")
-    for a in soup.find_all('a'):
+    text = component_links(text, path, autolinkable)
+    # huge_tree as embedded outputs can exceed libxml2's limit for a text node
+    parser = lxml.html.HTMLParser(huge_tree=True)
+    tree = lxml.html.document_fromstring(text, parser=parser)
+    messages = []
+    # libxml2 percent-escapes whitespace in URI attributes when serializing,
+    # and whitespace in base64 is ignored anyway
+    for element in tree.xpath('//*[starts-with(@src, "data:") or starts-with(@href, "data:")]'):
+        for attribute in ('src', 'href'):
+            value = element.get(attribute, '')
+            if value.startswith('data:') and ';base64,' in value:
+                element.set(attribute, ''.join(value.split()))
+
+    for a in tree.iter('a'):
         href = a.get('href', '')
         if '.ipynb' in href and 'http' not in href:
  #           for k, v in LINK_REPLACEMENTS.items():
  #               href = href.replace(k, v)
-            a['href'] = href.replace('.ipynb', '.html')
+            href = href.replace('.ipynb', '.html')
+            a.set('href', href)
 
             # check to make sure that path exists, if not, try un-numbered version
-            try_path = os.path.join(os.path.dirname(path), a['href'])
+            link, sep, fragment = href.partition('#')
+            try_path = os.path.join(os.path.dirname(path), link)
             if not os.path.exists(try_path):
                 num_name = os.path.basename(try_path)
                 name = re.split(r"^#?\d+( |-|_)", num_name)[-1]
                 new_path = try_path.replace(num_name, name)
                 if os.path.exists(new_path):
-                    a['href'] = os.path.relpath(new_path, os.path.dirname(path))
+                    # A URL, so always with forward slashes, also on Windows
+                    href = os.path.relpath(new_path, os.path.dirname(path)).replace(os.sep, '/')
+                    a.set('href', href + sep + fragment)
                 else:
                     also_tried = 'Also tried: {}'.format(name) if name != num_name else ''
-                    msg = 'Found missing link {} in: {}. {}'.format(a['href'], path, also_tried)
-                    warnings.warn(msg)
+                    messages.append('Found missing link {} in: {}. {}'.format(href, path, also_tried))
 
         elif href.endswith('/') and 'http' not in href:
-            a['href'] = href + 'index.html'
+            a.set('href', href + 'index.html')
 
-        if inspect_links and 'http' in a['href']:
-            print(a['href'])
+        if inspect_links and 'http' in a.get('href', ''):
+            print(a.get('href'))
 
-    for img in soup.find_all('img'):
+    for img in tree.iter('img'):
         src = img.get('src', '')
         if 'http' not in src and 'assets' in src:
             try_path = os.path.join(os.path.dirname(path), src)
             if not os.path.exists(try_path):
-                also_tried = os.path.join('..', src)
+                also_tried = posixpath.join('..', src)
                 if os.path.exists(os.path.join(os.path.dirname(path), also_tried)):
-                    img['src'] = also_tried
+                    img.set('src', also_tried)
                 else:
-                    msg = f'Found reference to missing image {src} in: {path}. Also tried: {also_tried}'
-                    warnings.warn(msg)
+                    messages.append(f'Found reference to missing image {src} in: {path}. Also tried: {also_tried}')
+
+    doctype = tree.getroottree().docinfo.doctype or None
     with open(path, 'w', encoding='utf-8') as f:
-        f.write(str(soup))
+        f.write(lxml.html.tostring(tree, doctype=doctype, encoding='unicode'))
+    return messages
 
 def fix_links(build_dir, inspect_links=False):
-    files = map(os.fspath, Path(build_dir).rglob("*.html"))
-    with ThreadPoolExecutor() as executor:
-        func = partial(cleanup_links, inspect_links=inspect_links)
-        # list to force execution and raise potential exception
-        list(executor.map(func, files))
+    files = [os.fspath(path) for path in Path(build_dir).rglob("*.html")]
+    autolinkable = find_autolinkable() if any(map(_uses_component_links, files)) else {}
+    func = partial(cleanup_links, inspect_links=inspect_links, autolinkable=autolinkable)
+    # Processes instead of threads, as editing the parsed pages holds the GIL
+    with ProcessPoolExecutor() as executor:
+        for messages in executor.map(func, files, chunksize=8):
+            for msg in messages:
+                warnings.warn(msg)

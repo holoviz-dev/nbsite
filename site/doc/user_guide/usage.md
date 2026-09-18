@@ -83,4 +83,21 @@ In conf.py, you can set options to control notebook execution:
 
 * `nbbuild_cell_timeout`: timeout per cell (seconds), e.g. `100`
 * `nbbuild_ipython_startup`: code (as string) to execute before running the first cell of each notebook. Defaults to [nbsite's ipython startup code](https://github.com/holoviz-dev/nbsite/blob/main/nbsite/ipystartup.py). E.g. `"module.special_swith=False"`.
-* `nbbuild_patterns_to_take_along`: list of glob patterns to match files that should be copied alongside a notebook. E.g. holoviews is configured to save data in external json files to improve page loading times, so this defaults to `["*.json"]`.
+* `nbbuild_patterns_to_take_along`: list of glob patterns to match files that should be copied alongside a notebook. E.g. holoviews is configured to save data in external json files to improve page loading times, so this defaults to `["*.json", "json_*"]`. Only files created while evaluating the notebook are moved; files that were already next to it, e.g. data the notebook reads, stay where they are.
+* `nbbuild_pre_execute`: evaluate the notebooks of all documents in a process pool before Sphinx reads the documents, when building with more than one process. Defaults to `True`. Notebooks from the same directory can then be evaluated at the same time, so notebooks that write files matching `nbbuild_patterns_to_take_along` with the same name to their directory can take each other's files. Set it to `False` to evaluate the notebooks while Sphinx reads the documents instead.
+
+While evaluating a notebook, nbsite sets `PANEL_EMBED_SAVE_PATH` to a temporary directory, and `PANEL_EMBED_LOAD_PATH` to `./` when it is not set, so that the embedded widget states of notebooks evaluated at the same time are kept apart. These take precedence over `pn.config.embed_save_path` and `pn.config.embed_load_path` set in a notebook. Set `PANEL_EMBED_SAVE_PATH` in the environment to save them somewhere else.
+
+## Sidebar navigation
+
+The sidebar shows the navigation of the whole site on every page. nbsite resolves this navigation once per build instead of for every page, which gives the same result. Set `nbsite_cache_toctree = False` in conf.py to let Sphinx resolve it for every page.
+
+## Sphinx patches
+
+nbsite patches Sphinx to:
+
+* run the task of a parallel worker that died without sending a result in the main process, instead of aborting the build.
+* keep the original definition of a Python object over an alias when merging parallel reads, as a serial build does.
+* resolve the sidebar navigation once per build (see `nbsite_cache_toctree`).
+
+Set `nbsite_sphinx_patches = False` in conf.py to build with Sphinx unpatched.

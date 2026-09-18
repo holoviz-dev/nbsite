@@ -38,8 +38,10 @@ import re
 import shutil
 import string
 import sys
+import tempfile
 import typing
 
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -57,6 +59,7 @@ from nbconvert.preprocessors import (
 )
 from packaging.version import Version
 from sphinx.util import logging
+from sphinx.util.display import status_iterator
 
 from .cmd import _prepare_paths, hosts
 
@@ -417,6 +420,33 @@ def nb_to_python(nb_path):
     return output
 
 
+@contextmanager
+def _panel_embed_save_path():
+    """
+    Let Panel save the embedded states of a notebook in a directory of its own.
+
+    Panel saves them in the working directory by default, i.e. next to the
+    notebook, where notebooks from the same directory evaluated at the same
+    time would take each other's files.
+    """
+    if 'PANEL_EMBED_SAVE_PATH' in os.environ:
+        yield None
+        return
+    load_path = os.environ.get('PANEL_EMBED_LOAD_PATH')
+    save_path = tempfile.mkdtemp(prefix='nbsite_embed_')
+    os.environ['PANEL_EMBED_SAVE_PATH'] = save_path
+    if load_path is None:
+        # Keeps the references relative to the page, as when saving to the working directory
+        os.environ['PANEL_EMBED_LOAD_PATH'] = './'
+    try:
+        yield save_path
+    finally:
+        del os.environ['PANEL_EMBED_SAVE_PATH']
+        if load_path is None:
+            del os.environ['PANEL_EMBED_LOAD_PATH']
+        shutil.rmtree(save_path, ignore_errors=True)
+
+
 def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
                       skip_execute=None, timeout=300, ipython_startup=None,
                       patterns_to_take_with_me=None):
@@ -429,9 +459,7 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
                   kernel_name='python%s'%sys.version_info[0],
                   allow_errors=skip_exceptions)
 
-    cwd = os.getcwd()
     filedir, filename = os.path.split(nb_path)
-    os.chdir(filedir)
     not_nb_runner = ExecutePreprocessor1000(**kwargs)
     if ipython_startup is not None:
         not_nb_runner._ipython_startup = ipython_startup
@@ -439,26 +467,42 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
     if not os.path.isfile(dest_path):
         print('INFO: Writing evaluated notebook to {dest_path!s}'.format(
             dest_path=os.path.abspath(dest_path)))
-        try:
-            if not skip_execute:
-                not_nb_runner.preprocess(notebook,{})
-        except CellExecutionError as e:
-            print('')
-            print(e)
-        os.chdir(cwd)
+        # Other notebooks evaluated from the same directory may still read them
+        existing_files = {
+            f
+            for pattern in patterns_to_take_with_me
+            for f in glob.glob(os.path.join(os.path.dirname(nb_path), pattern))
+        }
+        with _panel_embed_save_path() as embed_save_path:
+            cwd = os.getcwd()
+            os.chdir(filedir)
+            try:
+                if not skip_execute:
+                    not_nb_runner.preprocess(notebook,{})
+            except CellExecutionError as e:
+                print('')
+                print(e)
+            finally:
+                os.chdir(cwd)
 
-        if skip_execute:
-            with open(dest_path,'w', encoding='utf-8') as f:
-                nbformat.write(notebook, f)
-        else:
-            ne = NotebookExporter()
-            newnb, _ = ne.from_notebook_node(notebook)
-            with open(dest_path, 'w', encoding='utf-8') as f:
-                f.write(newnb)
-            for pattern in patterns_to_take_with_me:
-                for f in glob.glob(os.path.join(os.path.dirname(nb_path),pattern)):
-                    print("mv %s %s"%(f, os.path.dirname(dest_path)))
-                    shutil.move(f,os.path.dirname(dest_path))
+            if skip_execute:
+                with open(dest_path,'w', encoding='utf-8') as f:
+                    nbformat.write(notebook, f)
+            else:
+                ne = NotebookExporter()
+                newnb, _ = ne.from_notebook_node(notebook)
+                with open(dest_path, 'w', encoding='utf-8') as f:
+                    f.write(newnb)
+                source_dirs = [os.path.dirname(nb_path)]
+                if embed_save_path is not None:
+                    source_dirs.append(embed_save_path)
+                for pattern in patterns_to_take_with_me:
+                    for source_dir in source_dirs:
+                        for f in glob.glob(os.path.join(source_dir, pattern)):
+                            if f in existing_files:
+                                continue
+                            print("mv %s %s"%(f, os.path.dirname(dest_path)))
+                            shutil.move(f,os.path.dirname(dest_path))
     else:
         print('INFO: Skipping existing evaluated notebook {dest_path!s}'.format(
             dest_path=os.path.abspath(dest_path)))
@@ -530,6 +574,92 @@ def render_notebook(nb_path, document, preprocessors=[]):
         parser.parse(sio.read(), doc)
 
     return doc.children
+
+
+def evaluate_notebook_with_retries(nb_path, dest_path, **kwargs):
+    import zmq
+    for n in range(1, 6):
+        try:
+            evaluate_notebook(nb_path, dest_path, **kwargs)
+            break
+        except (zmq.error.ZMQError, RuntimeError) as e:
+            # Sometimes the kernel dies
+            print(f"{nb_path} failed with {e}, retrying ({n}/5)...", flush=True)
+
+
+_NOTEBOOK_DIRECTIVE_RE = re.compile(
+    r"^(?P<indent>[ \t]*)\.\.[ \t]+notebook::[ \t]+\S+[ \t]+(?P<path>\S+)[^\n]*\n?"
+    r"(?P<options>(?:(?P=indent)[ \t]+:[^\n]*(?:\n|$))*)",
+    re.MULTILINE,
+)
+_DIRECTIVE_OPTION_RE = re.compile(r"^[ \t]*:(?P<name>[^:\s]+):(?P<value>[^\n]*)$", re.MULTILINE)
+
+
+def find_notebook_evaluations(source_path, config):
+    """
+    Find the notebooks evaluated by the notebook directives of an rst file,
+    with the arguments NotebookDirective.run passes to evaluate_notebook.
+    """
+    with open(source_path, encoding='utf-8') as f:
+        source = f.read()
+    rst_dir = os.path.dirname(os.path.abspath(source_path))
+    evaluations = []
+    for match in _NOTEBOOK_DIRECTIVE_RE.finditer(source):
+        options = {
+            m['name']: m['value'].strip()
+            for m in _DIRECTIVE_OPTION_RE.finditer(match['options'])
+        }
+        nb_path = os.path.abspath(os.path.join(rst_dir, match['path']))
+        evaluations.append(dict(
+            nb_path=nb_path,
+            dest_path=os.path.join(rst_dir, os.path.basename(nb_path)),
+            skip_exceptions='skip_exceptions' in options,
+            # Same as the bool converter in NotebookDirective.option_spec
+            skip_execute=bool(options.get('skip_execute')),
+            timeout=config.nbbuild_cell_timeout,
+            ipython_startup=config.nbbuild_ipython_startup,
+            patterns_to_take_with_me=config.nbbuild_patterns_to_take_along,
+        ))
+    return evaluations
+
+
+def evaluate_notebooks_before_reading(app, env, docnames):
+    """
+    Evaluate the notebooks of the documents about to be read in a process pool.
+
+    Otherwise the notebooks are evaluated while Sphinx reads the documents,
+    where each parallel worker gets a fixed chunk of documents, so a chunk
+    with slow notebooks leaves the other workers idle. evaluate_notebook
+    skips notebooks already evaluated, so NotebookDirective only renders them.
+    """
+    # With a single process the notebooks are evaluated one at a time either way
+    if not app.config.nbbuild_pre_execute or app.parallel <= 1:
+        return
+
+    evaluations = {}
+    for docname in docnames:
+        source_path = str(env.doc2path(docname))
+        if not source_path.endswith('.rst') or not os.path.isfile(source_path):
+            continue
+        for evaluation in find_notebook_evaluations(source_path, app.config):
+            if not os.path.isfile(evaluation['dest_path']):
+                evaluations.setdefault(evaluation['dest_path'], evaluation)
+    if not evaluations:
+        return
+
+    with ProcessPoolExecutor(max_workers=min(app.parallel, len(evaluations))) as executor:
+        futures = {
+            executor.submit(evaluate_notebook_with_retries, **evaluation): dest_path
+            for dest_path, evaluation in evaluations.items()
+        }
+        for future in status_iterator(
+            as_completed(futures), 'evaluating notebooks... ', 'purple',
+            len(futures), app.verbosity,
+            stringify_func=lambda future: os.path.relpath(futures[future], app.srcdir),
+        ):
+            if (exc := future.exception()) is not None:
+                # NotebookDirective evaluates it again when the document is read
+                logger.warning("Evaluating %s failed: %s", futures[future], exc)
 
 
 class NotebookDirective(Directive):
@@ -636,21 +766,14 @@ class NotebookDirective(Directive):
         os.makedirs(dest_dir, exist_ok=True)
 
         # Evaluate Notebook and insert into Sphinx doc
-        import zmq
-        for n in range(1, 6):
-            try:
-                evaluate_notebook(
-                    nb_abs_path, dest_path,
-                    skip_exceptions='skip_exceptions' in self.options,
-                    skip_execute=self.options.get('skip_execute'),
-                    timeout=setup.config.nbbuild_cell_timeout,
-                    ipython_startup=setup.config.nbbuild_ipython_startup,
-                    patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
-                )
-                break
-            except (zmq.error.ZMQError, RuntimeError) as e:
-                # Sometimes the kernel dies
-                print(f"{nb_abs_path} failed with {e}, retrying ({n}/5)...", flush=True)
+        evaluate_notebook_with_retries(
+            nb_abs_path, dest_path,
+            skip_exceptions='skip_exceptions' in self.options,
+            skip_execute=self.options.get('skip_execute'),
+            timeout=setup.config.nbbuild_cell_timeout,
+            ipython_startup=setup.config.nbbuild_ipython_startup,
+            patterns_to_take_with_me=setup.config.nbbuild_patterns_to_take_along
+        )
 
         preprocessors = self.preprocessors(dest_dir)
         rendered_nodes = render_notebook(
@@ -686,5 +809,12 @@ def setup(app):
     app.add_config_value('nbbuild_cell_timeout',300,'html')
     app.add_config_value('nbbuild_ipython_startup',"from nbsite.ipystartup import *",'html')
     app.add_config_value('nbbuild_patterns_to_take_along',["*.json", "json_*"],'html')
+    app.add_config_value('nbbuild_pre_execute', True, 'html')
+    app.add_config_value('nbsite_cache_toctree', True, 'html')
+    app.add_config_value('nbsite_sphinx_patches', True, 'html')
+
+    from ._sphinx_patches import _apply_sphinx_patches
+    app.connect('config-inited', _apply_sphinx_patches)
 
     app.add_directive('notebook', NotebookDirective)
+    app.connect('env-before-read-docs', evaluate_notebooks_before_reading)

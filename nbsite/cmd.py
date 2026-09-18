@@ -8,11 +8,8 @@ from os.path import dirname
 
 from sphinx.application import Sphinx
 
-from ._parallel import patch_parallel_tasks as _patch_parallel_tasks
 from .scripts import clean_dist_html, fix_links
 from .util import copy_files
-
-_patch_parallel_tasks()
 
 DEFAULT_SITE_ORDERING = [
     "Introduction",

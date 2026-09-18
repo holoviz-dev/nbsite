@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Build a tested, sphinx-based website from notebooks."
 readme = "README.md"
 license = { text = "BSD" }
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [
     { name = "HoloViz developers", email = "developers@holoviz.org" },
 ]
@@ -18,7 +18,6 @@ maintainers = [
 classifiers = [
         "License :: OSI Approved :: BSD License",
         "Development Status :: 3 - Alpha",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
@@ -37,7 +36,7 @@ dependencies = [
     'jupyter_client',
     'myst-nb>=1.1',
     'notebook',
-    'sphinx>=7',
+    'sphinx>=9',
     'beautifulsoup4',
     'jinja2',
     'pillow',
@@ -49,6 +48,7 @@ dependencies = [
     'sphinxext-rediraffe',
     'packaging',
     'requests',
+    'lxml',
 ]
 
 [project.scripts]

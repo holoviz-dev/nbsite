@@ -11,7 +11,9 @@ import shutil
 import subprocess
 import tempfile
 
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, field
+from functools import partial
 from itertools import groupby
 from pathlib import Path
 from typing import Callable, Iterable, Sequence
@@ -561,6 +563,69 @@ def _convert_rst(
     return True
 
 
+def _rendered_html_for(source: MarkdownSource, rel_path: Path) -> Path | None:
+    if source.rendered_source_dir is None:
+        return None
+    return source.rendered_source_dir / rel_path.with_suffix(".html")
+
+
+def _build_markdown_file(
+    source: MarkdownSource,
+    path: Path,
+    markdown_root: Path,
+) -> tuple[Path, str] | None:
+    """Build the markdown of one source file.
+
+    Returns the generated path relative to markdown_root and the message to
+    print, or None when nothing was generated.
+    """
+    rel = path.relative_to(source.source_dir)
+    destination = source.output_dir / _strip_numeric_prefix(rel)
+
+    if path.suffix == ".md" and source.copy_markdown:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        rendered_html_path = _rendered_html_for(source, rel)
+        # Expand meta-refresh stubs (e.g. how-to section landings that
+        # only point at index.html#section) into real section content.
+        if _try_expand_redirect_markdown(path, destination, rendered_html_path):
+            md_rel = destination.relative_to(markdown_root)
+            return md_rel, f"  Expanded redirect {md_rel}"
+        shutil.copy2(path, destination)
+        # Always sanitize copied markdown so MyST chrome (pyodide
+        # fences, Jupyterlite banners, etc.) is stripped consistently.
+        _sanitize_markdown_output(destination)
+        md_rel = destination.relative_to(markdown_root)
+        return md_rel, f"  Copied {md_rel}"
+
+    if path.suffix == ".rst" and source.copy_markdown:
+        md_destination = destination.with_suffix(".md")
+        rendered_html_path = _rendered_html_for(source, rel)
+        if _convert_rst(path, md_destination, rendered_html_path):
+            md_rel = md_destination.relative_to(markdown_root)
+            return md_rel, f"  Converted {md_rel}"
+        return None
+
+    if path.suffix == ".ipynb" and source.convert_notebooks:
+        md_destination = destination.with_suffix(".md")
+        content = _convert_notebook(path)
+        if content is not None:
+            md_destination.parent.mkdir(parents=True, exist_ok=True)
+            md_destination.write_text(content, encoding="utf-8")
+            md_rel = md_destination.relative_to(markdown_root)
+            _sanitize_markdown_output(md_destination)
+            return md_rel, f"  Converted {md_rel}"
+    return None
+
+
+def _build_markdown_files(
+    source: MarkdownSource,
+    paths: Sequence[Path],
+    markdown_root: Path,
+) -> list[tuple[Path, str]]:
+    results = (_build_markdown_file(source, path, markdown_root) for path in paths)
+    return [result for result in results if result is not None]
+
+
 def build_markdown_docs(
     sources: Sequence[MarkdownSource],
     markdown_root: Path,
@@ -577,53 +642,22 @@ def build_markdown_docs(
 
     generated: list[Path] = []
 
-    def _rendered_html_for(source: MarkdownSource, rel_path: Path) -> Path | None:
-        if source.rendered_source_dir is None:
-            return None
-        return source.rendered_source_dir / rel_path.with_suffix(".html")
+    # Processes, as converting the pages is CPU bound
+    with ProcessPoolExecutor() as executor:
+        # Sources in order, as a later source overwrites the output of an earlier one
+        for source in sources:
+            groups: dict[Path, list[Path]] = {}
+            for path in _iter_source_files(source):
+                rel = path.relative_to(source.source_dir)
+                # Files with the same output are built in order, so the last one wins
+                output = (source.output_dir / _strip_numeric_prefix(rel)).with_suffix(".md")
+                groups.setdefault(output, []).append(path)
 
-    for source in sources:
-        for path in _iter_source_files(source):
-            rel = path.relative_to(source.source_dir)
-            destination = source.output_dir / _strip_numeric_prefix(rel)
-
-            if path.suffix == ".md" and source.copy_markdown:
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                rendered_html_path = _rendered_html_for(source, rel)
-                # Expand meta-refresh stubs (e.g. how-to section landings that
-                # only point at index.html#section) into real section content.
-                if _try_expand_redirect_markdown(path, destination, rendered_html_path):
-                    md_rel = destination.relative_to(markdown_root)
+            build = partial(_build_markdown_files, source, markdown_root=markdown_root)
+            for results in executor.map(build, groups.values()):
+                for md_rel, message in results:
                     generated.append(md_rel)
-                    print(f"  Expanded redirect {md_rel}")
-                    continue
-                shutil.copy2(path, destination)
-                # Always sanitize copied markdown so MyST chrome (pyodide
-                # fences, Jupyterlite banners, etc.) is stripped consistently.
-                _sanitize_markdown_output(destination)
-                generated.append(destination.relative_to(markdown_root))
-                print(f"  Copied {destination.relative_to(markdown_root)}")
-                continue
-
-            if path.suffix == ".rst" and source.copy_markdown:
-                md_destination = destination.with_suffix(".md")
-                rendered_html_path = _rendered_html_for(source, rel)
-                if _convert_rst(path, md_destination, rendered_html_path):
-                    md_rel = md_destination.relative_to(markdown_root)
-                    generated.append(md_rel)
-                    print(f"  Converted {md_rel}")
-                continue
-
-            if path.suffix == ".ipynb" and source.convert_notebooks:
-                md_destination = destination.with_suffix(".md")
-                content = _convert_notebook(path)
-                if content is not None:
-                    md_destination.parent.mkdir(parents=True, exist_ok=True)
-                    md_destination.write_text(content, encoding="utf-8")
-                    md_rel = md_destination.relative_to(markdown_root)
-                    _sanitize_markdown_output(md_destination)
-                    generated.append(md_rel)
-                    print(f"  Converted {md_rel}")
+                    print(message)
 
     return generated
 

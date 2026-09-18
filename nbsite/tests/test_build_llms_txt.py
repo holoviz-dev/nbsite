@@ -121,6 +121,35 @@ def test_build_markdown_docs_strips_numeric_prefixes(tmp_path):
     assert set(generated) == written == expected
 
 
+def test_build_markdown_docs_last_file_with_same_output_wins(tmp_path):
+    source_dir = tmp_path / "examples"
+    source_dir.mkdir()
+    output_dir = tmp_path / "builtdocs" / "markdown"
+    (source_dir / "1-Overview.md").write_text("# Numbered\n")
+    (source_dir / "Overview.md").write_text("# Unnumbered\n")
+
+    build_markdown_docs(
+        (MarkdownSource(source_dir=source_dir, output_dir=output_dir),),
+        output_dir,
+    )
+
+    assert "Unnumbered" in (output_dir / "Overview.md").read_text()
+
+
+def test_build_markdown_docs_later_source_wins(tmp_path):
+    output_dir = tmp_path / "builtdocs" / "markdown"
+    sources = []
+    for name in ("first", "second"):
+        source_dir = tmp_path / name
+        source_dir.mkdir()
+        (source_dir / "page.md").write_text(f"# {name}\n")
+        sources.append(MarkdownSource(source_dir=source_dir, output_dir=output_dir))
+
+    build_markdown_docs(tuple(sources), output_dir)
+
+    assert "second" in (output_dir / "page.md").read_text()
+
+
 def test_build_markdown_docs_output_dir_outside_markdown_root(tmp_path):
     source_dir = tmp_path / "doc"
     source_dir.mkdir()
