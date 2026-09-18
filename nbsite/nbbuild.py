@@ -467,8 +467,7 @@ def evaluate_notebook(nb_path, dest_path=None, skip_exceptions=False,
     if not os.path.isfile(dest_path):
         print('INFO: Writing evaluated notebook to {dest_path!s}'.format(
             dest_path=os.path.abspath(dest_path)))
-        # Files already next to the notebook, e.g. data the notebooks read, are
-        # not moved, as other notebooks may be evaluated from the same directory
+        # Other notebooks evaluated from the same directory may still read them
         existing_files = {
             f
             for pattern in patterns_to_take_with_me

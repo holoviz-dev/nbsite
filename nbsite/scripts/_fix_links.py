@@ -172,7 +172,6 @@ def fix_links(build_dir, inspect_links=False):
     func = partial(cleanup_links, inspect_links=inspect_links, autolinkable=autolinkable)
     # Processes instead of threads, as editing the parsed pages holds the GIL
     with ProcessPoolExecutor() as executor:
-        # list to force execution and raise potential exception
-        for messages in list(executor.map(func, files, chunksize=8)):
+        for messages in executor.map(func, files, chunksize=8):
             for msg in messages:
                 warnings.warn(msg)

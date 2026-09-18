@@ -96,7 +96,6 @@ def _mark_current(node, docname, marked):
 
 @contextmanager
 def _page_toctree(builder, cached, docname):
-    """Apply the ``current`` classes and relative links of a page to the toctree."""
     marked = {'classes': [], 'iscurrent': []}
     _mark_current(cached['tree'], docname, marked)
     for refnode, refuri, anchorname in cached['references']:
@@ -131,7 +130,7 @@ def _build_cache(builder, includehidden, maxdepth, titles_only):
     tree = entries.deepcopy()
     _toctree._toctree_add_classes(tree, 1, '')
     tree = _toctree._toctree_copy(tree, 1, toctree_maxdepth, False, tags)
-    if isinstance(tree[-1], nodes.Element) and len(tree[-1]) == 0:  # No titles found
+    if isinstance(tree[-1], nodes.Element) and len(tree[-1]) == 0:
         return cache
 
     references = [
