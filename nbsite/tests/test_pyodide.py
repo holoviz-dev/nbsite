@@ -102,3 +102,38 @@ def test_write_worker_lockfile_failure(tmp_path, monkeypatch):
     monkeypatch.setattr('nbsite.pyodide.subprocess.run', fail)
     with pytest.raises(RuntimeError, match='matching pyodide npm package'):
         write_worker(app, None)
+
+
+def test_write_worker_panel_local_wheels(tmp_path, monkeypatch):
+    (tmp_path / '_static').mkdir()
+    requirements = [
+        './wheels/bokeh-3.10.0-py3-none-any.whl',
+        './wheels/panel-1.10.0b1-py3-none-any.whl',
+        'pyodide-http',
+    ]
+    conf = dict(DEFAULT_PYODIDE_CONF, requirements=requirements, lockfile=True, enable_pwa=False)
+    app = SimpleNamespace(
+        builder=SimpleNamespace(format='html', outdir=tmp_path),
+        config=SimpleNamespace(nbsite_pyodide_conf=conf),
+    )
+    calls = []
+    monkeypatch.setattr('nbsite.pyodide.subprocess.run', lambda args, **kwargs: calls.append(args))
+
+    write_worker(app, None)
+
+    assert json.loads(calls[0][3]) == requirements
+    assert 'const LOCKFILE_PACKAGES = ["bokeh", "panel", "pyodide-http"]' in (tmp_path / '_static' / 'PyodideWebWorker.js').read_text()
+
+
+def test_write_worker_panel_314_js_url(tmp_path):
+    (tmp_path / '_static').mkdir()
+    conf = dict(DEFAULT_PYODIDE_CONF, PYODIDE_URL='https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js', enable_pwa=False)
+    app = SimpleNamespace(
+        builder=SimpleNamespace(format='html', outdir=tmp_path),
+        config=SimpleNamespace(nbsite_pyodide_conf=conf),
+    )
+
+    write_worker(app, None)
+
+    assert 'import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.mjs"' in (tmp_path / '_static' / 'PyodideWebWorker.js').read_text()
+    assert "{type: 'module'}" in (tmp_path / '_static' / 'WorkerHandler.js').read_text()
