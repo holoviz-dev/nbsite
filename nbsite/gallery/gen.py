@@ -392,14 +392,18 @@ def generate_pyodide_markdown(
     directive = 'python' if skip_execute else '{pyodide}'
 
     if nblink:
-        components = [examples_dir.split(os.path.sep)[-1], page]
+        source = content.get('source', page)
+        components = [os.path.basename(os.path.normpath(examples_dir)), source]
         if section:
             components.append(section)
         if backend:
             components.append(backend)
         if jupyterlite_url:
-            backend_slug = '/{backend}' if backend else ''
-            lite_path = f'{jupyterlite_url}?path=/{page}/{section}{backend_slug}/{basename}'
+            if 'source' in content:
+                lite_path = f'{jupyterlite_url}?path=/{"/".join(components[1:] + [basename])}'
+            else:
+                backend_slug = '/{backend}' if backend else ''
+                lite_path = f'{jupyterlite_url}?path=/{page}/{section}{backend_slug}/{basename}'
         else:
             lite_path = None
         nblink_text = get_nblink_md(
@@ -476,13 +480,17 @@ def generate_item_rst(
                 return
 
     if nblink:
-        components = [examples_dir.split(os.path.sep)[-1], page]
+        source = content.get('source', page)
+        components = [os.path.basename(os.path.normpath(examples_dir)), source]
         if section:
             components.append(section)
         if backend:
             components.append(backend)
+        lite_path = jupyterlite_url
+        if jupyterlite_url and 'source' in content:
+            lite_path = f'{jupyterlite_url}?path=/{"/".join(components[1:] + [basename])}'
         nblink_text = get_nblink_rst(
-            host, deployed_file, jupyterlite_url, download_as,
+            host, deployed_file, lite_path, download_as,
             org, proj, ref, components, basename, ftype, section
         )
 
@@ -776,7 +784,8 @@ def generate_gallery(app, page):
     # Get directories
     doc_dir = app.builder.srcdir
     examples_dir = os.path.join(doc_dir, gallery_conf['examples_dir'])
-    gallery_dir = os.path.join(examples_dir, page)
+    source = content.get('source', page)
+    gallery_dir = os.path.join(examples_dir, source)
     static_dir = app.config.html_static_path[-1]
     static_path = os.path.join(
         os.path.split(gallery_conf['examples_dir'])[-2], static_dir)
@@ -790,15 +799,15 @@ def generate_gallery(app, page):
     if 'sections' in content:
         sections = content['sections']
     else:
-        sections = [s for s in glob.glob(os.path.join(gallery_dir, '*'))
-                    if os.path.isdir(os.path.join(gallery_dir, s)) and
-                    not any(s.endswith(b) for b in backends)]
+        sections = [os.path.basename(s) for s in glob.glob(os.path.join(gallery_dir, '*'))
+                    if os.path.isdir(s) and not any(s.endswith(b) for b in (backends or []))]
         if not sections:
             sections = ['']
 
     extensions = content.get('extensions', gallery_conf['default_extensions'])
     sort_fn = gallery_conf['within_subsection_order']
     thumbnail_url = content.get('thumbnail_url', gallery_conf['thumbnail_url'])
+    thumbnail_source = content.get('thumbnail_source', page)
     download = gallery_conf['enable_download']
     script_prefix = gallery_conf['script_prefix']
     only_use_existing = gallery_conf['only_use_existing']
@@ -888,7 +897,7 @@ def generate_gallery(app, page):
         if section:
             path_components.append(section)
         dest_path = os.path.join(doc_dir, *path_components)
-        section_path = os.path.join(examples_dir, *path_components)
+        section_path = os.path.join(gallery_dir, section) if section else gallery_dir
 
         try:
             os.makedirs(dest_path)
@@ -1001,7 +1010,7 @@ def generate_gallery(app, page):
 
             sorted_files = sorted(files, key=subsection_order)
             with ThreadPoolExecutor() as ex:
-                func = partial(_download_image, page, thumbnail_url, download, backend, section, dest_dir, no_image_thumb)
+                func = partial(_download_image, thumbnail_source, thumbnail_url, download, backend, section, dest_dir, no_image_thumb)
                 futures = ex.map(func, sorted_files)
 
             for f, (thumb_extension, extension, basename, retcode, verb) in zip(sorted_files, futures):
@@ -1058,7 +1067,7 @@ def generate_gallery(app, page):
                     if thumb_extension not in ('svg', 'gif'):
                         resize_pad(os.path.join(doc_dir, thumb_path))
                     this_entry = _thumbnail_div(
-                        thumb_path, section, backend, basename,
+                        os.path.relpath(thumb_path, doc_dir), section, backend, basename,
                         normalize, titles.get(basename),
                         card_title_below=card_title_below,
                     )
