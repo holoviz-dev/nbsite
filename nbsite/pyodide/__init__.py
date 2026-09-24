@@ -4,6 +4,7 @@ import io
 import json
 import os
 import pathlib
+import subprocess
 import sys
 import traceback as tb
 import warnings
@@ -27,6 +28,8 @@ from docutils import nodes
 from docutils.parsers.rst import Directive, roles
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader
+from packaging.requirements import Requirement
+from packaging.utils import parse_wheel_filename
 from packaging.version import Version
 from panel.config import config, panel_extension as extension
 from panel.io.convert import BOKEH_VERSION
@@ -80,10 +83,11 @@ else:
     bk_prefix = 'release'
 
 DEFAULT_PYODIDE_CONF = {
-    'PYODIDE_URL': 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js',
+    'PYODIDE_URL': 'https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.mjs',
     'autodetect_deps': True,
     'enable_pwa': True,
     'requirements': ['panel', 'pandas'],
+    'lockfile': False,
     'precache': [],
     'scripts': [
         f'https://cdn.bokeh.org/bokeh/{bk_prefix}/bokeh-{BOKEH_VERSION}.min.js',
@@ -464,18 +468,37 @@ def write_worker(app: Sphinx, exc):
     builddir = Path(app.builder.outdir)
     staticdir = builddir / '_static'
 
+    lockfile_packages = []
+    if pyodide_conf['lockfile'] and pyodide_conf['requirements']:
+        requirements = pyodide_conf['requirements']
+        for requirement in requirements:
+            if requirement.endswith('.whl'):
+                lockfile_packages.append(str(parse_wheel_filename(requirement.rsplit('/', 1)[-1])[0]))
+            else:
+                lockfile_packages.append(Requirement(requirement).name)
+        try:
+            subprocess.run(
+                ['node', str(HERE / 'freeze.js'), pyodide_conf['PYODIDE_URL'],
+                 json.dumps(requirements), str(staticdir / 'pyodide-lock.json')],
+                check=True,
+            )
+        except (OSError, subprocess.CalledProcessError) as e:
+            raise RuntimeError('Could not freeze the Pyodide environment; install the matching pyodide npm package for the docs build.') from e
+
     # Render Web Worker
     web_worker = WEB_WORKER_TEMPLATE.render({
         'PYODIDE_URL': pyodide_conf['PYODIDE_URL'],
         'env_spec': ', '.join([repr(req) for req in pyodide_conf['requirements']]),
         'setup_code': pyodide_conf['setup_code'],
         'autodetect_deps': pyodide_conf['autodetect_deps'],
-        'requires': json.dumps(pyodide_conf['requires'])
+        'requires': json.dumps(pyodide_conf['requires']),
+        'lockfile_packages': json.dumps(lockfile_packages)
     })
     with open(staticdir/ 'PyodideWebWorker.js', 'w', encoding='utf-8') as f:
         f.write(web_worker)
     worker_setup = WORKER_HANDLER_TEMPLATE.render(
-        scripts=pyodide_conf['scripts']
+        scripts=pyodide_conf['scripts'],
+        module_worker=pyodide_conf['PYODIDE_URL'].endswith('.mjs'),
     )
     with open(staticdir/ 'WorkerHandler.js', 'w', encoding='utf-8') as f:
         f.write(worker_setup)
