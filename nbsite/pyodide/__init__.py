@@ -467,6 +467,10 @@ def write_worker(app: Sphinx, exc):
     pyodide_conf = app.config.nbsite_pyodide_conf
     builddir = Path(app.builder.outdir)
     staticdir = builddir / '_static'
+    pyodide_url = pyodide_conf['PYODIDE_URL']
+    version = Version(pyodide_url.rsplit('/v', 1)[-1].split('/', 1)[0])
+    if version >= Version('314.0.5') and pyodide_url.endswith('/pyodide.js'):
+        pyodide_url = pyodide_url[:-2] + 'mjs'
 
     lockfile_packages = []
     if pyodide_conf['lockfile'] and pyodide_conf['requirements']:
@@ -487,7 +491,7 @@ def write_worker(app: Sphinx, exc):
 
     # Render Web Worker
     web_worker = WEB_WORKER_TEMPLATE.render({
-        'PYODIDE_URL': pyodide_conf['PYODIDE_URL'],
+        'PYODIDE_URL': pyodide_url,
         'env_spec': ', '.join([repr(req) for req in pyodide_conf['requirements']]),
         'setup_code': pyodide_conf['setup_code'],
         'autodetect_deps': pyodide_conf['autodetect_deps'],
@@ -498,7 +502,7 @@ def write_worker(app: Sphinx, exc):
         f.write(web_worker)
     worker_setup = WORKER_HANDLER_TEMPLATE.render(
         scripts=pyodide_conf['scripts'],
-        module_worker=pyodide_conf['PYODIDE_URL'].endswith('.mjs'),
+        module_worker=pyodide_url.endswith('.mjs'),
     )
     with open(staticdir/ 'WorkerHandler.js', 'w', encoding='utf-8') as f:
         f.write(worker_setup)
