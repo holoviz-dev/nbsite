@@ -156,7 +156,8 @@ def test_worker_render_result(tmp_path, result):
 const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
-const source = fs.readFileSync(process.argv[1], 'utf8').replace(/^import \{ loadPyodide \}.*\n/, '');
+const source = fs.readFileSync(process.argv[1], 'utf8').replace(/\r?\n/g, '\r\n')
+  .replace(/^import \{ loadPyodide \}[^\r\n]*\r?$/m, '');
 const messages = [];
 const values = {content: 'rendered', mime_type: 'text/plain', stdout: 'printed', stderr: 'warning'};
 global.self = {
