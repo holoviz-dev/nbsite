@@ -191,30 +191,28 @@ self.onmessage = async (event) => {
 
   try {
     self.pyodide.globals.set('msg', msg)
-    let out = await self.pyodide.runPythonAsync(MESSAGES[msg.type])
+    const result = await self.pyodide.runPythonAsync(MESSAGES[msg.type])
     resolveExecution()
-    if (out == null) {
-      out = new Map()
-    }
-    if (out.has('content')) {
+    const out = result instanceof Map ? Object.fromEntries(result) : result ?? {}
+    if (Object.hasOwn(out, 'content')) {
       self.postMessage({
         type: 'render',
         id: msg.id,
-        content: out.get('content'),
-        mime: out.get('mime_type')
+        content: out.content,
+        mime: out.mime_type
       });
     }
-    if (out.has('stdout') && out.get('stdout').length) {
+    if (out.stdout?.length) {
       self.postMessage({
         type: 'stdout',
-        content: out.get('stdout'),
+        content: out.stdout,
         id: msg.id
       });
     }
-    if (out.has('stderr') && out.get('stderr').length) {
+    if (out.stderr?.length) {
       self.postMessage({
         type: 'stderr',
-        content: out.get('stderr'),
+        content: out.stderr,
         id: msg.id
       });
     }
