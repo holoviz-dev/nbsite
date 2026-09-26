@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 
 from types import SimpleNamespace
@@ -137,3 +138,43 @@ def test_write_worker_panel_314_js_url(tmp_path):
 
     assert 'import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.mjs"' in (tmp_path / '_static' / 'PyodideWebWorker.js').read_text()
     assert "{type: 'module'}" in (tmp_path / '_static' / 'WorkerHandler.js').read_text()
+
+
+@pytest.mark.parametrize('result', ['object', 'map', 'empty'])
+def test_worker_render_result(tmp_path, result):
+    """Worker handles both current object and older Map return values."""
+    if not shutil.which('node'):
+        pytest.skip('Node is required to execute the generated worker')
+    (tmp_path / '_static').mkdir()
+    conf = dict(DEFAULT_PYODIDE_CONF, autodetect_deps=False, enable_pwa=False)
+    app = SimpleNamespace(
+        builder=SimpleNamespace(format='html', outdir=tmp_path),
+        config=SimpleNamespace(nbsite_pyodide_conf=conf),
+    )
+    write_worker(app, None)
+    script = r'''
+const fs = require('node:fs');
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+const source = fs.readFileSync(process.argv[1], 'utf8').replace(/^import \{ loadPyodide \}.*\n/, '');
+const messages = [];
+const values = {content: 'rendered', mime_type: 'text/plain', stdout: 'printed', stderr: 'warning'};
+global.self = {
+  pyodide: {
+    globals: {set() {}},
+    runPythonAsync: async () => process.argv[2] === 'empty' ? null :
+      process.argv[2] === 'map' ? new Map(Object.entries(values)) : values,
+  },
+  postMessage: message => messages.push(message),
+};
+vm.runInThisContext(source);
+self.onmessage({data: {type: 'execute', id: 'cell', uuid: 'test'}}).then(() => {
+  assert.deepEqual(messages.map(message => message.type),
+    process.argv[2] === 'empty' ? ['idle'] : ['render', 'stdout', 'stderr', 'idle']);
+  if (process.argv[2] !== 'empty') {
+    assert.equal(messages[0].content, 'rendered');
+    assert.equal(messages[0].mime, 'text/plain');
+  }
+}).catch(error => { console.error(error); process.exitCode = 1; });
+'''
+    subprocess.run(['node', '-e', script, str(tmp_path / '_static' / 'PyodideWebWorker.js'), result], check=True)
