@@ -86,6 +86,12 @@ DEFAULT_PYODIDE_CONF = {
     'PYODIDE_URL': 'https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.mjs',
     'autodetect_deps': True,
     'enable_pwa': True,
+    # Opt-in service worker behaviour for sites that host several builds on one origin,
+    # e.g. versioned docs under /en/docs/<version>/. The defaults keep the original behaviour.
+    'pwa_cache_version': None,  # Defaults to the Sphinx `version`; set a build id so re-publishes invalidate
+    'pwa_scope_caches': False,  # Key caches by worker scope so builds do not delete each other's caches
+    'pwa_fetch_cache': None,  # RequestCache mode for same-origin fetches, e.g. 'no-cache'
+    'pwa_manifest_scope': '/',  # Web app manifest scope; './' confines an installed app to its build
     'requirements': ['panel', 'pandas'],
     'lockfile': False,
     'precache': [],
@@ -513,7 +519,9 @@ def write_worker(app: Sphinx, exc):
     # Render service worker
     service_worker = SERVICE_WORKER_TEMPLATE.render({
         'project': app.config.project,
-        'version': app.config.version,
+        'version': pyodide_conf['pwa_cache_version'] or app.config.version,
+        'scope_caches': pyodide_conf['pwa_scope_caches'],
+        'fetch_cache': pyodide_conf['pwa_fetch_cache'],
         'pre_cache': ', '.join([repr(req) for req in pyodide_conf['precache']]),
         'cache_patterns': ', '.join([repr(req) for req in pyodide_conf['cache_patterns']])
     })
@@ -526,6 +534,7 @@ def write_worker(app: Sphinx, exc):
     # Render manifest
     site_manifest = WEB_MANIFEST_TEMPLATE.render({
         'name': app.config.html_title,
+        'scope': pyodide_conf['pwa_manifest_scope'],
     })
     with open(builddir / 'site.webmanifest', 'w', encoding='utf-8') as f:
         f.write(site_manifest)

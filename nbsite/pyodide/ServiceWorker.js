@@ -1,5 +1,16 @@
 const appName = '{{ project }}'
-const appCacheName = '{{ project }}-{{ version }}';
+{% if scope_caches %}
+// Cache storage is shared by every worker on the origin. Keying caches by scope stops
+// builds hosted side by side (e.g. versioned docs) from deleting each other's caches.
+const cachePrefix = `${appName}@${self.registration.scope}-`;
+{% else %}
+const cachePrefix = appName;
+{% endif %}
+const appCacheName = {% if scope_caches %}`${cachePrefix}{{ version }}`{% else %}'{{ project }}-{{ version }}'{% endif %};
+
+// When set, same-origin requests revalidate with the server instead of trusting the
+// browser HTTP cache, so a new worker does not re-cache pages from the previous build.
+const fetchCache = {{ fetch_cache|tojson }};
 
 const preCacheFiles = [{{ pre_cache }}];
 
@@ -11,7 +22,7 @@ self.addEventListener('install', (e) => {
   e.waitUntil((async () => {
     const cacheNames = await caches.keys();
     for (const cacheName of cacheNames) {
-      if (cacheName.startsWith(appName) && cacheName !== appCacheName) {
+      if (cacheName.startsWith(cachePrefix) && cacheName !== appCacheName) {
         console.log(`[Service Worker] Delete old cache ${cacheName}`);
         caches.delete(cacheName);
       }
@@ -35,6 +46,17 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
+const networkRequest = (request) => {
+  if (!fetchCache || new URL(request.url).origin !== self.location.origin) {
+    return request;
+  }
+  // A navigation request cannot be copied with a RequestInit, so rebuild it by URL.
+  if (request.mode === 'navigate') {
+    return new Request(request.url, {cache: fetchCache, credentials: request.credentials, redirect: 'manual'});
+  }
+  return new Request(request, {cache: fetchCache});
+};
+
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') {
     return
@@ -46,9 +68,12 @@ self.addEventListener('fetch', (e) => {
     if (response) {
       return response;
     }
-    response = await fetch(e.request);
-    if (!response.ok && !(response.type == 'opaque')) {
-      throw Error(`[Service Worker] Fetching resource ${e.request.url} failed with response: ${response.status}`);
+    response = await fetch(networkRequest(e.request));
+    // Redirects and error pages go back to the page uncached; throwing here turned them
+    // into network errors, e.g. a directory URL without its trailing slash.
+    if (!response.ok && response.type !== 'opaque') {
+      console.log(`[Service Worker] Not caching ${e.request.url}: ${response.type} ${response.status}`);
+      return response;
     }
     console.log(`[Service Worker] Caching new resource: ${e.request.url}`);
     if (e.request.mode !== 'no-cors') {
