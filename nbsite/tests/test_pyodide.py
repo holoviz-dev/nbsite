@@ -179,3 +179,127 @@ self.onmessage({data: {type: 'execute', id: 'cell', uuid: 'test'}}).then(() => {
 }).catch(error => { console.error(error); process.exitCode = 1; });
 '''
     subprocess.run(['node', '-e', script, str(tmp_path / '_static' / 'PyodideWebWorker.js'), result], check=True)
+
+
+SERVICE_WORKER_HARNESS = r'''
+const fs = require('node:fs');
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+const [source, scenario] = [fs.readFileSync(process.argv[1], 'utf8'), process.argv[2]];
+
+const store = new Map([
+  ['Docs-0.9', new Map()],
+  ['Docs Pyodide App-abc', new Map()],
+  ['Docs@https://example.org/en/docs/0.9/-0.9', new Map()],
+  ['Docs@https://example.org/en/docs/1.0/-0.9', new Map()],
+]);
+const fetched = [];
+const handlers = {};
+const context = {
+  console: {log() {}},
+  URL, Request, Response,
+  caches: {
+    keys: async () => [...store.keys()],
+    delete: async (name) => store.delete(name),
+    open: async (name) => {
+      if (!store.has(name)) store.set(name, new Map());
+      const entries = store.get(name);
+      return {match: async (r) => entries.get(r.url), put: async (r, res) => entries.set(r.url, res)};
+    },
+  },
+  fetch: async (request) => {
+    fetched.push(request);
+    const path = new URL(request.url).pathname;
+    if (path.endsWith('/missing.html')) return new Response('', {status: 404});
+    if (path.endsWith('/dir')) return {ok: false, type: 'opaqueredirect', status: 0};
+    return new Response('ok');
+  },
+};
+context.self = {
+  registration: {scope: 'https://example.org/en/docs/1.0/'},
+  location: {origin: 'https://example.org'},
+  clients: {claim() {}},
+  skipWaiting() {},
+  addEventListener: (type, fn) => { handlers[type] = fn; },
+};
+vm.runInNewContext(source, context);
+
+const respond = (request) => new Promise((resolve) => handlers.fetch({request, respondWith: resolve}));
+const navigation = (url) => ({url, method: 'GET', mode: 'navigate', credentials: 'include'});
+
+(async () => {
+  let installed;
+  handlers.install({waitUntil: (p) => { installed = p; }});
+  await installed;
+  const kept = [...store.keys()].sort();
+
+  if (scenario === 'default') {
+    // Original behaviour: every cache starting with the project name except the current one goes.
+    assert.deepEqual(kept, ['Docs-1.0']);
+  } else {
+    assert.deepEqual(kept, [
+      'Docs Pyodide App-abc',
+      'Docs-0.9',
+      'Docs@https://example.org/en/docs/0.9/-0.9',
+      'Docs@https://example.org/en/docs/1.0/-1.0',
+    ]);
+  }
+
+  const missing = await respond(new Request('https://example.org/en/docs/1.0/missing.html'));
+  assert.equal(missing.status, 404);
+  const redirect = await respond(navigation('https://example.org/en/docs/1.0/dir'));
+  assert.equal(redirect.type, 'opaqueredirect');
+  const cacheName = [...store.keys()].find((name) => name.endsWith('1.0'));
+  assert.deepEqual([...store.get(cacheName).keys()], []);
+
+  fetched.length = 0;
+  await respond(new Request('https://example.org/en/docs/1.0/page.html'));
+  await respond(navigation('https://example.org/en/docs/1.0/index.html'));
+  await respond(new Request('https://cdn.example.com/lib.js'));
+  const [asset, page, external] = fetched;
+  if (scenario === 'default') {
+    assert.equal(asset.cache, 'default');
+    assert.equal(page.mode, 'navigate');
+  } else {
+    assert.equal(asset.cache, 'no-cache');
+    assert.equal(page.cache, 'no-cache');
+    assert.equal(page.redirect, 'manual');
+  }
+  assert.equal(external.cache, 'default');
+  assert.equal(store.get(cacheName).size, 3);
+})().catch((error) => { console.error(error); process.exitCode = 1; });
+'''
+
+
+def _write_pwa(tmp_path, **options):
+    (tmp_path / '_static').mkdir()
+    conf = dict(DEFAULT_PYODIDE_CONF, autodetect_deps=False, **options)
+    app = SimpleNamespace(
+        builder=SimpleNamespace(format='html', outdir=tmp_path),
+        config=SimpleNamespace(nbsite_pyodide_conf=conf, project='Docs', version='1.0', html_title='Docs 1.0'),
+    )
+    write_worker(app, None)
+
+
+@pytest.mark.parametrize('scenario', ['default', 'versioned'])
+def test_service_worker_caches(tmp_path, scenario):
+    if not shutil.which('node'):
+        pytest.skip('Node is required to execute the generated service worker')
+    options = {} if scenario == 'default' else {'pwa_scope_caches': True, 'pwa_fetch_cache': 'no-cache'}
+    _write_pwa(tmp_path, **options)
+    subprocess.run(['node', '-e', SERVICE_WORKER_HARNESS, str(tmp_path / 'PyodideServiceWorker.js'), scenario], check=True)
+
+
+def test_service_worker_defaults_unchanged(tmp_path):
+    _write_pwa(tmp_path)
+    worker = (tmp_path / 'PyodideServiceWorker.js').read_text()
+    assert "const appCacheName = 'Docs-1.0';" in worker
+    assert 'const fetchCache = null;' in worker
+    assert json.loads((tmp_path / 'site.webmanifest').read_text())['scope'] == '/'
+
+
+def test_service_worker_overrides(tmp_path):
+    _write_pwa(tmp_path, pwa_cache_version='1.0+build.7', pwa_manifest_scope='./')
+    worker = (tmp_path / 'PyodideServiceWorker.js').read_text()
+    assert "const appCacheName = 'Docs-1.0+build.7';" in worker
+    assert json.loads((tmp_path / 'site.webmanifest').read_text())['scope'] == './'
