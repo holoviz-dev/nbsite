@@ -138,3 +138,68 @@ def test_gallery_source_discovers_sections(tmp_path, monkeypatch):
     dest = tmp_path / 'doc' / page
     assert (dest / 'elements' / 'example.rst').exists()
     assert 'elements/index' in (dest / 'index.rst').read_text()
+
+
+def test_gallery_external_items_thumbnail_path(tmp_path):
+    """Link tiles without a thumbnail point to an image relative to the docs root."""
+    doc_dir = tmp_path / 'doc'
+    doc_dir.mkdir()
+    page = 'gallery'
+    conf = dict(gen.DEFAULT_GALLERY_CONF, **{
+        'examples_dir': '../examples',
+        'galleries': {page: {
+            'title': 'Examples',
+            'sections': [{'path': 'api', 'title': 'API', 'items': [{'title': 'Area', 'url': 'https://example.com'}]}],
+            'no_image_thumb': True,
+        }},
+        'only_use_existing': True,
+    })
+    app = SimpleNamespace(
+        config=SimpleNamespace(nbsite_gallery_conf=conf, html_static_path=['_static'], html_theme_options={}),
+        builder=SimpleNamespace(srcdir=str(doc_dir)),
+    )
+    gen.generate_gallery(app, page)
+
+    index = (doc_dir / page / 'index.rst').read_text()
+    assert ':img-top: /gallery/api/thumbnails/area.png\n' in index
+    assert (doc_dir / 'gallery' / 'api' / 'thumbnails' / 'area.png').exists()
+    assert str(tmp_path) not in index
+
+
+@pytest.mark.parametrize('tile', ['link', 'notebook'])
+def test_gallery_logo_fallback_path(tmp_path, monkeypatch, tile):
+    """Tiles without a thumbnail fall back to the theme logo, given relative to the docs root."""
+    doc_dir = tmp_path / 'doc'
+    (doc_dir / '_static').mkdir(parents=True)
+    (doc_dir / '_static' / 'logo.png').write_bytes(b'')
+    page = 'gallery'
+    if tile == 'link':
+        section = {'path': 'api', 'title': 'API', 'items': [{'title': 'Area', 'url': 'https://example.com'}]}
+    else:
+        section = 'elements'
+        src_dir = tmp_path / 'examples' / page / section
+        src_dir.mkdir(parents=True)
+        nbformat.write(nbformat.v4.new_notebook(cells=[nbformat.v4.new_markdown_cell('# Example')]), src_dir / 'example.ipynb')
+        monkeypatch.setattr(gen, 'get_deployed_url', lambda urls, basename: None)
+    conf = dict(gen.DEFAULT_GALLERY_CONF, **{
+        'examples_dir': '../examples',
+        'galleries': {page: {'title': 'Examples', 'sections': [section], 'no_image_thumb': False}},
+        'enable_download': False,
+        'only_use_existing': True,
+    })
+    app = SimpleNamespace(
+        config=SimpleNamespace(
+            nbsite_gallery_conf=conf,
+            # Extensions like sphinx-copybutton append their absolute static folder last.
+            html_static_path=['_static', str(tmp_path / 'package' / '_static')],
+            # pydata-sphinx-theme logos are given relative to the docs root.
+            html_theme_options={'logo': {'image_light': '_static/logo.png'}},
+        ),
+        builder=SimpleNamespace(srcdir=str(doc_dir)),
+    )
+    gen.generate_gallery(app, page)
+
+    index = (doc_dir / page / 'index.rst').read_text()
+    directive = ':img-top:' if tile == 'link' else '.. image::'
+    assert f'{directive} /_static/logo.png\n' in index
+    assert str(tmp_path) not in index
