@@ -795,6 +795,11 @@ def generate_gallery(app, page):
     if isinstance(logo, dict):
         logo = logo['image_light']
     logo_path = os.path.join(static_path, logo)
+    if not os.path.exists(os.path.join(doc_dir, logo_path)):
+        # Theme logos like pydata-sphinx-theme's are given relative to the docs root,
+        # e.g. '_static/logo.png', and the last static path may be a package's own
+        # absolute static folder (e.g. sphinx-copybutton).
+        logo_path = logo
 
     if 'sections' in content:
         sections = content['sections']
