@@ -941,7 +941,7 @@ def generate_gallery(app, page):
                     else:
                         if thumb_extension not in ("svg", "gif"):
                             resize_pad(os.path.join(doc_dir, thumb_path))
-                        thumb = thumb_path
+                        thumb = os.path.relpath(thumb_path, doc_dir)
                 this_entry = _external_thumbnail_div(
                     thumb,
                     item_title,

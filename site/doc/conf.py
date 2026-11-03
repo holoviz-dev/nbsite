@@ -60,6 +60,23 @@ nbsite_gallery_conf = {
                     'path': 'section-2',
                     'title': 'Renamed as Section 2',
                 },
+                {
+                    'path': 'links',
+                    'title': 'Link tiles',
+                    'items': [
+                        {
+                            'title': 'PyHDX',
+                            'url': 'https://github.com/Jhsmit/PyHDX',
+                            'thumbnail': 'https://assets.holoviz.org/panel/gallery/community/pyhdx.png',
+                            'description': 'Tile with an explicit thumbnail.',
+                        },
+                        {
+                            'title': 'nbsite',
+                            'url': 'https://github.com/holoviz-dev/nbsite',
+                            'description': 'Tile without a thumbnail, uses the no_image_thumb fallback.',
+                        },
+                    ],
+                },
             ],
             'no_image_thumb': True,
             'titles_from_files': True,
