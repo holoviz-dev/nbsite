@@ -528,17 +528,16 @@ def get_deployed_examples(endpoint):
         return []
 
     soup = bs4.BeautifulSoup(r.content, features='lxml')
-    try:
-        deployed_examples = [
-            l.text for l in soup.find('div', {"class": "list-group"}).find_all('h4')
-        ]
-    except Exception:
-        deployed_examples = [
-            l.get('id')[1:] for l in soup.find('ul', {"class": "cards-grid"}).find_all('a', {"class": "card-link"})
-        ]
-        if not deployed_examples:
-            deployed_examples = [l.text for l in soup.find('ul').find_all('a')]
-    return deployed_examples
+    if list_group := soup.find('div', {"class": "list-group"}):
+        return [l.text for l in list_group.find_all('h4')]
+    for grid_class, link_class in (("pn-grid", "pn-card-link"), ("cards-grid", "card-link")):
+        if grid := soup.find('ul', {"class": grid_class}):
+            links = grid.find_all('a', {"class": link_class})
+            if examples := [l['id'][1:] for l in links if l.get('id')]:
+                return examples
+    if ul := soup.find('ul'):
+        return [l.text for l in ul.find_all('a')]
+    return []
 
 def generate_file_rst(
     app, src_dir, dest_dir, page, section, backend, img_extension, skip, deployment_urls
