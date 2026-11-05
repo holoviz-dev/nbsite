@@ -47,6 +47,17 @@ nbsite_gallery_conf = {
             'sections': [
                 'section1',
                 'section2',
+                {
+                    'path': 'links',
+                    'title': 'Link tiles',
+                    'items': [
+                        {
+                            'title': 'nbsite',
+                            'url': 'https://github.com/holoviz-dev/nbsite',
+                            'description': 'Tile without a thumbnail, falls back to the theme logo.',
+                        },
+                    ],
+                },
             ],
             'thumbnail_url': 'https://assets.holoviz.org/nbsite/thumbnails',
         },
@@ -59,6 +70,23 @@ nbsite_gallery_conf = {
                 {
                     'path': 'section-2',
                     'title': 'Renamed as Section 2',
+                },
+                {
+                    'path': 'links',
+                    'title': 'Link tiles',
+                    'items': [
+                        {
+                            'title': 'PyHDX',
+                            'url': 'https://github.com/Jhsmit/PyHDX',
+                            'thumbnail': 'https://assets.holoviz.org/panel/gallery/community/pyhdx.png',
+                            'description': 'Tile with an explicit thumbnail.',
+                        },
+                        {
+                            'title': 'nbsite',
+                            'url': 'https://github.com/holoviz-dev/nbsite',
+                            'description': 'Tile without a thumbnail, uses the no_image_thumb fallback.',
+                        },
+                    ],
                 },
             ],
             'no_image_thumb': True,
@@ -85,6 +113,8 @@ switcher_version = (
 
 # Configure the theme
 html_theme_options.update({
+    # Also used by the gallery as the fallback thumbnail.
+    "logo": {"image_light": "_static/nbsite-logo.png"},
     "navbar_start": ["navbar-logo", "version-switcher"],
     "github_url": "https://github.com/holoviz-dev/nbsite",
     "icon_links": [

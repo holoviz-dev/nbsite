@@ -1,8 +1,13 @@
+{% if PYODIDE_URL.endswith('.mjs') %}
+import { loadPyodide } from "{{ PYODIDE_URL }}";
+{% else %}
 importScripts("{{ PYODIDE_URL }}");
+{% endif %}
 
 const QUEUE = [];
 
 const REQUIRES = {{ requires }}
+const LOCKFILE_PACKAGES = {{ lockfile_packages }};
 
 function sendPatch(patch, buffers, cell_id) {
   self.postMessage({
@@ -30,13 +35,19 @@ function sendStderr(cell_id, stderr) {
 
 async function loadApplication(cell_id, path) {
   console.log("Loading pyodide!");
-  self.pyodide = await loadPyodide();
+  const options = LOCKFILE_PACKAGES.length ? {
+    lockFileURL: new URL('pyodide-lock.json', self.location.href).href,
+    packages: ['micropip', ...LOCKFILE_PACKAGES]
+  } : {};
+  self.pyodide = await loadPyodide(options);
   self.pyodide.globals.set("sendPatch", sendPatch);
   self.pyodide.globals.set("sendStdout", sendStdout);
   self.pyodide.globals.set("sendStderr", sendStderr);
   console.log("Loaded!");
-  await self.pyodide.loadPackage("micropip");
-  const packages = [{{ env_spec }}];
+  if (!LOCKFILE_PACKAGES.length) {
+    await self.pyodide.loadPackage('micropip');
+  }
+  const packages = LOCKFILE_PACKAGES.length ? [] : [{{ env_spec }}];
   if (path != null) {
     for (const key of Object.keys(REQUIRES)) {
       if (path.replace('.html', '').endsWith(key.replace('.md', ''))) {
@@ -49,15 +60,16 @@ async function loadApplication(cell_id, path) {
 
   await self.pyodide.runPythonAsync("{{ setup_code }}")
   self.pyodide.runPython("import micropip")
-  for (const pkg of packages) {
-    self.postMessage({
-      type: 'loading',
-      msg: `Loading ${pkg}`,
-      id: cell_id
-    });
+  if (packages.length) {
+    self.postMessage({type: 'loading', msg: `Loading ${packages.join(', ')}`, id: cell_id});
+    self.pyodide.globals.set('packages', packages);
     await self.pyodide.runPythonAsync(`
-      await micropip.install('${pkg}', keep_going=True, reinstall=True);
-    `);
+import inspect
+options = {'keep_going': True}
+if 'reinstall' in inspect.signature(micropip.install).parameters:
+    options['reinstall'] = True
+await micropip.install(packages.to_py(), **options)
+`);
   }
   console.log("Packages loaded!");
 }
@@ -179,30 +191,28 @@ self.onmessage = async (event) => {
 
   try {
     self.pyodide.globals.set('msg', msg)
-    let out = await self.pyodide.runPythonAsync(MESSAGES[msg.type])
+    const result = await self.pyodide.runPythonAsync(MESSAGES[msg.type])
     resolveExecution()
-    if (out == null) {
-      out = new Map()
-    }
-    if (out.has('content')) {
+    const out = result instanceof Map ? Object.fromEntries(result) : result ?? {}
+    if (Object.hasOwn(out, 'content')) {
       self.postMessage({
         type: 'render',
         id: msg.id,
-        content: out.get('content'),
-        mime: out.get('mime_type')
+        content: out.content,
+        mime: out.mime_type
       });
     }
-    if (out.has('stdout') && out.get('stdout').length) {
+    if (out.stdout?.length) {
       self.postMessage({
         type: 'stdout',
-        content: out.get('stdout'),
+        content: out.stdout,
         id: msg.id
       });
     }
-    if (out.has('stderr') && out.get('stderr').length) {
+    if (out.stderr?.length) {
       self.postMessage({
         type: 'stderr',
-        content: out.get('stderr'),
+        content: out.stderr,
         id: msg.id
       });
     }

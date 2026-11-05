@@ -1,5 +1,5 @@
 const url_root = document.getElementsByTagName('html')[0].getAttribute('data-content_root')
-const pyodideWorker = new Worker(`${url_root}_static/PyodideWebWorker.js`);
+const pyodideWorker = new Worker(`${url_root}_static/PyodideWebWorker.js`{% if module_worker %}, {type: 'module'}{% endif %});
 
 pyodideWorker.documents = {}
 pyodideWorker.busy = false
