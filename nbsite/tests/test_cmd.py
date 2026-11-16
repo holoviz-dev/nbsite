@@ -3,10 +3,16 @@ import os
 import shutil
 
 from collections import Counter
+from importlib.metadata import version
 
 import pytest
 
+from packaging.version import Version
+
 from nbsite.cmd import build, generate_rst
+
+# sphinx-design 0.8 stopped writing a `_sphinx_design_static` folder to the build dir
+SD_STATIC_DIR = Version(version("sphinx-design")) < Version("0.8.0")
 
 # Note: a lot of this setup is copied from the new (2018-11-01) test in
 # pyct. Potentially this could be consolidated at some point. The fixture
@@ -789,10 +795,8 @@ def test_build_deletes_by_default(tmp_project_with_docs_skeleton):
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='')
     assert not (project / "builtdocs" / ".doctrees").is_dir()
     assert (project / "builtdocs" / "First_Notebook.html").is_file()
-    # Used to test for 10, bumped to 11 as the sphinx-design extension
-    # adds a `_sphinx_design_static` folder in `builtdocs/`.
-    # Further incremented when sphinx-rediraffe was added as it adds _rediraffe_redirected.json
-    assert len(list((project / "builtdocs").iterdir())) == 12
+    # sphinx-rediraffe adds _rediraffe_redirected.json
+    assert len(list((project / "builtdocs").iterdir())) == 11 + SD_STATIC_DIR
 
 @pytest.mark.slow
 def test_build_with_clean_dry_run_does_not_delete(tmp_project_with_docs_skeleton):
@@ -802,10 +806,8 @@ def test_build_with_clean_dry_run_does_not_delete(tmp_project_with_docs_skeleton
     build('html', str(project / "builtdocs"), project_root=str(project), examples_assets='', clean_dry_run=True)
     assert (project / "builtdocs" / ".doctrees").is_dir()
     assert (project / "builtdocs" / "First_Notebook.html").is_file()
-    # Used to test for 12, bumped to 13 as the sphinx-design extension
-    # adds a `_sphinx_design_static` folder in `builtdocs/`.
-    # Further incremented when sphinx-rediraffe was added as it adds _rediraffe_redirected.json
-    assert len(list((project / "builtdocs").iterdir())) == 14
+    # sphinx-rediraffe adds _rediraffe_redirected.json
+    assert len(list((project / "builtdocs").iterdir())) == 13 + SD_STATIC_DIR
 
 @pytest.mark.slow
 def test_build_copies_json(tmp_project_with_docs_skeleton):
